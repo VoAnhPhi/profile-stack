@@ -1,0 +1,778 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens - "the annotated proof"
+
+   Palette ported from ../built-by-phi/SPEC.md section 8. Paper base, ink text,
+   a single editorial accent used sparingly.
+--------------------------------------------------------------------------- */
+
+:root {
+  /* surface */
+  --canvas: #fafaf8;
+  --canvas-sunk: #f2f0ec;
+  --ink: #111111;
+  --ink-soft: #33332f;
+  --muted: #6b675f;
+  --divider: #eae7e1;
+  --accent: #b42318;
+  --inverse-bg: #111111;
+  --inverse-text: #f5f3ee;
+
+  /* motion - two deliberately separate systems.
+     editorial never overshoots; overshoot on a block of text hurts reading.
+     playful overshoots, and is reserved for icons, notes and stickers. */
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-playful: cubic-bezier(0.34, 1.9, 0.5, 1);
+  --ease-linear: cubic-bezier(0, 0, 1, 1);
+
+  --dur-hover: 200ms;
+  --dur-pop: 280ms;
+  --dur-reveal: 600ms;
+  --dur-scene: 1100ms;
+  --stagger: 12ms;
+
+  /* rhythm */
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --measure: 68ch;
+  --section-gap: clamp(6rem, 14vh, 12rem);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-sunk: var(--canvas-sunk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-divider: var(--divider);
+  --color-accent: var(--accent);
+  --color-inverse-bg: var(--inverse-bg);
+  --color-inverse-text: var(--inverse-text);
+
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
+  --font-hand: var(--font-playpen);
+
+  --ease-editorial: var(--ease-editorial);
+  --ease-playful: var(--ease-playful);
+
+  /* Display sizes track the reference set: 96px-174px at desktop.
+     Line heights sit under 1 the way all four reference sites do.
+
+     Sized down from 11.2vw, which put the name at 160px on a 1440 window and read
+     as shouting. 8.4vw lands at about 120px there and leaves the headroom the
+     column needs at every breakpoint - measured, not assumed. */
+  --text-hero: clamp(2.4rem, 8.4vw, 7.5rem);
+  --text-hero--line-height: 0.92;
+  --text-display: clamp(2.5rem, 6vw, 4.75rem);
+  --text-display--line-height: 0.98;
+  --text-title: clamp(1.75rem, 3vw, 2.5rem);
+  --text-title--line-height: 1.08;
+  --text-lead: clamp(1.125rem, 1.6vw, 1.5rem);
+  --text-lead--line-height: 1.5;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+}
+
+/* ---------------------------------------------------------------------------
+   Cascade layers
+
+   Tailwind v4 emits its utilities inside `@layer utilities`, and an unlayered
+   rule beats every layered one regardless of specificity. Writing these resets
+   and primitives outside a layer therefore silently killed the utilities meant
+   to override them: `* { min-width: 0 }` disabled every `min-w-*` on the site,
+   and `.label` won over `text-ink`, `normal-case` and `tracking-normal`
+   everywhere they were paired.
+
+   Found by measuring, not by reading: the capability strip in Trajectory had
+   flex items 2px wide holding 56px gaps, which pushed the document 59px wider
+   than a 390px viewport.
+--------------------------------------------------------------------------- */
+
+@layer base {
+  /* ---------------------------------------------------------------------------
+     Base
+  --------------------------------------------------------------------------- */
+
+  * {
+    min-width: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Lenis handles smoothing. Native smooth scroll would fight it. */
+    scroll-behavior: auto;
+  }
+
+  main {
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1rem, 1.05vw, 1.0625rem);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Lenis owns scrolling on <html>. Under prefers-reduced-motion the provider
+     never attaches, so these classes are simply absent and native scroll runs. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--canvas);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------------------
+     Type primitives
+  --------------------------------------------------------------------------- */
+
+  .font-display {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    /* SOFT and WONK are what make Fraunces playful rather than merely editorial.
+       WONK swaps in the canted terminals; SOFT rounds the corners. */
+    font-variation-settings:
+      "SOFT" 40,
+      "WONK" 1;
+    font-weight: 460;
+    letter-spacing: -0.025em;
+  }
+
+  .font-hand {
+    font-family: var(--font-playpen), var(--font-geist), cursive;
+    /* Floor of 1.4. Handwriting faces carry tall ascenders, and Vietnamese stacked
+       diacritics sit above them. The usual 1.15 clipping threshold is too low here. */
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .label {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: var(--text-label);
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Masked line reveals clip at the box edge. With a sub-1 line-height that edge
+     cuts diacritics off the top of characters like O with tilde. Pad the mask and
+     pull the same amount back out so layout is unchanged. */
+  .mask-line {
+    display: block;
+    overflow: hidden;
+    padding-top: 0.18em;
+    margin-top: -0.18em;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Layout primitives
+  --------------------------------------------------------------------------- */
+
+  /* The content column is deliberately narrower than the viewport. Measured on
+     plnty.app at 1600px, their column runs about 209-1231px, roughly 64% of the
+     window, and the bands either side are where the playful objects live. At
+     74rem this leaves ~144px a side at 1440 and ~224px at 1600. */
+  .shell {
+    width: 100%;
+    max-width: 74rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .shell-narrow {
+    width: 100%;
+    max-width: 62rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .hairline {
+    border-top: 1px solid var(--divider);
+  }
+
+  .section {
+    padding-block: var(--section-gap);
+    scroll-margin-top: 6rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Paper ground
+
+   Diamond lattice plus film grain, both static SVG tiles. Replaces a WebGL noise
+   shader that needed a GL context, a render loop, a low-power path and a
+   reduced-motion path to do the same thing. The lattice is plnty.app's, which
+   uses it behind its hero and sign-up sections.
+--------------------------------------------------------------------------- */
+
+.paper-field__lattice {
+  background-color: var(--canvas);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M36 0 72 36 36 72 0 36Z' fill='none' stroke='%23111111' stroke-opacity='0.045'/%3E%3C/svg%3E");
+  background-position: center top;
+  /* Fades out below the first screen so the lattice frames the hero rather than
+     sitting under every paragraph on the page. */
+  mask-image: linear-gradient(to bottom, #000 0, #000 42vh, transparent 92vh);
+}
+
+.paper-field__grain {
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* ---------------------------------------------------------------------------
+   Hero flip card
+
+   A photograph on the front, paper on the back - the side of a print where the
+   note gets written. Hover turns it; click pins it, which is the half that works
+   on touch.
+--------------------------------------------------------------------------- */
+
+.hero-flip {
+  width: 100%;
+  max-width: 22rem;
+  justify-self: end;
+}
+
+.hero-flip__scene {
+  perspective: 1400px;
+}
+
+.hero-flip__card {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  transform-style: preserve-3d;
+  transition: transform 780ms var(--ease-editorial);
+  cursor: pointer;
+}
+
+.hero-flip__scene[data-flipped="true"] .hero-flip__card {
+  transform: rotateY(180deg);
+}
+
+/* Under `reduce` the faces swap rather than spin. */
+.hero-flip__scene[data-reduced="true"] .hero-flip__card {
+  transition: none;
+}
+
+.hero-flip__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--divider);
+  background: var(--canvas-sunk);
+  box-shadow: 0 26px 50px -30px rgba(17, 17, 17, 0.42);
+  backface-visibility: hidden;
+}
+
+.hero-flip__face--back {
+  transform: rotateY(180deg);
+  background: var(--canvas);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.hero-flip__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink);
+}
+
+.hero-flip__dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.hero-flip__note {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  max-width: 24ch;
+}
+
+.hero-flip__foot {
+  border-top: 1px solid var(--divider);
+  padding-top: 0.7rem;
+}
+
+.hero-flip__hint {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--inverse-text);
+  padding: 0.32rem 0.66rem;
+}
+
+
+
+
+
+
+
+
+
+@media (max-width: 1023px) {
+  .hero-flip {
+    justify-self: start;
+  }
+  }
+
+/* ---------------------------------------------------------------------------
+   Bleeding items
+
+   plnty.app's signature composition: playful objects beside the content column,
+   tilted and cropped. They now sit further inside the edge and rest faded, so
+   they read as texture until the cursor comes near - the lift is driven from JS
+   in BleedItems, because a z-index of -1 puts `main` above them for hit testing
+   and CSS :hover never fires.
+--------------------------------------------------------------------------- */
+
+.bleed-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Exactly the viewport, centred on the section, so an item's `x` reads as a
+     percentage of the window rather than of a column whose width changes. `main`
+     clips horizontally, so the extra scrollbar width in 100vw is absorbed there
+     and cannot widen the document. */
+  left: 50%;
+  width: 100vw;
+  translate: -50% 0;
+  pointer-events: none;
+  z-index: -1;
+
+  /* A 60px dissolve at each window edge. Anything running off the side fades out
+     instead of ending on a hard crop against the page border. */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 60px,
+    #000 calc(100% - 60px),
+    transparent 100%
+  );
+}
+
+.bleed-item {
+  position: absolute;
+  will-change: transform;
+}
+
+.bleed-item__inner {
+  will-change: transform, opacity;
+}
+
+/* A photographic card in the margin. Same treatment as the hero stack so the two
+   read as one family: rounded, hairline border, soft shadow. */
+.bleed-card {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  background: var(--canvas-sunk);
+  box-shadow: 0 16px 34px -22px rgba(17, 17, 17, 0.4);
+}
+
+@media (max-width: 900px) {
+  /* Below this the copy needs the full width; only the corner items stay. */
+  .bleed-item[data-priority="low"] {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Image stack
+
+   The fanned screenshot stack on each work chapter. All CSS 3D - sadumedia.com
+   gets its entire sense of depth this way with no canvas at all, and keeping the
+   plates as real <img> preserves indexing, lazy loading and alt text.
+
+   `--spread` and `--lean` are the only values scroll touches; everything below is
+   a compositor transform.
+--------------------------------------------------------------------------- */
+
+.image-stack {
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+  /* `clip` rather than `hidden`: it contains the fan's contribution to document
+     width without creating a scroll container, which would break the perspective
+     and any sticky ancestor. The margin lets the drop shadow still bleed. */
+  overflow: clip;
+  overflow-clip-margin: 30px;
+}
+
+.image-stack__inner {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  transform-style: preserve-3d;
+  /* The fan offsets every plate to one side, so the stack has to be pulled back by
+     half the total spread. Without this the front plate - which perspective also
+     scales up by about 8% - was sliced off at the viewport edge. */
+  transform: translateX(calc(var(--spread, 1) * -6.5%))
+    rotateY(calc(var(--lean, -4) * 1deg)) rotateX(3deg);
+  transition: transform 600ms var(--ease-editorial);
+}
+
+.image-stack__plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--canvas-sunk);
+  border: 1px solid var(--divider);
+  transform-style: preserve-3d;
+  transform: translate3d(
+      calc(var(--i) * var(--spread, 1) * 6.5%),
+      calc(var(--i) * var(--spread, 1) * -5.5%),
+      calc(var(--i) * var(--spread, 1) * 55px)
+    )
+    rotate(var(--jitter, 0deg));
+  box-shadow: 0 24px 50px -32px rgba(17, 17, 17, 0.45);
+  transition: transform 600ms var(--ease-editorial);
+  /* Plates behind the front one sit back in the stack. */
+  z-index: calc(10 - var(--depth));
+}
+
+.image-stack:hover .image-stack__plate {
+  transform: translate3d(
+      calc(var(--i) * 8.5%),
+      calc(var(--i) * -7.5%),
+      calc(var(--i) * 78px)
+    )
+    rotate(var(--jitter, 0deg));
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  /* Tablet columns are narrower than desktop ones but were fanning by the same
+     percentage, which pushed the document 4px wider than a 768px viewport. */
+  .image-stack__inner {
+    transform: translateX(calc(var(--spread, 1) * -3.5%))
+      rotateY(calc(var(--lean, -4) * 1deg)) rotateX(3deg);
+  }
+
+  .image-stack__plate {
+    transform: translate3d(
+        calc(var(--i) * var(--spread, 1) * 3.5%),
+        calc(var(--i) * var(--spread, 1) * -4%),
+        calc(var(--i) * var(--spread, 1) * 34px)
+      )
+      rotate(var(--jitter, 0deg));
+  }
+}
+
+@media (max-width: 640px) {
+  /* One plate on a phone. Three fanned plates at that width is mush. */
+  .image-stack__plate:not(:first-child) {
+    display: none;
+  }
+  .image-stack__inner {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Line wipe
+
+   The host stays ink-coloured until SplitText has run, so if the split never
+   happens - fonts blocked, JS failed, reduced motion - the text simply reads
+   normally instead of sitting muted forever.
+--------------------------------------------------------------------------- */
+
+.wipe-line {
+  position: relative;
+  color: var(--muted);
+  transition: color 200ms linear;
+}
+
+.wipe-line__fill {
+  position: absolute;
+  inset: 0;
+  color: var(--ink);
+  pointer-events: none;
+  will-change: clip-path;
+}
+
+/* Nested copies would recurse one level; stop them dead. */
+.wipe-line__fill .wipe-line__fill {
+  display: none;
+}
+
+/* An accent word needs one colour in the muted base and another in the ink fill,
+   otherwise its line has nothing left to wipe. Tailwind's `text-accent` cannot do
+   this - it would paint both copies - so wiped headlines mark the word with
+   `wipe-accent` instead and the two rules below resolve it per copy. */
+.wipe-line .wipe-accent {
+  color: inherit;
+}
+
+.wipe-line__fill .wipe-accent {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------------------
+   Stickers
+
+   Irregular tilt is the cheapest of plnty.app's three playfulness levers and the
+   one that survives best on an editorial ground. Amplitude stays inside +/-2deg
+   to +/-12deg; values come from a fixed table, never Math.random().
+
+   Layout and tilt live outside the scripting gate - they are how the icon looks,
+   not how it arrives. Only the entrance state is gated.
+--------------------------------------------------------------------------- */
+
+.sticker {
+  display: inline-flex;
+  rotate: var(--tilt, 0deg);
+  color: var(--ink);
+}
+
+.sticker[data-accent="true"] {
+  color: var(--accent);
+}
+
+/* The tinted chip. `color-mix` against currentColor means one rule serves every
+   hue - the chip is always a wash of whatever the glyph is painted in.
+
+   The wash was 13% with a 16% ring, which measured 1.10:1 to 1.13:1 against the
+   paper - below what an eye resolves as a colour rather than as a smudge, so the
+   chips read as grey boxes whatever the glyph inside them was doing. 18% and 30%
+   put the tint and its edge where they were always meant to be. */
+.sticker__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, currentColor 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 30%, transparent);
+  transition:
+    background var(--dur-hover) var(--ease-editorial),
+    box-shadow var(--dur-hover) var(--ease-editorial);
+}
+
+a:hover .sticker__chip,
+.group:hover .sticker__chip {
+  background: color-mix(in oklab, currentColor 28%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal
+
+   Gated on `scripting: enabled` rather than on a class added by an inline script.
+   The script version worked, but mutating `documentElement.classList` before
+   hydration changes an attribute React rendered, and React 19 reports that as a
+   hydration mismatch. This media feature answers exactly the same question with
+   no script and no mismatch.
+
+   Where `scripting` is unsupported the block simply never applies, so content
+   renders visible and un-animated. That is the right direction to fail in.
+--------------------------------------------------------------------------- */
+
+@media (scripting: enabled) {
+
+  [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y, 24px), 0);
+    transition:
+      opacity var(--dur-reveal) var(--ease-editorial) var(--reveal-delay, 0ms),
+      transform var(--dur-reveal) var(--ease-editorial) var(--reveal-delay, 0ms);
+    will-change: transform, opacity;
+  }
+
+  [data-reveal][data-ease="playful"] {
+    transition-timing-function: var(--ease-playful);
+    transition-duration: var(--dur-pop);
+  }
+
+  [data-reveal][data-inview="true"] {
+    opacity: 1;
+    transform: none;
+    /* Drop the compositor hint once the element has settled. Leaving will-change on
+       permanently keeps a layer alive for every revealed node on the page. */
+    will-change: auto;
+  }
+
+  .sticker[data-reveal] {
+    transform: translate3d(0, var(--reveal-y, 5px), 0) scale(0.86);
+  }
+
+  .sticker[data-reveal][data-inview="true"] {
+    transform: none;
+    scale: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+
+   The model here is surendarselvaraj.com, verified under
+   `prefers-reduced-motion: reduce`: Lenis detached, transitions collapsed, and
+   content still fully revealed. Components additionally guard in JS - CSS alone
+   cannot stop a GSAP timeline or a WebGL render loop.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1e-06s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1e-06s !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Anything that animates in must be visible without its animation. */
+  [data-reveal],
+  [data-reveal] * {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    filter: none !important;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   Skills board
+
+   One chip per technology instead of `A · B · C` strings. Chips are individually
+   hoverable - the author asked for the small items to be interactive - and
+   hovering a group dims the others so one layer can be read on its own.
+--------------------------------------------------------------------------- */
+
+.skills-board {
+  display: grid;
+  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.skills-group__inner {
+  height: 100%;
+  border-top: 1px solid var(--divider);
+  padding-top: 1rem;
+  transition: opacity 260ms var(--ease-editorial);
+}
+
+.skills-board[data-dim="true"] .skills-group__inner[data-muted="true"] {
+  opacity: 0.4;
+}
+
+.skills-group__inner[data-focus="true"] {
+  border-top-color: var(--ink);
+}
+
+.skills-chip {
+  --lift: 0px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  background: var(--canvas);
+  color: var(--ink-soft);
+  rotate: var(--tilt, 0deg);
+  translate: 0 var(--lift);
+  cursor: default;
+  transition:
+    translate var(--dur-pop) var(--ease-playful),
+    rotate var(--dur-pop) var(--ease-playful),
+    border-color var(--dur-hover) var(--ease-editorial),
+    color var(--dur-hover) var(--ease-editorial),
+    box-shadow var(--dur-hover) var(--ease-editorial);
+}
+
+@media (hover: hover) {
+  .skills-chip:hover {
+    --lift: -3px;
+    rotate: 0deg;
+    border-color: var(--ink);
+    color: var(--ink);
+    box-shadow: 0 8px 16px -10px rgba(17, 17, 17, 0.35);
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Pointer scramble, on the hero type and every section heading
+
+   The character box carries the width of whatever glyph it is currently showing,
+   written by JS. It used to be pinned to the letter's own width so a substitution
+   could not reflow the line, which meant a 102px `&` sat inside a 78px box and
+   overhung its neighbours; the row easing open and closed is the better answer.
+   Everything here just has to make that box addressable and let the width, colour
+   and nudge ease rather than snap.
+   -------------------------------------------------------------------------- */
+
+.scramble-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* The accessible copy exists for assistive tech. Leaving it selectable as well meant
+   a reader dragging across a heading copied the sentence twice - aria-hidden governs
+   the accessible name, not the selection. The visible layer keeps the selection,
+   because that is the one the reader can see themselves highlighting. */
+.scramble-sr {
+  user-select: none;
+}
+
+.scramble-ch {
+  display: inline-block;
+  text-align: center;
+  /* The box carries the width of whatever glyph it currently shows, written by JS.
+     Easing it is what lets the row breathe when a letter becomes a symbol instead
+     of the symbol overhanging a box pinned to the letter it replaced. */
+  transition: width var(--dur-pop) var(--ease-editorial);
+}
+
+.scramble-ch__i {
+  display: inline-block;
+  transition:
+    color var(--dur-hover) var(--ease-editorial),
+    translate var(--dur-pop) var(--ease-playful);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scramble-ch,
+  .scramble-ch__i {
+    transition: none;
+  }
+}
