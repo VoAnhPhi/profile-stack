@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SITE } from "@/content/site";
+import { CubeMark } from "@/components/chrome/CubeMark";
 
 const NAV = [
   { label: "Work", href: "/#work" },
@@ -37,13 +38,7 @@ export function Header() {
       }`}
     >
       <div className="shell flex h-16 items-center justify-between gap-6">
-        <Link
-          href="/"
-          data-cursor
-          className="font-display text-[1.125rem] tracking-tight"
-        >
-          {SITE.nameLatin}
-        </Link>
+        <CubeMark />
 
         <nav aria-label="Sections" className="hidden md:block">
           <ul className="flex items-center gap-7">

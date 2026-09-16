@@ -3,6 +3,7 @@ import { fontVariables } from "@/lib/fonts";
 import { SITE } from "@/content/site";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Cursor } from "@/components/chrome/Cursor";
+import { Preloader } from "@/components/chrome/Preloader";
 import { InkFilter } from "@/components/icons/InkFilter";
 import { PaperField } from "@/components/playful/PaperField";
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({
         <InkFilter />
         <PaperField />
         <Cursor />
+        <Preloader />
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
