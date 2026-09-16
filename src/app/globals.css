@@ -103,6 +103,12 @@
     -webkit-text-size-adjust: 100%;
     /* Lenis handles smoothing. Native smooth scroll would fight it. */
     scroll-behavior: auto;
+    /* Scroll anchoring off. Arriving at /#work from a case study, Next placed the
+       section on its 96px scroll margin and an anchoring correction then carried
+       it 162px further, under the header; with anchoring off it stays put. Every
+       image box reserves its space - blocking images leaves the page height
+       unchanged - so nothing here leans on anchoring to absorb a late shift. */
+    overflow-anchor: none;
   }
 
   main {
@@ -343,6 +349,288 @@
   padding: 0.32rem 0.66rem;
 }
 
+/* ---------------------------------------------------------------------------
+   Manifesto portrait, two faces
+
+   Same 3D mechanics as the hero card. The aspect ratio is 3/4 rather than the
+   hero's 4/5 because both portraits were painted at 3/4 and cropping either one
+   tighter cuts the shop out of the first and the shoulders off the second.
+--------------------------------------------------------------------------- */
+
+.portrait-flip {
+  width: 12rem;
+  perspective: 1200px;
+  rotate: -2.21911deg;
+}
+
+@media (min-width: 640px) {
+  .portrait-flip {
+    width: 14rem;
+  }
+}
+
+.portrait-flip__card {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+  transition: transform 780ms var(--ease-editorial);
+}
+
+.portrait-flip[data-flipped="true"] .portrait-flip__card {
+  transform: rotateY(180deg);
+}
+
+.portrait-flip[data-reduced="true"] .portrait-flip__card {
+  transition: none;
+}
+
+.portrait-flip__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--canvas-sunk);
+  box-shadow: 0 18px 40px -26px rgba(17, 17, 17, 0.5);
+  backface-visibility: hidden;
+}
+
+.portrait-flip__face--back {
+  transform: rotateY(180deg);
+}
+
+.portrait-flip__hint {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--inverse-text);
+  padding: 0.26rem 0.56rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Header cube mark
+
+   The turning is driven from JS (CubeMark.tsx) because it reads scroll velocity;
+   everything static about the object lives here.
+
+   `perspective` is 6.5x the cube edge. Shorter and the far faces splay badly at a
+   40px object; longer and the thing stops reading as a solid at all.
+--------------------------------------------------------------------------- */
+
+.cube-mark {
+  --cube: 34px;
+  display: block;
+  flex: 0 0 auto;
+  width: var(--cube);
+  height: var(--cube);
+  perspective: calc(var(--cube) * 6.5);
+}
+
+@media (min-width: 768px) {
+  .cube-mark {
+    --cube: 40px;
+  }
+}
+
+.cube-mark__box {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: scale var(--dur-hover) var(--ease-playful);
+}
+
+.cube-mark:hover .cube-mark__box {
+  scale: 1.06;
+}
+
+/* White ground on every face, ink on top - the same pair the drawn portrait uses.
+   A white cube on a #fafaf8 header has almost no silhouette of its own, so the edge
+   has to be drawn: without the hairline the six faces read as one flat card the
+   moment two of them are lit the same. */
+.cube-mark__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.16);
+  /* The cube is closed and every face is opaque, so the far side is never wanted. */
+  backface-visibility: hidden;
+}
+
+/* Two sizes, on purpose. A mark is a symbol and survives being small; a face needs
+   pixels before it is a face again.
+
+   35% for the tech marks. This sits below the stroke floor they were drawn against:
+   a 1.5-unit stroke lands at 0.88px on the 40px desktop face and 0.74px on the 34px
+   mobile one, where a line stops being a line. Raising strokeWidth in TechLogos.tsx
+   is the fix if they read too faint - see the note there.
+
+   55% for the portrait, measured rather than matched to the marks. At 35% it renders
+   14px wide and the whole face is five or six pixels: a black mass with a pale
+   smudge, saying nothing about who this is. 55% puts it at 22px on desktop and 19px
+   on mobile, which is where the eyes and the hairline come back. The two therefore
+   carry different margins, and that difference is the reason. */
+.cube-mark__face svg {
+  width: 35%;
+  height: 35%;
+}
+
+.cube-mark__portrait {
+  width: 55%;
+  height: 55%;
+  object-fit: contain;
+}
+
+.cube-mark__face--front {
+  transform: translateZ(calc(var(--cube) / 2));
+}
+
+.cube-mark__portrait {
+  object-fit: contain;
+}
+
+.cube-mark__face--back {
+  transform: rotateY(180deg) translateZ(calc(var(--cube) / 2));
+}
+.cube-mark__face--right {
+  transform: rotateY(90deg) translateZ(calc(var(--cube) / 2));
+}
+.cube-mark__face--left {
+  transform: rotateY(-90deg) translateZ(calc(var(--cube) / 2));
+}
+.cube-mark__face--top {
+  transform: rotateX(90deg) translateZ(calc(var(--cube) / 2));
+}
+.cube-mark__face--bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--cube) / 2));
+}
+
+/* ---------------------------------------------------------------------------
+   Preloader
+
+   A paper ground with the page's own objects arriving on it, the number in the
+   middle, and everything thrown outward when the load finishes. Motion is driven
+   from Preloader.tsx; this file owns the ground, the placement and the type.
+
+   The whole thing is styled to survive without JS: the failsafe animation below
+   hides it after 4s, and Preloader.tsx cancels that the moment it mounts. Under
+   `reduce` it is never shown at all.
+--------------------------------------------------------------------------- */
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background: var(--canvas);
+  overflow: hidden;
+  animation: preloader-failsafe 0s linear 4s forwards;
+}
+
+@keyframes preloader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Two nested spans per object, and the nesting is load-bearing: the outer one owns
+   arrival and scatter, the inner one owns the endless drift. Running both on one
+   element would have the drift's `y` fighting the scatter's for the same property. */
+/* Arrival is CSS, driven by one data attribute, and that is deliberate. It was a
+   GSAP `fromTo` first; the tween silently never ran and every object stayed at the
+   `opacity: 0` the stylesheet had set, so the opening rendered an empty page with a
+   number on it. A transition cannot fail that way: if the attribute never lands the
+   object is still invisible, but if anything at all sets it the object appears.
+
+   `scale` and `translate` are separate properties from `transform` here, which is
+   what lets the scatter write `transform` later without fighting this. */
+.preloader__shape {
+  position: absolute;
+  /* left/top come from the component; this centres the object on that point. */
+  translate: -50% -50%;
+  will-change: transform, opacity;
+  opacity: 0;
+  scale: 0.3;
+  rotate: -18deg;
+  transition:
+    opacity 0.5s var(--ease-editorial),
+    scale 0.62s var(--ease-playful),
+    rotate 0.62s var(--ease-playful);
+}
+
+.preloader__shape[data-in="1"] {
+  /* Full strength. The same stickers rest at 0.2 in the margins, where they sit
+     beside text and the pointer brings them up; here the dishes are the whole
+     picture and nothing can be hovered, so any fade only reads as washed out. */
+  opacity: 1;
+  scale: 1;
+  rotate: 0deg;
+}
+
+/* The scatter drives `transform`, so the arrival transition has to be out of the
+   way or it would ease the throw as well. */
+.preloader__shape[data-leaving="1"] {
+  transition: none;
+}
+
+.preloader__shape-inner {
+  display: block;
+  will-change: transform;
+}
+
+.preloader__sticker {
+  display: block;
+  object-fit: contain;
+  /* The cut-outs carry their own hard edge; a shadow gives them a little weight on
+     the paper without turning them into cards. */
+  filter: drop-shadow(0 6px 14px rgba(17, 17, 17, 0.16));
+}
+
+.preloader__count {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(4.5rem, 15vw, 11rem);
+  line-height: 0.84;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.preloader__meta {
+  position: absolute;
+  bottom: 1.6rem;
+  right: var(--gutter);
+  color: var(--muted);
+}
+
+html.is-loading,
+html.is-loading body {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader {
+    display: none;
+  }
+}
+
 
 
 
@@ -371,141 +659,217 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  /* Exactly the viewport, centred on the section, so an item's `x` reads as a
-     percentage of the window rather than of a column whose width changes. `main`
+  /* Exactly the viewport, centred on the section, so an item's position reads
+     against the window rather than against a column whose width changes. `main`
      clips horizontally, so the extra scrollbar width in 100vw is absorbed there
-     and cannot widen the document. */
+     and cannot widen the document. It also cancels here: the layer is centred on
+     the section, so the overflow is symmetric and `--copy-edge` below stays exact
+     whether or not a scrollbar is taking 15px. */
   left: 50%;
   width: 100vw;
   translate: -50% 0;
   pointer-events: none;
   z-index: -1;
 
-  /* A 60px dissolve at each window edge. Anything running off the side fades out
-     instead of ending on a hard crop against the page border. */
+  /* Where the copy column starts, in this layer's own coordinates. `.shell` caps
+     the column at 74rem and pads it by the gutter, so everything past that is
+     margin - 142px at 1360, 388px at 1920. Objects are placed against this rather
+     than against a fixed offset from the window edge; see `u` in BleedItems. */
+  --copy-edge: calc(max(0px, (100vw - 74rem) / 2) + var(--gutter));
+
+  /* Objects grow with the margin they live in. Straight percentages would do this
+     too, but they would also shrink a bowl of pho to a smudge at 1360 and blow it
+     up past its neighbours at 2560, so the steps are deliberate. */
+  --bleed-scale: 1.04;
+
+  /* How far in from the window edge an object may reach. Objects live along the
+     two edges, not across the whole margin: an earlier version let them run to 16px
+     from the copy, and on a real screen that read as the margin pressing into the
+     column. The band is 68% of the margin, never closer than 40px to the copy and
+     never deeper than 240px - so at 1920 the innermost object stops 184px short of
+     the text, and at 1366 it still clears it by 47px. */
+  --bleed-reach-cap: 240px;
+
+  /* A 36px dissolve at each window edge, down from 60px. The wider fade was drawn
+     for abstract gradient blobs, where losing the outer third read as depth. A
+     cut-out of a bowl of pho loses its bowl. Measured at four widths, every object
+     sat inside the old 60px band; 36px leaves the body of each one intact and still
+     softens whatever the edge crops. */
   mask-image: linear-gradient(
     to right,
     transparent 0,
-    #000 60px,
-    #000 calc(100% - 60px),
+    #000 36px,
+    #000 calc(100% - 36px),
     transparent 100%
   );
+}
+
+@media (max-width: 1699px) {
+  .bleed-layer {
+    --bleed-scale: 0.86;
+  }
+}
+
+@media (max-width: 1439px) {
+  .bleed-layer {
+    --bleed-scale: 0.72;
+  }
+}
+
+@media (max-width: 1359px) {
+  /* The column is capped at 74rem, so below about 1360 the margin is thinner than
+     a single object - 63px of usable band at 1280, against objects 40 to 120px
+     wide. The old breakpoint was 900px, which is why objects at these widths were
+     landing on the header and behind the hero card instead of beside them. There
+     is nothing to arrange here, so nothing is drawn. */
+  .bleed-layer {
+    display: none;
+  }
 }
 
 .bleed-item {
   position: absolute;
   will-change: transform;
+  translate: 0 -50%;
+
+  /* `--w` (unitless px) and `--u` (0 to 1) come from the preset. */
+  --iw: calc(var(--w) * var(--bleed-scale) * 1px);
+  --reach: min(
+    calc(var(--copy-edge) * 0.68),
+    calc(var(--copy-edge) - 40px),
+    var(--bleed-reach-cap)
+  );
+  /* Left edge at u = 0: the object's inner side sits on the reach line. */
+  --inner: calc(var(--reach) - var(--iw));
+  /* Left edge at u = 1. It depends on the object's own width: the fade is 36px, so
+     a 20px-wide glass of tra tac pushed all the way out would simply disappear.
+     Every object keeps at least 18px of its body outside the fade. */
+  --outer-min: max(16px, calc(54px - var(--iw)));
+  --travel: max(0px, calc(var(--inner) - var(--outer-min)));
+
+  width: var(--iw);
+}
+
+.bleed-item[data-side="l"] {
+  left: calc(var(--inner) - var(--u) * var(--travel));
+}
+
+.bleed-item[data-side="r"] {
+  right: calc(var(--inner) - var(--u) * var(--travel));
 }
 
 .bleed-item__inner {
   will-change: transform, opacity;
 }
 
-/* A photographic card in the margin. Same treatment as the hero stack so the two
-   read as one family: rounded, hairline border, soft shadow. */
-.bleed-card {
-  display: block;
-  overflow: hidden;
-  border-radius: 10px;
-  border: 1px solid var(--divider);
-  background: var(--canvas-sunk);
-  box-shadow: 0 16px 34px -22px rgba(17, 17, 17, 0.4);
-}
+/* Cut-outs in the margin. Same drop shadow as the ones in the opening, so an object
+   looks like the same object whether it is introducing the page or sitting beside
+   it.
 
-@media (max-width: 900px) {
-  /* Below this the copy needs the full width; only the corner items stay. */
-  .bleed-item[data-priority="low"] {
-    display: none;
-  }
+   `width: 100%` fills the box the item sized, and the height comes from the width
+   and height attributes Next writes, which the browser knows before the bytes land.
+   Bare `width: auto` is what must not go here: it overrode those attributes and
+   every lazy image measured 0x0 until it decoded, which a Playwright pass caught on
+   eleven objects below the fold. */
+.bleed-sticker {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 18px rgba(17, 17, 17, 0.18));
 }
 
 /* ---------------------------------------------------------------------------
-   Image stack
+   Work cover
 
-   The fanned screenshot stack on each work chapter. All CSS 3D - sadumedia.com
-   gets its entire sense of depth this way with no canvas at all, and keeping the
-   plates as real <img> preserves indexing, lazy loading and alt text.
-
-   `--spread` and `--lean` are the only values scroll touches; everything below is
-   a compositor transform.
+   One flat cover per chapter; `WorkCover.tsx` has the reasons the fanned stack
+   went. Flat means flat: no perspective and no tilt, so nothing skews the
+   interface text inside the screenshot. The only motion is on hover - the card
+   rises 4px and the image eases in by 3% under its own clip.
 --------------------------------------------------------------------------- */
 
-.image-stack {
-  perspective: 1600px;
-  perspective-origin: 50% 45%;
-  /* `clip` rather than `hidden`: it contains the fan's contribution to document
-     width without creating a scroll container, which would break the perspective
-     and any sticky ancestor. The margin lets the drop shadow still bleed. */
-  overflow: clip;
-  overflow-clip-margin: 30px;
-}
-
-.image-stack__inner {
-  position: relative;
-  aspect-ratio: 16 / 11;
-  transform-style: preserve-3d;
-  /* The fan offsets every plate to one side, so the stack has to be pulled back by
-     half the total spread. Without this the front plate - which perspective also
-     scales up by about 8% - was sliced off at the viewport edge. */
-  transform: translateX(calc(var(--spread, 1) * -6.5%))
-    rotateY(calc(var(--lean, -4) * 1deg)) rotateX(3deg);
-  transition: transform 600ms var(--ease-editorial);
-}
-
-.image-stack__plate {
-  position: absolute;
-  inset: 0;
+.work-cover {
+  display: block;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--canvas-sunk);
-  border: 1px solid var(--divider);
-  transform-style: preserve-3d;
-  transform: translate3d(
-      calc(var(--i) * var(--spread, 1) * 6.5%),
-      calc(var(--i) * var(--spread, 1) * -5.5%),
-      calc(var(--i) * var(--spread, 1) * 55px)
-    )
-    rotate(var(--jitter, 0deg));
-  box-shadow: 0 24px 50px -32px rgba(17, 17, 17, 0.45);
-  transition: transform 600ms var(--ease-editorial);
-  /* Plates behind the front one sit back in the stack. */
-  z-index: calc(10 - var(--depth));
+  box-shadow:
+    0 0 0 1px rgba(17, 17, 17, 0.05),
+    0 22px 44px -26px rgba(17, 17, 17, 0.34);
+  transition:
+    translate 500ms var(--ease-editorial),
+    box-shadow 500ms var(--ease-editorial);
 }
 
-.image-stack:hover .image-stack__plate {
-  transform: translate3d(
-      calc(var(--i) * 8.5%),
-      calc(var(--i) * -7.5%),
-      calc(var(--i) * 78px)
-    )
-    rotate(var(--jitter, 0deg));
+.work-cover:hover {
+  translate: 0 -4px;
+  box-shadow:
+    0 0 0 1px rgba(17, 17, 17, 0.06),
+    0 30px 56px -28px rgba(17, 17, 17, 0.4);
 }
 
-@media (min-width: 641px) and (max-width: 1023px) {
-  /* Tablet columns are narrower than desktop ones but were fanning by the same
-     percentage, which pushed the document 4px wider than a 768px viewport. */
-  .image-stack__inner {
-    transform: translateX(calc(var(--spread, 1) * -3.5%))
-      rotateY(calc(var(--lean, -4) * 1deg)) rotateX(3deg);
-  }
-
-  .image-stack__plate {
-    transform: translate3d(
-        calc(var(--i) * var(--spread, 1) * 3.5%),
-        calc(var(--i) * var(--spread, 1) * -4%),
-        calc(var(--i) * var(--spread, 1) * 34px)
-      )
-      rotate(var(--jitter, 0deg));
-  }
+.work-cover__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
 }
 
-@media (max-width: 640px) {
-  /* One plate on a phone. Three fanned plates at that width is mush. */
-  .image-stack__plate:not(:first-child) {
-    display: none;
+.work-cover__img {
+  object-fit: cover;
+  transition: scale 700ms var(--ease-editorial);
+}
+
+.work-cover:hover .work-cover__img {
+  scale: 1.03;
+}
+
+/* Browser chrome for a cover that is a bare screenshot. Drawn in the page's own
+   paper and divider tones rather than as a real OS window, so it frames the shot
+   without pretending to be one. */
+.work-cover__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  padding-inline: 14px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--divider);
+}
+
+.work-cover__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.work-cover__dots > span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--divider);
+}
+
+.work-cover__url {
+  flex: 1;
+  /* Centred on the bar, not on the space the dots leave: pull back by the dots'
+     width so the address sits over the middle of the screenshot. */
+  margin-right: 39px;
+  text-align: center;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: var(--text-label);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-cover,
+  .work-cover__img {
+    transition: none;
   }
-  .image-stack__inner {
-    transform: none;
+  .work-cover:hover {
+    translate: none;
+  }
+  .work-cover:hover .work-cover__img {
+    scale: none;
   }
 }
 
