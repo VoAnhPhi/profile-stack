@@ -54,15 +54,3 @@ export const SITE = {
 
   availability: "Open to Software Engineer roles",
 } as const;
-
-/**
- * Figures carried in the hero and the contact block. All are countable claims
- * from the CV, which is the point - the site asserts nothing it cannot source.
- */
-export type Figure = { value: string; label: string; note?: string };
-
-export const FIGURES: Figure[] = [
-  { value: "35+", label: "REST endpoints shipped", note: "15 at Hopper, 20 on SonaSpace" },
-  { value: "4", label: "production codebases", note: "all four are live" },
-  { value: "3.4", label: "GPA / 4.0", note: "Industrial University of HCMC" },
-];

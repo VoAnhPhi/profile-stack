@@ -1,6 +1,6 @@
 import { Header } from "@/components/chrome/Header";
 import { Footer } from "@/components/chrome/Footer";
-import { Hero, Figures } from "@/components/sections/Hero";
+import { Hero } from "@/components/sections/Hero";
 import { Manifesto } from "@/components/sections/Manifesto";
 import { WorkChapters } from "@/components/sections/WorkChapters";
 import { Trajectory } from "@/components/sections/Trajectory";
@@ -13,7 +13,6 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Figures />
         <Manifesto />
         <Trajectory />
         <Skills />

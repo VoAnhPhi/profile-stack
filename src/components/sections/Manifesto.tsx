@@ -1,11 +1,10 @@
 import { BleedItems } from "@/components/playful/BleedItems";
 import { BUILD_PRINCIPLES, BUILD_STEPS, HOW_I_BUILD_HEADLINE, HOW_I_BUILD_LEAD } from "@/content/manifesto";
 import { Reveal } from "@/components/annotate/Reveal";
-import Image from "next/image";
-import { SITE } from "@/content/site";
 import { LineWipe, WordBlur } from "@/components/annotate/TextReveal";
 import { Sticker } from "@/components/annotate/Sticker";
 import { MarginNote } from "@/components/annotate/MarginNote";
+import { PortraitFlip } from "@/components/playful/PortraitFlip";
 
 export function Manifesto() {
 	return (
@@ -35,20 +34,11 @@ export function Manifesto() {
 						))}
 					</div>
 
-					{/* The portrait moved here from the hero. A face next to a set of
-              stated beliefs earns its place; a face next to a name is decoration. */}
+					{/* The portrait moved here from the hero. A face next to a set of stated
+              beliefs earns its place; a face next to a name is decoration. Two faces
+              now, because the answer to "how I build" has two halves. */}
 					<Reveal delay={180} className="mt-12 flex flex-wrap items-end gap-6">
-						<figure className="relative w-[11rem] shrink-0 sm:w-[13rem]" style={{ rotate: "-2.21911deg" }}>
-							<div className="relative aspect-[744/1282] overflow-hidden rounded-md bg-canvas-sunk shadow-[0_18px_40px_-26px_rgba(17,17,17,0.5)]">
-								<Image
-									src="/img/me/portrait.webp"
-									alt={`${SITE.nameLatin}, ${SITE.role}`}
-									fill
-									sizes="13rem"
-									className="object-cover"
-								/>
-							</div>
-						</figure>
+<PortraitFlip />
 						<MarginNote index={2} delay={80} className="mb-2">
 							Me, approximately five minutes before opening another file.
 						</MarginNote>

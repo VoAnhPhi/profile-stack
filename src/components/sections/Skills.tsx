@@ -45,7 +45,7 @@ export function Skills() {
 
   return (
     <section id="skills" className="relative shell section hairline">
-      <BleedItems preset="work" />
+      <BleedItems preset="skills" />
 
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>

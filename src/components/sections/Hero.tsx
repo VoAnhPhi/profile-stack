@@ -1,6 +1,6 @@
 import { BleedItems } from "@/components/playful/BleedItems";
 import Link from "next/link";
-import { SITE, FIGURES } from "@/content/site";
+import { SITE } from "@/content/site";
 import { Reveal } from "@/components/annotate/Reveal";
 import { Sticker } from "@/components/annotate/Sticker";
 import { Icon } from "@/components/icons/Icon";
@@ -95,37 +95,6 @@ export function Hero() {
 
         <HeroFlip />
       </div>
-    </section>
-  );
-}
-
-/**
- * Figures band.
- *
- * Outside the hero because inside it the primary call to action fell below the
- * fold at 1440x900 - measured, not guessed.
- */
-export function Figures() {
-  return (
-    <section className="shell hairline py-10">
-      <Reveal className="flex flex-wrap gap-x-14 gap-y-8">
-        {FIGURES.map((figure) => (
-          <div key={figure.label} className="min-w-40">
-            <p className="font-display text-title tabular-nums">{figure.value}</p>
-            <p className="label mt-1 max-w-[20ch] normal-case tracking-normal">
-              {figure.label}
-            </p>
-            {figure.note ? (
-              <p className="font-hand mt-1.5 text-[0.8125rem] text-muted">
-                {figure.note}
-              </p>
-            ) : null}
-          </div>
-        ))}
-        <p className="label ml-auto max-w-[24ch] self-end normal-case tracking-normal">
-          A quick snapshot of what I have built and studied so far.
-        </p>
-      </Reveal>
     </section>
   );
 }

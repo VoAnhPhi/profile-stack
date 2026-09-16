@@ -89,9 +89,13 @@ export function Contact() {
           {/*
             Placeholder signature. This should be replaced with a real SVG traced
             from a scan - a script face always reads as a font, never as a hand.
+
+            `w-fit` keeps the tilt pivoting on the name. A full-width box pivots on
+            the column centre, and between 640 and 1023px that dropped the
+            left-aligned name 4-14px into the note underneath.
           */}
           <p
-            className="font-hand text-[clamp(1.75rem,4vw,2.75rem)] leading-none"
+            className="font-hand w-fit text-[clamp(1.75rem,4vw,2.75rem)] leading-none lg:ml-auto"
             style={{ rotate: "-3.10544deg" }}
           >
             {SITE.name}
