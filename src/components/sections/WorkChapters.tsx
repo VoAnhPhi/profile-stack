@@ -6,7 +6,7 @@ import { Reveal } from "@/components/annotate/Reveal";
 import { Sticker } from "@/components/annotate/Sticker";
 import { MarginNote } from "@/components/annotate/MarginNote";
 import { Icon } from "@/components/icons/Icon";
-import { ImageStack } from "@/components/work/ImageStack";
+import { WorkCover } from "@/components/work/WorkCover";
 
 /**
  * Work, as full-bleed chapters rather than a grid of cards.
@@ -14,9 +14,11 @@ import { ImageStack } from "@/components/work/ImageStack";
  * The previous version was a two-column card grid - which is what the old
  * portfolio did, and a large part of why this rebuild still felt like it.
  * Measured against the reference set the page also carried the highest text
- * density and the fewest images of any of them: 134 words per 1000px against
- * 51-110, and 5 media elements against 21-254. Chapters fix both, since each
- * project now gets real space and three real screenshots instead of one thumbnail.
+ * density of any of them: 134 words per 1000px against 51-110. Chapters fix that
+ * by giving each project real space and one cover drawn half the column wide.
+ *
+ * Each chapter used to carry three screenshots fanned in CSS 3D; see `WorkCover`
+ * for why that became a single flat cover.
  */
 export function WorkChapters() {
   return (
@@ -45,11 +47,6 @@ export function WorkChapters() {
       <div className="mt-16 space-y-28 lg:mt-24 lg:space-y-40">
         {PROJECTS.map((project, i) => {
           const flip = i % 2 === 1;
-          const plates = project.gallery.length
-            ? project.gallery
-            : project.cover
-              ? [project.cover]
-              : [];
 
           return (
             <article key={project.slug} className="shell">
@@ -148,12 +145,7 @@ export function WorkChapters() {
                 </Reveal>
 
                 <Reveal delay={90} distance={36}>
-                  <ImageStack
-                    images={plates}
-                    alt={`${project.title} - ${project.summary}`}
-                    flip={flip}
-                    preload={i === 0}
-                  />
+                  <WorkCover project={project} />
                 </Reveal>
               </div>
             </article>

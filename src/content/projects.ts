@@ -28,6 +28,12 @@ export type Project = {
   duration: string;
   stack: string[];
   cover: string | null;
+  /**
+   * Set when the cover is a bare screenshot rather than a presentation mockup.
+   * The work index then draws a browser window around it, so it sits beside the
+   * device mockups the other covers already are instead of looking unfinished.
+   */
+  coverFrame?: "browser";
   /** Countable claims only. Every figure here is sourced from the CV. */
   metrics: { value: string; label: string }[];
   overview: string;
@@ -165,7 +171,7 @@ export const PROJECTS: Project[] = [
       },
     ],
     gallery: [],
-    links: [{ label: "Repository", href: "https://github.com/VoAnhPhi" }],
+    links: [{ label: "GitHub profile", href: "https://github.com/VoAnhPhi" }],
     note: "Scoring is rules, not a model, on purpose. When somebody asks why a family ranked where it did, I want to be able to answer.",
   },
   {
@@ -181,6 +187,7 @@ export const PROJECTS: Project[] = [
     duration: "Jan - Apr 2025",
     stack: ["React", "JavaScript", "Responsive CSS", "REST API"],
     cover: "/img/work/nhangonsaigon/01-search.webp",
+    coverFrame: "browser",
     metrics: [
       { value: "5+", label: "REST APIs integrated" },
       { value: "4", label: "months, delivered" },

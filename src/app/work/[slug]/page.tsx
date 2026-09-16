@@ -61,7 +61,14 @@ export default async function CaseStudy({
       <Header />
       <main>
         {project.cover ? (
-          <div className="relative h-[52svh] min-h-80 w-full overflow-hidden md:h-[64svh]">
+          <div className="relative mt-16 h-[52svh] min-h-80 w-full overflow-hidden md:h-[64svh]">
+            {/*
+              No scrims. The frame used to run up under the fixed header and the
+              title was pulled up over its lower edge, so it needed a canvas
+              gradient at each end to keep the nav links and the H1 readable - and
+              those read as two pale bands across the photograph. It now starts
+              below the header's own h-16, and the title sits beneath it on the page.
+            */}
             <Image
               src={project.cover}
               alt=""
@@ -70,29 +77,13 @@ export default async function CaseStudy({
               preload
               className="object-cover"
             />
-            {/*
-              Two scrims, each confined to the edge it protects. A single
-              `inset-0` gradient was washing 40% canvas across the whole frame and
-              leaving the photograph looking faded.
-            */}
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-canvas to-transparent" />
-            {/* The fixed header is transparent until the reader scrolls, so a dark
-                crop would leave the ink nav links unreadable over it. */}
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-canvas/90 to-transparent" />
           </div>
         ) : (
           <div className="h-28" />
         )}
 
         <article className="shell">
-          {/*
-            `relative z-10` is load-bearing. The hero image sits in a positioned
-            container, so a statically positioned header pulled up over it paints
-            underneath - the H1 was being sliced in half by the image edge.
-          */}
-          <header
-            className={`relative z-10 ${project.cover ? "-mt-20 md:-mt-28" : "pt-16"}`}
-          >
+          <header className={project.cover ? "pt-10 md:pt-14" : "pt-16"}>
             <Reveal className="flex items-center gap-3">
               <Sticker name="pointer" index={1} size={20} />
               <p className="label">

@@ -9,9 +9,17 @@ export type Section = { id: string; label: string };
  * surendarselvaraj.com's case studies: a horizontal rail that pins under the
  * header, with the active entry as a filled pill.
  *
- * Built on IntersectionObserver rather than scroll maths, so it costs nothing per
- * frame. Under `prefers-reduced-motion` the pill still moves - it is a position
- * indicator, and hiding it would remove information rather than motion.
+ * The active entry is the last section whose top has reached its own anchor line,
+ * the `scroll-margin-top` a pill click lands it on, so clicking a pill and reading
+ * the rail can never disagree. This replaced an IntersectionObserver band at 20-40%
+ * of the viewport. The observer only reports sections that change state, and a
+ * section already inside the band when its neighbour left was never reported
+ * again: at 1440x900 the band was 180px tall and Challenge ran 153-222px, so
+ * clicking Approach lit Challenge, and scrolling past Challenge never lit it at all.
+ *
+ * Reading five rects once per animation frame is cheap. Under
+ * `prefers-reduced-motion` the pill still moves - it is a position indicator, and
+ * hiding it would remove information rather than motion.
  */
 export function CaseStudyNav({ sections }: { sections: Section[] }) {
   const [active, setActive] = useState(sections[0]?.id ?? "");
@@ -23,20 +31,40 @@ export function CaseStudyNav({ sections }: { sections: Section[] }) {
 
     if (!elements.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Pick the entry closest to the top of the reading area rather than the
-        // first intersecting one; with short sections several are visible at once.
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActive(visible[0].target.id);
-      },
-      { rootMargin: "-20% 0px -60% 0px", threshold: 0 },
-    );
+    let frame = 0;
 
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    const update = () => {
+      frame = 0;
+      let current = elements[0].id;
+      for (const el of elements) {
+        const line = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+        // 2px absorbs sub-pixel rounding when a click lands a section exactly on it.
+        if (el.getBoundingClientRect().top <= line + 2) current = el.id;
+      }
+
+      // A short last section can run out of page before it climbs to its line.
+      // Once nothing more can scroll, the reader is in the last one.
+      const root = document.documentElement;
+      const atEnd =
+        window.scrollY > 0 &&
+        window.scrollY + window.innerHeight >= root.scrollHeight - 2;
+
+      setActive(atEnd ? elements[elements.length - 1].id : current);
+    };
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
   }, [sections]);
 
   return (
