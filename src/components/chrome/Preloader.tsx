@@ -12,8 +12,9 @@ import Image from "next/image";
  * Progress is told twice - once as a number and once as a count of things on screen.
  * The second is the one a reader actually feels, because each sticker lands at a
  * fixed percentage and stays. Nothing here is decoration hunting for a reason: these
- * are the same cut-outs that sit in the page margins, so the opening introduces the
- * page's own vocabulary rather than borrowing a splash screen from somewhere else.
+ * come from the same set of cut-outs as the page margins, so the opening introduces
+ * the page's own vocabulary rather than borrowing a splash screen from somewhere
+ * else. Never the same files, though - see `PIECES`.
  * They are also the answer to what this portfolio is: a Vietnamese engineer's, said
  * with pho, banh mi and banh xeo rather than with an adjective.
  *
@@ -50,8 +51,8 @@ const WAIT_CEILING = 0.94;
 const WEIGHT = { fonts: 0.3, images: 0.45, load: 0.25 } as const;
 
 /*
- * Objects land at full opacity, set in globals.css. The margin copies in
- * `BleedItems.tsx` rest at 0.2 because they sit beside text and only brighten when
+ * Objects land at full opacity, set in globals.css. The stickers in the margins
+ * (`BleedItems.tsx`) rest at 0.2 because they sit beside text and only brighten when
  * the pointer comes near; here nothing can be hovered and the dishes are the whole
  * picture, so there is nothing for them to recede behind.
  */
@@ -88,6 +89,10 @@ type Piece = {
  * take the slots that were drawn for the biggest objects, and a flan stays a flan.
  *
  * Rotations keep the page's habit: nothing sits square, and no two tilts rhyme.
+ *
+ * None of these sixteen is drawn again in the margins. A reader who watched a dish
+ * land here and then met it beside the hero saw the page repeat itself, so the
+ * margin deal in `BleedItems.tsx` excludes this list. Change one, change the other.
  */
 const PIECES: Piece[] = [
   { sticker: "banh-xeo-met", label: "bánh xèo", w: 80, h: 77, x: 13, y: 20, rotate: 6.1, at: 5 },

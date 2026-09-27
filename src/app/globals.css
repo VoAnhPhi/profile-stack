@@ -613,7 +613,7 @@
 }
 
 .preloader__shape[data-in="1"] {
-  /* Full strength. The same stickers rest at 0.2 in the margins, where they sit
+  /* Full strength. The stickers in the margins rest at 0.2, where they sit
      beside text and the pointer brings them up; here the dishes are the whole
      picture and nothing can be hovered, so any fade only reads as washed out. */
   opacity: 1;
