@@ -5,20 +5,17 @@ import type { ReactNode } from "react";
  *
  * Deliberately separate from `Icon.tsx`. That set is hand-drawn annotation and runs
  * through the `ink-wobble` filter; these are brand marks, where a wobble reads as a
- * mistake rather than as a pen. Same reason they carry no colour: the cube is one
- * object, and five brand palettes on six faces would be five objects.
+ * mistake rather than as a pen. They draw in `currentColor` and carry no brand
+ * palette: five brand palettes on one cube would be five objects. The cube inks
+ * each face from the scramble palette instead, which keeps it one colour world.
  *
  * Drawn against the size they actually render at, not scaled down from a poster.
- * The cube face is 40px on desktop and 34px on mobile. These strokes were sized for
- * a mark occupying about half the face, where 1.5 units on this 24-unit viewBox
- * lands near 1.3px - the point below which a line stops reading as a line.
+ * The face is 32px and renders the mark at half of it, 16px, where 1.5 units on
+ * this 24-unit viewBox land at 1px - about the point below which a line stops
+ * reading as a line. If the cube shrinks further, thicken the strokes here rather
+ * than letting them fall under that.
  *
- * The face now renders the mark at 35%, which puts that same stroke at 0.88px on
- * desktop and 0.74px on mobile. If the marks read faint, multiply every strokeWidth
- * here by about 1.5 rather than growing the mark back: at 35% the geometry still has
- * room, it is only the ink that ran thin.
- *
- * Two marks were cut after failing that test at 34px, both times by drawing them and
+ * Two marks were cut after failing at this size, both times by drawing them and
  * looking rather than by guessing: a PostgreSQL elephant head read as a pair of
  * headphones through two separate attempts, and a Node hexagon carrying "JS" lost the
  * S and left a bare "J". The database cylinder that replaced Postgres is not a brand
@@ -90,7 +87,7 @@ const MARKS: Record<TechName, ReactNode> = {
   ),
 
   // Stacked cylinder for the data layer. Stands in for PostgreSQL, which could not
-  // be drawn legibly at 34px - see the note at the top of this file.
+  // be drawn legibly at this size - see the note at the top of this file.
   database: (
     <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
       <ellipse cx="12" cy="5.6" rx="7.8" ry="3.0" />
@@ -100,7 +97,7 @@ const MARKS: Record<TechName, ReactNode> = {
   ),
 
   // Containers on a hull. The four boxes are the densest thing on the cube; they
-  // survive 34px only because the gaps between them are a full stroke wide.
+  // survive only because the gaps between them are a full stroke wide.
   docker: (
     <>
       <g fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">

@@ -457,22 +457,20 @@
    everything static about the object lives here.
 
    `perspective` is 6.5x the cube edge. Shorter and the far faces splay badly at a
-   40px object; longer and the thing stops reading as a solid at all.
+   small object; longer and the thing stops reading as a solid at all.
+
+   32px at every width. At 40px, drawn out to 44x48 by the pitch and perspective,
+   it stood almost twice the height of the 28px CV pill at the other end of the
+   row and was the heaviest thing in a header of 12px mono labels.
 --------------------------------------------------------------------------- */
 
 .cube-mark {
-  --cube: 34px;
+  --cube: 32px;
   display: block;
   flex: 0 0 auto;
   width: var(--cube);
   height: var(--cube);
   perspective: calc(var(--cube) * 6.5);
-}
-
-@media (min-width: 768px) {
-  .cube-mark {
-    --cube: 40px;
-  }
 }
 
 .cube-mark__box {
@@ -489,16 +487,23 @@
   scale: 1.06;
 }
 
-/* White ground on every face, ink on top - the same pair the drawn portrait uses.
-   A white cube on a #fafaf8 header has almost no silhouette of its own, so the edge
-   has to be drawn: without the hairline the six faces read as one flat card the
-   moment two of them are lit the same. */
+/* White ground on every face, the mark in its own ink on top. White rather than
+   paper because the drawn portrait is an opaque white image, and on a paper face
+   its edge showed as a lighter square. A white cube on a #fafaf8 header has almost
+   no silhouette of its own, so the edge has to be drawn: without the hairline the
+   faces read as one flat card the moment two of them are lit the same.
+
+   Radius is 0.16 of the edge. Six faces only meet along the straight run of their
+   edges, and at the 0.32 a flat chip uses that run was too short: a foreshortened
+   face rounded off into a floating oval and a turning cube came apart into cards.
+   0.16 was the largest radius that still read as one solid at rest, mid-turn and
+   under a fast-scroll lean. */
 .cube-mark__face {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: 4px;
+  border-radius: calc(var(--cube) * 0.16);
   background: #ffffff;
   color: var(--ink);
   box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.16);
@@ -509,33 +514,32 @@
 /* Two sizes, on purpose. A mark is a symbol and survives being small; a face needs
    pixels before it is a face again.
 
-   35% for the tech marks. This sits below the stroke floor they were drawn against:
-   a 1.5-unit stroke lands at 0.88px on the 40px desktop face and 0.74px on the 34px
-   mobile one, where a line stops being a line. Raising strokeWidth in TechLogos.tsx
-   is the fix if they read too faint - see the note there.
+   50% for the tech marks: 16px on the 32px face, which puts a 1.5-unit stroke at
+   1px. The old 35% of a 40px face set it at 0.88px, under the point where a line
+   still reads as a line.
 
-   55% for the portrait, measured rather than matched to the marks. At 35% it renders
-   14px wide and the whole face is five or six pixels: a black mass with a pale
-   smudge, saying nothing about who this is. 55% puts it at 22px on desktop and 19px
-   on mobile, which is where the eyes and the hairline come back. The two therefore
-   carry different margins, and that difference is the reason. */
+   70% for the portrait, which keeps it at the 22px where the eyes and the hairline
+   come back - the size it had at 55% of the old 40px face. Smaller and the whole
+   face is five or six pixels of black mass saying nothing about who this is. */
+/* `--mark` is written per frame by CubeMark.tsx from how squarely the face points
+   at the reader, so a mark never shows squeezed onto a face seen edge-on. */
+.cube-mark__face > * {
+  opacity: var(--mark, 1);
+}
+
 .cube-mark__face svg {
-  width: 35%;
-  height: 35%;
+  width: 50%;
+  height: 50%;
 }
 
 .cube-mark__portrait {
-  width: 55%;
-  height: 55%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
 }
 
 .cube-mark__face--front {
   transform: translateZ(calc(var(--cube) / 2));
-}
-
-.cube-mark__portrait {
-  object-fit: contain;
 }
 
 .cube-mark__face--back {

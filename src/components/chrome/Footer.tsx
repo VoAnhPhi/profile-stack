@@ -31,7 +31,7 @@ export function Footer() {
             &copy; {year} {SITE.nameLatin}
           </p>
           <p className="label">
-            Built with Next.js, GSAP, Lenis and Three.js
+            Built with Next.js, GSAP and Lenis
           </p>
           <a
             href="#top"
