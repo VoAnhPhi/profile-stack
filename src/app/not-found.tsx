@@ -19,7 +19,7 @@ export default function NotFound() {
       <Header />
       <main className="shell pt-32 pb-24 md:pt-40">
         <p className="label">[ 404 ]</p>
-        <h1 className="font-display mt-6 max-w-[16ch] text-[clamp(2.5rem,7vw,6rem)] leading-[0.98]">
+        <h1 className="font-display text-page mt-6 max-w-[16ch]">
           This page does not exist.
         </h1>
         <p className="text-lead mt-6 max-w-[46ch] text-ink-soft">

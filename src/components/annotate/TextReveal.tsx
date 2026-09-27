@@ -109,16 +109,21 @@ function buildLineWipe(el: HTMLElement) {
       return fill;
     });
 
+    // The clip reaches 0.3em past the line box top and bottom. At the display
+    // line-height of 0.98, descenders hang below the box, and an inset of 0 cut the
+    // tail of every "g" out of the ink copy - the muted original showed through, so
+    // "starting" ended in a grey hook. Only the right edge animates, and it stays in
+    // % at both ends so the tween interpolates one unit.
     gsap.set(fills, {
       position: "absolute",
       top: 0,
       left: 0,
       width: "100%",
-      clipPath: "inset(0 100% 0 0)",
+      clipPath: "inset(-0.3em 100% -0.3em 0)",
     });
 
     gsap.to(fills, {
-      clipPath: "inset(0 0% 0 0)",
+      clipPath: "inset(-0.3em 0% -0.3em 0)",
       ease: "none",
       duration: 1,
       stagger: 0.65,

@@ -36,7 +36,7 @@ export function Hero() {
 
       <div className="grid flex-1 items-center gap-x-12 gap-y-12 py-8 lg:grid-cols-[minmax(0,1fr)_clamp(15rem,23vw,22rem)]">
         <div>
-        <h1 className="font-display text-hero uppercase">
+        <h1 className="font-name text-hero">
           {SITE.nameLines.map((line, i) => (
             <span key={line} className="mask-line">
               <Reveal delay={i * 90} distance={40} as="span" className="block">

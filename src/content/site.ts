@@ -7,7 +7,7 @@ export const SITE = {
   name: "Võ Đoàn Anh Phi",
   nameLatin: "Vo Doan Anh Phi",
   /** Split for per-line masked reveal in the hero. */
-  nameLines: ["VÕ ĐOÀN", "ANH PHI"],
+  nameLines: ["Võ Đoàn", "Anh Phi"],
   role: "Software Engineer",
   discipline: "Full-stack",
   location: "Ho Chi Minh City, Viet Nam",
@@ -32,7 +32,10 @@ export const SITE = {
       "day's treating you well.",
     "I work across both frontend and backend, mostly with React, Next.js, NestJS " +
       "and PostgreSQL, with experience building products in fintech, real estate, " +
-      "e-commerce and CRM.",
+      // U+2060 WORD JOINER holds "e-commerce" on one line; the hyphen alone is a
+      // break point, and the paragraph was splitting it at 320, 390, 1280 and 1440.
+      // Not U+2011: Geist has no glyph for it, so it would render from a fallback.
+      "e-⁠commerce and CRM.",
   ],
 
   /**

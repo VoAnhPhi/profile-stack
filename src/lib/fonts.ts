@@ -4,9 +4,14 @@ import { Fraunces, Geist, Geist_Mono, Playpen_Sans } from "next/font/google";
  * Fraunces carries the playfulness inside the typeface itself rather than as an
  * effect bolted on top: SOFT rounds the corners, WONK swaps in canted terminals.
  * Also the display face on surendarselvaraj.com, one of the reference sites.
+ *
+ * Both styles load. The hero name and the accent word in each section heading are
+ * set in italic, and with only the upright file present the browser faked it by
+ * slanting the upright - no italic letterforms at all, just a sheared roman.
  */
 export const fraunces = Fraunces({
   subsets: ["latin", "vietnamese"],
+  style: ["normal", "italic"],
   axes: ["SOFT", "WONK", "opsz"],
   variable: "--font-fraunces",
   display: "swap",

@@ -57,7 +57,7 @@ export function WorkChapters() {
               >
                 <Reveal distance={32}>
                   <div className="flex items-baseline gap-4">
-                    <span className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-none tabular-nums text-divider">
+                    <span className="font-display text-[clamp(2.25rem,4vw,3rem)] leading-none tabular-nums text-divider">
                       {project.index}
                     </span>
                     <p className="label">
@@ -65,7 +65,7 @@ export function WorkChapters() {
                     </p>
                   </div>
 
-                  <h3 className="font-display mt-4 text-[clamp(2.25rem,5.2vw,4.25rem)] leading-[0.98]">
+                  <h3 className="font-display mt-4 text-[clamp(2.25rem,4.4vw,3.25rem)] leading-[0.98]">
                     <Link
                       href={`/work/${project.slug}`}
                       data-cursor

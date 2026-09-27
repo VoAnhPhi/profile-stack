@@ -91,7 +91,7 @@ export default async function CaseStudy({
               </p>
             </Reveal>
 
-            <h1 className="font-display mt-6 text-[clamp(2.5rem,7vw,6rem)] leading-[0.98]">
+            <h1 className="font-display text-page mt-6">
               {project.title}
             </h1>
 
@@ -219,7 +219,7 @@ export default async function CaseStudy({
               data-cursor-label={next.category}
               className="group mt-4 flex items-baseline gap-5"
             >
-              <span className="font-display text-[clamp(2rem,6vw,4.5rem)] leading-none transition-colors duration-200 group-hover:text-accent">
+              <span className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-none transition-colors duration-200 group-hover:text-accent">
                 {next.title}
               </span>
               <Icon
@@ -259,7 +259,7 @@ function Prose({
   return (
     <section
       id={id}
-      className="scroll-mt-32 border-t border-divider pt-12 first:border-t-0 first:pt-16"
+      className="scroll-mt-32 border-t border-divider pt-12 pb-12 first:border-t-0 first:pt-16"
     >
       <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
         <Reveal as="h2" className="font-display text-title lg:text-[1.5rem]">

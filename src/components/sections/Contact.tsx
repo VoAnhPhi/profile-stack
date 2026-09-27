@@ -37,7 +37,7 @@ export function Contact() {
           // `voanhphi.dev@gmail.com` is one unbreakable token. At 360px and below
           // it pushed the document 27px wider than the viewport; `anywhere` lets it
           // break, and the lower clamp floor keeps it from needing to.
-          className="font-display inline-flex flex-wrap items-baseline gap-x-4 gap-y-2 text-[clamp(1.375rem,5vw,3.75rem)] leading-none [overflow-wrap:anywhere] transition-colors duration-200 hover:text-accent"
+          className="font-display inline-flex flex-wrap items-baseline gap-x-4 gap-y-2 text-[clamp(1.375rem,5vw,3rem)] leading-none [overflow-wrap:anywhere] transition-colors duration-200 hover:text-accent"
         >
           {SITE.email}
           <Icon name="arrow" size={28} className="shrink-0 self-center text-accent" />

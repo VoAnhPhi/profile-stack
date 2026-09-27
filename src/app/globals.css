@@ -57,19 +57,26 @@
   --ease-editorial: var(--ease-editorial);
   --ease-playful: var(--ease-playful);
 
-  /* Display sizes track the reference set: 96px-174px at desktop.
-     Line heights sit under 1 the way all four reference sites do.
+  /* Line heights sit under 1 the way all four reference sites do.
 
-     Sized down from 11.2vw, which put the name at 160px on a 1440 window and read
-     as shouting. 8.4vw lands at about 120px there and leaves the headroom the
-     column needs at every breakpoint - measured, not assumed. */
-  --text-hero: clamp(2.4rem, 8.4vw, 7.5rem);
+     The caps are set against the column, not the window. `.shell` stops growing
+     at 74rem, so from about 1300px up every size here is final, and the old caps
+     were drawn for a wider page than this one: on a 1184px column the name ran to
+     120px, section heads to 76px, a role title to 40px and running prose to 24px,
+     so a case study read like a poster and a heading like "Overview" set no larger
+     than the paragraph beside it. The floors are unchanged - phones were fine.
+
+     Lead then went 24 -> 20 -> 22px: 20 read small beside the 18px body copy it
+     introduces, and 22 keeps a clear step above it without returning to 24. */
+  --text-hero: clamp(2.4rem, 8.4vw, 6rem);
   --text-hero--line-height: 0.92;
-  --text-display: clamp(2.5rem, 6vw, 4.75rem);
+  --text-page: clamp(2.5rem, 7vw, 5rem);
+  --text-page--line-height: 0.98;
+  --text-display: clamp(2.5rem, 6vw, 4rem);
   --text-display--line-height: 0.98;
-  --text-title: clamp(1.75rem, 3vw, 2.5rem);
+  --text-title: clamp(1.75rem, 3vw, 2rem);
   --text-title--line-height: 1.08;
-  --text-lead: clamp(1.125rem, 1.6vw, 1.5rem);
+  --text-lead: clamp(1.125rem, 1.6vw, 1.375rem);
   --text-lead--line-height: 1.5;
   --text-label: 0.75rem;
   --text-label--line-height: 1.2;
@@ -119,7 +126,9 @@
     background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-    font-size: clamp(1rem, 1.05vw, 1.0625rem);
+    /* 16px through tablets, 18px from 1440 up. The old 1.0625rem cap held body
+       copy at 16px on a 1440 laptop, which read small in a 1184px column. */
+    font-size: clamp(1rem, 1.25vw, 1.125rem);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -139,6 +148,13 @@
 
   .lenis.lenis-stopped {
     overflow: hidden;
+  }
+
+  /* A lone word on the last line - "CRM." under a full hero paragraph - is the most
+     visible wrapping defect at this measure. `pretty` re-balances the last lines;
+     where it is unsupported the paragraph wraps exactly as it did before. */
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
@@ -168,6 +184,21 @@
     letter-spacing: -0.025em;
   }
 
+  /* The hero name: Fraunces italic in mixed case, the same voice as the italic
+     accent word in every section heading. The name used to be set in capitals,
+     where Fraunces' serifs read as a newspaper masthead; lower case is where the
+     italic has its character. SOFT goes to 100, past the headings' 40, so a name
+     this large reads as friendly rather than formal. */
+  .font-name {
+    font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-variation-settings:
+      "SOFT" 100,
+      "WONK" 1;
+    letter-spacing: -0.03em;
+  }
+
   .font-hand {
     font-family: var(--font-playpen), var(--font-geist), cursive;
     /* Floor of 1.4. Handwriting faces carry tall ascenders, and Vietnamese stacked
@@ -187,7 +218,11 @@
 
   /* Masked line reveals clip at the box edge. With a sub-1 line-height that edge
      cuts diacritics off the top of characters like O with tilde. Pad the mask and
-     pull the same amount back out so layout is unchanged. */
+     pull the same amount back out so layout is unchanged.
+
+     The sides need the same room once the line is italic: the foot of the slanted
+     A in "Anh" sits 0.036em left of its advance box - 3.5px at 96px - and the mask
+     was shaving it off. 0.08em clears that with margin at every size. */
   .mask-line {
     display: block;
     overflow: hidden;
@@ -195,6 +230,8 @@
     margin-top: -0.18em;
     padding-bottom: 0.08em;
     margin-bottom: -0.08em;
+    padding-inline: 0.08em;
+    margin-inline: -0.08em;
   }
 
   /* ---------------------------------------------------------------------------
