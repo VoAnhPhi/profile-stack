@@ -52,20 +52,16 @@ export function Manifesto() {
 						<p className="label text-ink">From zero to shipped</p>
 					</div>
 
+					{/* Every step in one weight and one colour. They used to ramp from 380 to
+              600 and from half ink to full, meant to make the sequence scannable, but
+              it read as the early steps being fainter and mattering less. The numbers
+              already carry the order; 500 keeps the steps a notch above the 400 body
+              copy beside them without any one of them shouting. */}
 					<ol className="mt-6 border-t border-divider">
-						{BUILD_STEPS.map((step, i) => (
+						{BUILD_STEPS.map((step) => (
 							<li key={step.level} className="flex items-baseline gap-4 border-b border-divider py-3">
 								<span className="label w-6 shrink-0 tabular-nums">{step.level}</span>
-								<span
-									className="flex-1"
-									style={{
-										// The increasing weight makes the sequence easy to scan.
-										fontWeight: 380 + i * 44,
-										color: `color-mix(in oklab, var(--ink) ${52 + i * 9}%, var(--muted))`,
-									}}
-								>
-									{step.label}
-								</span>
+								<span className="flex-1 font-medium text-ink">{step.label}</span>
 							</li>
 						))}
 					</ol>
