@@ -451,234 +451,109 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Header cube mark
+   Header mark slots
 
-   The turning is driven from JS (CubeMark.tsx) because it reads scroll velocity;
-   everything static about the object lives here.
-
-   `perspective` is 6.5x the cube edge. Shorter and the far faces splay badly at a
-   small object; longer and the thing stops reading as a solid at all.
-
-   32px at every width. At 40px, drawn out to 44x48 by the pitch and perspective,
-   it stood almost twice the height of the 28px CV pill at the other end of the
-   row and was the heaviest thing in a header of 12px mono labels.
+   Two 40px boxes the mark layer draws into (MarkLayer.tsx), one each side of the
+   header. Each holds a flat poster - the drawn portrait on the left, a spark on
+   the right - which is what shows before the 3D chunk arrives and on a machine
+   without WebGL. The layer marks <html> once it has drawn a frame, and the
+   posters step aside.
 --------------------------------------------------------------------------- */
 
-.cube-mark {
-  --cube: 32px;
-  display: block;
-  flex: 0 0 auto;
-  width: var(--cube);
-  height: var(--cube);
-  perspective: calc(var(--cube) * 6.5);
-}
-
-.cube-mark__box {
+.mark-slot {
   position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: scale var(--dur-hover) var(--ease-playful);
-}
-
-.cube-mark:hover .cube-mark__box {
-  scale: 1.06;
-}
-
-/* White ground on every face, the mark in its own ink on top. White rather than
-   paper because the drawn portrait is an opaque white image, and on a paper face
-   its edge showed as a lighter square. A white cube on a #fafaf8 header has almost
-   no silhouette of its own, so the edge has to be drawn: without the hairline the
-   faces read as one flat card the moment two of them are lit the same.
-
-   Radius is 0.16 of the edge. Six faces only meet along the straight run of their
-   edges, and at the 0.32 a flat chip uses that run was too short: a foreshortened
-   face rounded off into a floating oval and a turning cube came apart into cards.
-   0.16 was the largest radius that still read as one solid at rest, mid-turn and
-   under a fast-scroll lean. */
-.cube-mark__face {
-  position: absolute;
-  inset: 0;
   display: grid;
   place-items: center;
-  border-radius: calc(var(--cube) * 0.16);
-  background: #ffffff;
-  color: var(--ink);
-  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.16);
-  /* The cube is closed and every face is opaque, so the far side is never wanted. */
-  backface-visibility: hidden;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
-/* Two sizes, on purpose. A mark is a symbol and survives being small; a face needs
-   pixels before it is a face again.
-
-   50% for the tech marks: 16px on the 32px face, which puts a 1.5-unit stroke at
-   1px. The old 35% of a 40px face set it at 0.88px, under the point where a line
-   still reads as a line.
-
-   70% for the portrait, which keeps it at the 22px where the eyes and the hairline
-   come back - the size it had at 55% of the old 40px face. Smaller and the whole
-   face is five or six pixels of black mass saying nothing about who this is. */
-/* `--mark` is written per frame by CubeMark.tsx from how squarely the face points
-   at the reader, so a mark never shows squeezed onto a face seen edge-on. */
-.cube-mark__face > * {
-  opacity: var(--mark, 1);
+.mark-slot__poster {
+  transition: opacity 200ms var(--ease-editorial);
 }
 
-.cube-mark__face svg {
-  width: 50%;
-  height: 50%;
-}
-
-.cube-mark__portrait {
-  width: 70%;
-  height: 70%;
+img.mark-slot__poster {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-.cube-mark__face--front {
-  transform: translateZ(calc(var(--cube) / 2));
-}
-
-.cube-mark__face--back {
-  transform: rotateY(180deg) translateZ(calc(var(--cube) / 2));
-}
-.cube-mark__face--right {
-  transform: rotateY(90deg) translateZ(calc(var(--cube) / 2));
-}
-.cube-mark__face--left {
-  transform: rotateY(-90deg) translateZ(calc(var(--cube) / 2));
-}
-.cube-mark__face--top {
-  transform: rotateX(90deg) translateZ(calc(var(--cube) / 2));
-}
-.cube-mark__face--bottom {
-  transform: rotateX(-90deg) translateZ(calc(var(--cube) / 2));
+html[data-marks="ready"] .mark-slot__poster {
+  opacity: 0;
 }
 
 /* ---------------------------------------------------------------------------
-   Preloader
+   Opening
 
-   A paper ground with the page's own objects arriving on it, the number in the
-   middle, and everything thrown outward when the load finishes. Motion is driven
-   from Preloader.tsx; this file owns the ground, the placement and the type.
+   Paper over the first paint, a count, and the name. Opening.tsx owns the policy
+   and the motion; the mark in the middle is drawn by the mark layer's own canvas
+   above this (z 95).
 
-   The whole thing is styled to survive without JS: the failsafe animation below
-   hides it after 4s, and Preloader.tsx cancels that the moment it mounts. Under
+   Styled to survive without JS: the failsafe below lifts the paper after 3s, and
+   Opening.tsx cancels it the moment it mounts. The inline script in layout.tsx
+   hides it before first paint for a session that has seen it, and under
    `reduce` it is never shown at all.
 --------------------------------------------------------------------------- */
 
-.preloader {
+.opening {
   position: fixed;
   inset: 0;
   z-index: 90;
   pointer-events: none;
-  background: var(--canvas);
-  overflow: hidden;
-  animation: preloader-failsafe 0s linear 4s forwards;
+  animation: opening-failsafe 0s linear 3s forwards;
 }
 
-@keyframes preloader-failsafe {
+@keyframes opening-failsafe {
   to {
     opacity: 0;
     visibility: hidden;
   }
 }
 
-/* Two nested spans per object, and the nesting is load-bearing: the outer one owns
-   arrival and scatter, the inner one owns the endless drift. Running both on one
-   element would have the drift's `y` fighting the scatter's for the same property. */
-/* Arrival is CSS, driven by one data attribute, and that is deliberate. It was a
-   GSAP `fromTo` first; the tween silently never ran and every object stayed at the
-   `opacity: 0` the stylesheet had set, so the opening rendered an empty page with a
-   number on it. A transition cannot fail that way: if the attribute never lands the
-   object is still invisible, but if anything at all sets it the object appears.
+html[data-opening="skip"] .opening {
+  display: none;
+}
 
-   `scale` and `translate` are separate properties from `transform` here, which is
-   what lets the scatter write `transform` later without fighting this. */
-.preloader__shape {
+.opening__ground {
   position: absolute;
-  /* left/top come from the component; this centres the object on that point. */
-  translate: -50% -50%;
-  will-change: transform, opacity;
-  opacity: 0;
-  scale: 0.3;
-  rotate: -18deg;
-  transition:
-    opacity 0.5s var(--ease-editorial),
-    scale 0.62s var(--ease-playful),
-    rotate 0.62s var(--ease-playful);
+  inset: 0;
+  background: var(--canvas);
 }
 
-.preloader__shape[data-in="1"] {
-  /* Full strength. The stickers in the margins rest at 0.2, where they sit
-     beside text and the pointer brings them up; here the dishes are the whole
-     picture and nothing can be hovered, so any fade only reads as washed out. */
-  opacity: 1;
-  scale: 1;
-  rotate: 0deg;
-}
-
-/* The scatter drives `transform`, so the arrival transition has to be out of the
-   way or it would ease the throw as well. */
-.preloader__shape[data-leaving="1"] {
-  transition: none;
-}
-
-.preloader__shape-inner {
-  display: block;
-  will-change: transform;
-}
-
-.preloader__sticker {
-  display: block;
-  object-fit: contain;
-  /* The cut-outs carry their own hard edge; a shadow gives them a little weight on
-     the paper without turning them into cards. */
-  filter: drop-shadow(0 6px 14px rgba(17, 17, 17, 0.16));
-}
-
-.preloader__count {
+/* Under the mark, which sits a little above centre at up to 300px tall. */
+.opening__count {
   position: absolute;
   left: 50%;
-  top: 50%;
-  translate: -50% -50%;
+  top: calc(50% + min(20vh, 172px));
+  translate: -50% 0;
+  opacity: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(4.5rem, 15vw, 11rem);
-  line-height: 0.84;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
-.preloader__meta {
+.opening__meta {
   position: absolute;
   bottom: 1.6rem;
   right: var(--gutter);
+  opacity: 0;
   color: var(--muted);
 }
 
-html.is-loading,
-html.is-loading body {
+html.is-opening,
+html.is-opening body {
   overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .preloader {
+  .opening {
     display: none;
   }
 }
-
-
-
-
-
-
-
-
 
 @media (max-width: 1023px) {
   .hero-flip {
@@ -1071,6 +946,17 @@ a:hover .sticker__chip,
     clip-path: none !important;
     filter: none !important;
   }
+
+  /* Except the turns that make a two-faced card: they are how it is built, not
+     how it moves. Wiped by the rule above, the hero card's back face stood
+     unturned in front of the photograph, and a reader under `reduce` saw the
+     note side on first paint and could not turn it back. */
+  [data-reveal] .hero-flip__face--back,
+  [data-reveal] .portrait-flip__face--back,
+  [data-reveal] .hero-flip__scene[data-flipped="true"] .hero-flip__card,
+  [data-reveal] .portrait-flip[data-flipped="true"] .portrait-flip__card {
+    transform: rotateY(180deg) !important;
+  }
 }
 
 
@@ -1180,4 +1066,33 @@ a:hover .sticker__chip,
   .scramble-ch__i {
     transition: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Ink cursor (Cursor.tsx)
+
+   Cursor.tsx puts `ink-cursor` on <html> on the first mouse move of a fine
+   pointer and removes it on unmount, so the system cursor is hidden only while
+   the dot is drawn to replace it: never before hydration, never on touch.
+   !important because an inline cursor, or Tailwind's layered cursor-* utilities,
+   must not bring the arrow back on top of the dot.
+
+   Text entry is the exception: the I-beam returns and the dot and ring step
+   aside. The selector mirrors TEXT_ENTRY in Cursor.tsx; change both together.
+--------------------------------------------------------------------------- */
+
+html.ink-cursor,
+html.ink-cursor * {
+  cursor: none !important;
+}
+
+html.ink-cursor
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="color"], [type="file"], [type="image"]),
+    textarea,
+    select,
+    [contenteditable]:not([contenteditable="false"])
+  ),
+html.ink-cursor [contenteditable]:not([contenteditable="false"]) * {
+  cursor: auto !important;
 }

@@ -92,12 +92,11 @@ export type BleedPreset =
  * computed at runtime. A layout that reshuffles every build cannot be reviewed.
  *
  * The set is dealt at random across sections, not grouped by theme, with three
- * rules on the deal. No file appears twice on the page: the sixteen dishes the
- * opening draws (`PIECES` in Preloader.tsx) are left out here, and the other 47
- * take one position each. Two dishes of the same family - three kinds of banh mi,
- * five coffees, five rolls - never share a section. And each section gets drinks
- * in roughly the proportion of the whole set, so no screen turns into a menu.
- * Counts follow section height: 5, 7, 9, 5, 17, 4.
+ * rules on the deal. Every file takes exactly one position: 63 files, 63 places,
+ * nothing on the page twice. Two dishes of the same family - four kinds of banh
+ * mi, five coffees, six rolls - never share a section. And each section gets
+ * drinks in roughly the proportion of the whole set, so no screen turns into a
+ * menu. Counts follow section height: 6, 10, 13, 6, 23, 5.
  *
  * Within a section the objects zigzag. The section is cut into evenly spaced
  * slots that alternate sides, so neighbours on one edge sit two slots apart and
@@ -114,63 +113,79 @@ export type BleedPreset =
  */
 const PRESETS: Record<BleedPreset, Item[]> = {
   hero: [
-    { sticker: "cha-gio", w: 70, h: 59, side: "l", u: 0.54, y: 10.2, drift: -32 },
-    { sticker: "mi-quang", w: 70, h: 65, side: "r", u: 0.59, y: 28.1, drift: 32 },
-    { sticker: "chao", w: 66, h: 38, side: "l", u: 0.84, y: 47.7, drift: 44 },
-    { sticker: "tra-tac", w: 24, h: 62, side: "r", u: 0.32, y: 68.2, drift: 51 },
-    { sticker: "goi-cuon-doi", w: 62, h: 50, side: "l", u: 0.87, y: 83.3, drift: 21 },
+    { sticker: "goi-cuon-doi", w: 62, h: 50, side: "l", u: 0.48, y: 12.4, drift: -41 },
+    { sticker: "banh-xeo", w: 72, h: 69, side: "r", u: 0.52, y: 26.2, drift: -38 },
+    { sticker: "com-tam-dia", w: 73, h: 63, side: "l", u: 0.11, y: 40.7, drift: 40 },
+    { sticker: "pho-tai", w: 68, h: 67, side: "r", u: 0.78, y: 53.7, drift: -31 },
+    { sticker: "thit-kho", w: 72, h: 65, side: "l", u: 0.30, y: 72.7, drift: -50 },
+    { sticker: "phin-ly", w: 59, h: 62, side: "r", u: 0.01, y: 87.7, drift: 25 },
   ],
   manifesto: [
-    { sticker: "nuoc-mia", w: 48, h: 65, side: "l", u: 0.47, y: 7.8, drift: -21 },
-    { sticker: "phin-ly", w: 59, h: 62, side: "r", u: 0.57, y: 24.1, drift: -28 },
-    { sticker: "banh-da-lon", w: 66, h: 47, side: "l", u: 0.36, y: 34.1, drift: -51 },
-    { sticker: "lau", w: 74, h: 67, side: "r", u: 0.17, y: 48.5, drift: -32 },
-    { sticker: "banh-mi-cha", w: 70, h: 33, side: "l", u: 0.54, y: 62.5, drift: 41 },
-    { sticker: "banh-trang-cuon", w: 70, h: 56, side: "r", u: 0.78, y: 72.6, drift: 27 },
-    { sticker: "met-banh-la", w: 74, h: 71, side: "l", u: 0.11, y: 87.6, drift: -51 },
+    { sticker: "bun-bo-hue", w: 62, h: 69, side: "l", u: 0.98, y: 6.9, drift: 50 },
+    { sticker: "banh-xeo-met", w: 73, h: 70, side: "r", u: 0.40, y: 15.8, drift: 51 },
+    { sticker: "met-cha-gio", w: 74, h: 67, side: "l", u: 0.79, y: 26.5, drift: -23 },
+    { sticker: "pho-cuon", w: 70, h: 69, side: "r", u: 0.05, y: 34.4, drift: -55 },
+    { sticker: "tra-tac-da", w: 37, h: 61, side: "l", u: 0.72, y: 44.0, drift: -37 },
+    { sticker: "trung-cut", w: 48, h: 69, side: "r", u: 0.66, y: 51.7, drift: 21 },
+    { sticker: "trung-vit-lon", w: 69, h: 61, side: "l", u: 0.63, y: 61.3, drift: -51 },
+    { sticker: "phin", w: 35, h: 62, side: "r", u: 0.87, y: 70.1, drift: 37 },
+    { sticker: "banh-mi-cha", w: 70, h: 33, side: "l", u: 0.73, y: 80.7, drift: 24 },
+    { sticker: "che", w: 51, h: 62, side: "r", u: 0.87, y: 88.0, drift: -25 },
   ],
   trajectory: [
-    { sticker: "tra-tac-da", w: 37, h: 61, side: "l", u: 0.97, y: 8.9, drift: 43 },
-    { sticker: "banh-xeo", w: 72, h: 69, side: "r", u: 0.93, y: 19.1, drift: 34 },
-    { sticker: "ca-phe-sua-da", w: 45, h: 58, side: "l", u: 0.90, y: 28.7, drift: 43 },
-    { sticker: "cha-gio-dia", w: 50, h: 70, side: "r", u: 0.50, y: 38.6, drift: 33 },
-    { sticker: "banh-mi-trung", w: 32, h: 73, side: "l", u: 0.45, y: 47.6, drift: 34 },
-    { sticker: "pho-cuon", w: 70, h: 69, side: "r", u: 0.49, y: 56.8, drift: -46 },
-    { sticker: "trung-cut", w: 48, h: 69, side: "l", u: 0.76, y: 67.7, drift: -49 },
-    { sticker: "hu-tieu-nam-vang", w: 69, h: 54, side: "r", u: 0.08, y: 77.1, drift: -45 },
-    { sticker: "banh-cuon", w: 67, h: 52, side: "l", u: 0.65, y: 87.4, drift: 49 },
+    { sticker: "banh-mi-trung", w: 32, h: 73, side: "r", u: 0.80, y: 6.1, drift: -49 },
+    { sticker: "pho", w: 68, h: 53, side: "l", u: 0.35, y: 13.4, drift: 27 },
+    { sticker: "bun-rieu", w: 65, h: 70, side: "r", u: 0.12, y: 19.6, drift: -29 },
+    { sticker: "hu-tieu-nam-vang", w: 69, h: 54, side: "l", u: 0.31, y: 26.3, drift: 43 },
+    { sticker: "phin-sua", w: 52, h: 62, side: "r", u: 0.96, y: 34.8, drift: -55 },
+    { sticker: "banh-xeo-trung", w: 72, h: 71, side: "l", u: 0.58, y: 41.0, drift: 25 },
+    { sticker: "bo-la-lot", w: 74, h: 73, side: "r", u: 0.44, y: 47.7, drift: 22 },
+    { sticker: "cha-gio", w: 70, h: 59, side: "l", u: 0.01, y: 53.9, drift: 24 },
+    { sticker: "goi-cuon-tom", w: 61, h: 66, side: "r", u: 0.18, y: 62.3, drift: 45 },
+    { sticker: "flan-dia", w: 61, h: 40, side: "l", u: 0.26, y: 68.7, drift: 47 },
+    { sticker: "banh-chung", w: 73, h: 72, side: "r", u: 0.29, y: 75.4, drift: 52 },
+    { sticker: "met-tong-hop", w: 80, h: 71, side: "l", u: 0.95, y: 83.4, drift: -39 },
+    { sticker: "bun-dau", w: 76, h: 67, side: "r", u: 0.41, y: 89.7, drift: 21 },
   ],
   skills: [
-    { sticker: "tro-choi-giay", w: 58, h: 56, side: "l", u: 0.45, y: 11.5, drift: -35 },
-    { sticker: "che-bap", w: 64, h: 57, side: "r", u: 0.44, y: 28.3, drift: -45 },
-    { sticker: "phin-sua", w: 52, h: 62, side: "l", u: 0.40, y: 47.4, drift: -34 },
-    { sticker: "goi-cuon", w: 71, h: 61, side: "r", u: 0.17, y: 63.4, drift: -30 },
-    { sticker: "banh-tet-don", w: 72, h: 61, side: "l", u: 0.21, y: 82.2, drift: 52 },
+    { sticker: "banh-mi-hop", w: 70, h: 45, side: "r", u: 0.19, y: 12.5, drift: -25 },
+    { sticker: "quay-dua", w: 104, h: 104, side: "l", u: 0.59, y: 24.3, drift: 32 },
+    { sticker: "ca-phe-sa", w: 53, h: 63, side: "r", u: 0.32, y: 40.7, drift: 31 },
+    { sticker: "goi-cuon-dia", w: 70, h: 46, side: "l", u: 0.71, y: 55.1, drift: 32 },
+    { sticker: "banh-tet-sua", w: 73, h: 54, side: "r", u: 0.72, y: 68.4, drift: -52 },
+    { sticker: "am-tra", w: 70, h: 66, side: "l", u: 0.13, y: 84.6, drift: 24 },
   ],
   work: [
-    { sticker: "com-tam-suon", w: 71, h: 48, side: "r", u: 0.36, y: 5.1, drift: 48 },
-    { sticker: "bun-bo", w: 68, h: 68, side: "l", u: 0.04, y: 10.2, drift: 32 },
-    { sticker: "bun-rieu", w: 65, h: 70, side: "r", u: 0.30, y: 16.4, drift: 25 },
-    { sticker: "che", w: 51, h: 62, side: "l", u: 0.27, y: 21.0, drift: 51 },
-    { sticker: "trung-vit-lon", w: 69, h: 61, side: "r", u: 0.95, y: 26.3, drift: 27 },
-    { sticker: "hu-tieu-doi", w: 73, h: 67, side: "l", u: 0.68, y: 32.9, drift: -26 },
-    { sticker: "pho-tai", w: 68, h: 67, side: "r", u: 0.92, y: 38.1, drift: -44 },
-    { sticker: "banh-tet-sua", w: 73, h: 54, side: "l", u: 0.51, y: 42.8, drift: 31 },
-    { sticker: "banh-mi-hop", w: 70, h: 45, side: "r", u: 0.04, y: 47.5, drift: -49 },
-    { sticker: "am-tra", w: 70, h: 66, side: "l", u: 0.90, y: 53.7, drift: 50 },
-    { sticker: "banh-xeo-rau", w: 68, h: 73, side: "r", u: 0.63, y: 58.3, drift: -23 },
-    { sticker: "noi-bun", w: 73, h: 67, side: "l", u: 0.03, y: 63.2, drift: -52 },
-    { sticker: "quay-dua", w: 104, h: 104, side: "r", u: 0.49, y: 69.3, drift: -41 },
-    { sticker: "flan", w: 45, h: 61, side: "l", u: 0.09, y: 74.8, drift: -40 },
-    { sticker: "goi-cuon-dia", w: 70, h: 46, side: "r", u: 0.23, y: 80.2, drift: 42 },
-    { sticker: "phin", w: 35, h: 62, side: "l", u: 0.24, y: 85.6, drift: -23 },
-    { sticker: "canh-chua", w: 68, h: 56, side: "r", u: 0.84, y: 90.9, drift: 55 },
+    { sticker: "com-tam-suon", w: 71, h: 48, side: "l", u: 0.15, y: 5.5, drift: -42 },
+    { sticker: "hu-tieu-doi", w: 73, h: 67, side: "r", u: 0.11, y: 9.1, drift: -25 },
+    { sticker: "nem-chua", w: 50, h: 69, side: "l", u: 0.10, y: 12.8, drift: 28 },
+    { sticker: "banh-khot", w: 70, h: 50, side: "r", u: 0.81, y: 16.8, drift: -22 },
+    { sticker: "banh-mi", w: 64, h: 79, side: "l", u: 0.67, y: 20.8, drift: -49 },
+    { sticker: "canh-chua", w: 68, h: 56, side: "r", u: 0.78, y: 24.5, drift: -20 },
+    { sticker: "che-bap", w: 64, h: 57, side: "l", u: 0.25, y: 28.0, drift: -33 },
+    { sticker: "cha-gio-dia", w: 50, h: 70, side: "r", u: 0.68, y: 31.9, drift: 35 },
+    { sticker: "ca-phe-sua-da", w: 45, h: 58, side: "l", u: 0.75, y: 36.4, drift: -29 },
+    { sticker: "tra-tac", w: 24, h: 62, side: "r", u: 0.39, y: 40.3, drift: 23 },
+    { sticker: "banh-trang-cuon", w: 70, h: 56, side: "l", u: 0.55, y: 44.6, drift: -34 },
+    { sticker: "trung-vit-lon-rau", w: 64, h: 63, side: "r", u: 0.27, y: 47.8, drift: -28 },
+    { sticker: "flan", w: 45, h: 61, side: "l", u: 0.53, y: 51.4, drift: -26 },
+    { sticker: "lau", w: 74, h: 67, side: "r", u: 0.12, y: 56.3, drift: -43 },
+    { sticker: "tro-choi-giay", w: 58, h: 56, side: "l", u: 0.41, y: 59.8, drift: 25 },
+    { sticker: "banh-da-lon", w: 66, h: 47, side: "r", u: 0.16, y: 64.0, drift: 41 },
+    { sticker: "noi-bun", w: 73, h: 67, side: "l", u: 0.20, y: 67.7, drift: 28 },
+    { sticker: "xien-que", w: 69, h: 51, side: "r", u: 0.32, y: 71.4, drift: -33 },
+    { sticker: "banh-xeo-rau", w: 68, h: 73, side: "l", u: 0.06, y: 75.1, drift: 55 },
+    { sticker: "banh-cuon", w: 67, h: 52, side: "r", u: 0.22, y: 79.7, drift: -40 },
+    { sticker: "banh-tet-don", w: 72, h: 61, side: "l", u: 0.21, y: 83.1, drift: -49 },
+    { sticker: "bun-bo", w: 68, h: 68, side: "r", u: 0.11, y: 86.8, drift: 44 },
+    { sticker: "mi-quang", w: 70, h: 65, side: "l", u: 0.59, y: 91.1, drift: -35 },
   ],
   contact: [
-    { sticker: "met-tong-hop", w: 80, h: 71, side: "r", u: 0.00, y: 12.2, drift: -41 },
-    { sticker: "bun-bo-hue", w: 62, h: 69, side: "l", u: 0.24, y: 33.7, drift: -29 },
-    { sticker: "ca-phe-sa", w: 53, h: 63, side: "r", u: 0.59, y: 56.0, drift: -38 },
-    { sticker: "banh-xeo-trung", w: 72, h: 71, side: "l", u: 0.57, y: 79.1, drift: -33 },
+    { sticker: "nuoc-mia", w: 48, h: 65, side: "r", u: 0.11, y: 13.8, drift: -47 },
+    { sticker: "met-banh-la", w: 74, h: 71, side: "l", u: 0.44, y: 32.6, drift: 25 },
+    { sticker: "bun-bo-gio", w: 69, h: 51, side: "r", u: 0.69, y: 49.3, drift: 49 },
+    { sticker: "chao", w: 66, h: 38, side: "l", u: 0.03, y: 68.5, drift: -51 },
+    { sticker: "goi-cuon", w: 71, h: 61, side: "r", u: 0.44, y: 85.4, drift: -41 },
   ],
 };
 
@@ -178,8 +193,6 @@ const PRESETS: Record<BleedPreset, Item[]> = {
  * Resting opacity. At 0.62 the margins competed with the copy for attention on a
  * real screen, so objects now sit back as texture until the pointer finds them,
  * and the gap to full opacity on approach is what makes the lift worth noticing.
- * The opening draws its own dishes at full opacity: nothing there can be hovered,
- * so fading them would only make the preloader look empty.
  */
 const REST = 0.2;
 

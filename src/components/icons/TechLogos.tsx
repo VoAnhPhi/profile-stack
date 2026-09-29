@@ -1,19 +1,19 @@
 import type { ReactNode } from "react";
 
 /**
- * Monochrome tech marks for the header cube.
+ * Monochrome tech marks for the cube (marks/TileCube.tsx).
  *
  * Deliberately separate from `Icon.tsx`. That set is hand-drawn annotation and runs
  * through the `ink-wobble` filter; these are brand marks, where a wobble reads as a
  * mistake rather than as a pen. They draw in `currentColor` and carry no brand
- * palette: five brand palettes on one cube would be five objects. The cube inks
- * each face from the scramble palette instead, which keeps it one colour world.
+ * palette: five brand palettes on one cube would be five objects. The cube draws
+ * them in ink on white tiles.
  *
- * Drawn against the size they actually render at, not scaled down from a poster.
- * The face is 32px and renders the mark at half of it, 16px, where 1.5 units on
- * this 24-unit viewBox land at 1px - about the point below which a line stops
- * reading as a line. If the cube shrinks further, thicken the strokes here rather
- * than letting them fall under that.
+ * The cube does not render these as DOM: it rasterises each one to a 256px
+ * texture and maps it onto a tile, so at header size a mark lands at about 11px.
+ * 1.5 units on this 24-unit viewBox come to 0.7px there - thin, and it holds only
+ * because ink on white is the strongest contrast the cube has. If the marks read
+ * faint at that size, thicken the strokes here rather than growing the mark.
  *
  * Two marks were cut after failing at this size, both times by drawing them and
  * looking rather than by guessing: a PostgreSQL elephant head read as a pair of

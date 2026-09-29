@@ -3,7 +3,9 @@ import { fontVariables } from "@/lib/fonts";
 import { SITE } from "@/content/site";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Cursor } from "@/components/chrome/Cursor";
-import { Preloader } from "@/components/chrome/Preloader";
+import { Opening } from "@/components/chrome/Opening";
+import { MarkLayerMount } from "@/components/marks/MarkLayerMount";
+import { MarkLogos } from "@/components/marks/MarkLogos";
 import { InkFilter } from "@/components/icons/InkFilter";
 import { PaperField } from "@/components/playful/PaperField";
 import "./globals.css";
@@ -38,22 +40,36 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
+/**
+ * Runs before first paint, ahead of the opening's paper in the document: a session
+ * that has already seen the opening, or a reader who prefers reduced motion, gets
+ * the page with no paper at all rather than a flash of it until hydration.
+ */
+const OPENING_SKIP = `try{if(sessionStorage.getItem("opening:seen")||matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.opening="skip"}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={fontVariables}>
+    // The skip script writes data-opening, and the mark layer data-marks, onto
+    // <html> outside React.
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: OPENING_SKIP }} />
         {/*
-          The ground is CSS now. A persistent WebGL canvas used to live here; it
-          was removed at the author's request, and the research supported it -
-          none of the four reference sites uses WebGL at all.
+          The ground is CSS. WebGL is confined to the header's two marks and the
+          opening, drawn by a layer that arrives in its own chunk after hydration;
+          the page itself renders and reads without it.
         */}
         <InkFilter />
+        <MarkLogos />
         <PaperField />
         <Cursor />
-        <Preloader />
-        <SmoothScroll>{children}</SmoothScroll>
+        <SmoothScroll>
+          <Opening />
+          {children}
+          <MarkLayerMount />
+        </SmoothScroll>
       </body>
     </html>
   );

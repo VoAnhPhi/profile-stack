@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/content/site";
-import { CubeMark } from "@/components/chrome/CubeMark";
+import { Icon } from "@/components/icons/Icon";
+import { registerSlot, type SlotName } from "@/components/marks/runtime";
 
 const NAV = [
   { label: "Work", href: "/#work" },
@@ -13,11 +15,29 @@ const NAV = [
 ];
 
 /**
+ * Registers a 40px box with the mark layer, which draws into it. Made once, at
+ * module level: a ref callback made in render is a new function every render, and
+ * React would unregister and re-register the slot each time the header re-renders.
+ */
+const slot = (name: SlotName) => (element: HTMLSpanElement | null) => {
+  registerSlot(name, element);
+  return () => registerSlot(name, null);
+};
+const markSlot = slot("mark");
+const entrySlot = slot("entry");
+
+/**
  * Fixed header that grows a hairline and a backdrop once the reader has moved off
  * the hero, following surendarselvaraj.com.
  *
- * The site is a technical showcase, but the CV link is present from the first
- * frame. A recruiter who does not want the scroll should not have to earn it.
+ * Two 3D objects bracket it, drawn by the mark layer into the slots below: the mark
+ * on the left - the mascot unless the reader chose otherwise - and on the right the
+ * way into the studio, where they can choose. Until the 3D chunk arrives, and on a
+ * machine without WebGL, each slot shows a flat poster.
+ *
+ * The right slot used to be the CV. The CV now lives in the hero and in Contact:
+ * the hero's button is on the first screen of the home page, and the author chose
+ * the studio for this corner.
  */
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -38,7 +58,18 @@ export function Header() {
       }`}
     >
       <div className="shell flex h-16 items-center justify-between gap-6">
-        <CubeMark />
+        <Link href="/" aria-label={`${SITE.nameLatin}, home`} data-cursor className="shrink-0">
+          <span ref={markSlot} className="mark-slot">
+            <Image
+              src="/img/mascot/poster.webp"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className="mark-slot__poster"
+            />
+          </span>
+        </Link>
 
         <nav aria-label="Sections" className="hidden md:block">
           <ul className="flex items-center gap-7">
@@ -56,15 +87,17 @@ export function Header() {
           </ul>
         </nav>
 
-        <a
-          href={SITE.cvPath}
-          download
+        <Link
+          href="/studio"
+          aria-label="Studio: change how this header looks"
           data-cursor
-          data-cursor-label="PDF, 1.5 MB"
-          className="label rounded-full border border-divider px-3.5 py-1.5 text-ink transition-colors duration-150 hover:border-ink"
+          data-cursor-label="Make it yours"
+          className="shrink-0"
         >
-          CV
-        </a>
+          <span ref={entrySlot} className="mark-slot">
+            <Icon name="spark" size={22} className="mark-slot__poster text-ink" />
+          </span>
+        </Link>
       </div>
     </header>
   );
