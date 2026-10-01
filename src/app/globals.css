@@ -116,6 +116,11 @@
        image box reserves its space - blocking images leaves the page height
        unchanged - so nothing here leans on anchoring to absorb a late shift. */
     overflow-anchor: none;
+    /* The opening locks scroll with `overflow: hidden`, which took the scrollbar
+       away while it ran and gave it back on its last frame: on a Windows scrollbar
+       the whole page and the header's mark stepped 7.5px left at that instant. A
+       stable gutter keeps the width the same with or without scrolling. */
+    scrollbar-gutter: stable;
   }
 
   main {
