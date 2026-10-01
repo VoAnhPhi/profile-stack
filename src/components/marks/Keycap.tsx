@@ -95,15 +95,16 @@ const worldScale = new THREE.Vector3();
 
 /**
  * Sets an ink tube to the outline's width in px for a mark `size` px tall, and hides it
- * where its part is scaled toward nothing, as the hull's own weight does.
+ * where its part is scaled toward nothing, as the hull's own weight does. `px` overrides
+ * the width for a mark drawn lighter than the rest.
  */
-export function setInkWidth(mesh: THREE.Mesh | null, size: number) {
+export function setInkWidth(mesh: THREE.Mesh | null, size: number, px = inkPx(size)) {
   if (!mesh) return;
   mesh.getWorldScale(worldScale);
   const unit = (worldScale.x + worldScale.y + worldScale.z) / 3;
   mesh.visible = unit > 2;
   const material = mesh.material as THREE.ShaderMaterial;
-  material.uniforms.radius.value = inkPx(size) / 2 / Math.max(unit, 1e-3);
+  material.uniforms.radius.value = px / 2 / Math.max(unit, 1e-3);
 }
 
 /* --------------------------------------------------------------------------- */

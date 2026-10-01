@@ -4,7 +4,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { Cel, PALETTE, aim, easeInOutCubic, easeOutBack, grow, leanOf, span, type MarkProps } from "./shared";
+import { PALETTE, aim, easeInOutCubic, easeOutBack, grow, leanOf, span, type MarkProps } from "./shared";
 import { inkTube, setInkWidth } from "./Keycap";
 
 /**
@@ -31,11 +31,22 @@ import { inkTube, setInkWidth } from "./Keycap";
 /* --------------------------------------------------------------------------- */
 /* The folds                                                                    */
 
-/** The sheet, nose up the y axis, the side that ends up on top of the wings facing +z. */
+/**
+ * The sheet, nose up the y axis, the side that ends up on top of the wings facing +z.
+ * As short for its width as the dart allows: the second fold runs from the nose to the
+ * side edge, which needs HL >= 1.207 HW. A shorter sheet is a broader plane at the same
+ * length on screen, and at 0.65 the plane read as long and thin.
+ */
 const HW = 0.5;
-const HL = 0.65;
-/** How far the wing roots sit from the crease at the tail: the depth of the keel. */
-const KEEL = 0.12;
+const HL = 0.62;
+/**
+ * How far the wing roots sit from the crease at the tail: the depth of the keel. At 0.12
+ * the keel was a sliver the wings covered from every angle that still showed the wings,
+ * and the plane read as a flat arrowhead with nothing under it. 0.3 hangs it deep enough
+ * to show below wings that SPREAD then draws broad; with a shallower keel the broader
+ * wings covered it again.
+ */
+const KEEL = 0.3;
 /**
  * The spacing of layers folded flat onto each other: enough that no layer fights the one
  * under it, little enough that the ink of a fold's layers reads as one line.
@@ -275,6 +286,30 @@ function edgeCovers(piece: Piece, all: Piece[]): number[] {
 }
 
 /**
+ * The half fold that shuts a flap inside the keel, or -1. The corners and edges fold
+ * onto the side that faces +z, and folding the sheet in half turns that side inward:
+ * in the keel, below the wing roots, those flaps end up between its two walls. Their
+ * lines are a few px wide and the layers a fraction of one apart, so they showed
+ * through the keel's outside as short stray strokes; they go as the halves shut. On the
+ * wings the same side turns up, and their flaps keep their lines.
+ */
+/** The folds whose lines outline the keel from outside: the crease under it, the wing roots over it. */
+const OUTLINE_FOLDS = new Set(
+  FOLDS.flatMap((fold, index) => (["halfR", "halfL", "wingR", "wingL"].includes(fold.id) ? [index] : [])),
+);
+
+/** Below the wing roots: turned by a half fold, and by no wing fold. */
+function inKeel(piece: Piece) {
+  const turnedBy = (ids: FoldId[]) => piece.chain.some((index) => ids.includes(FOLDS[index].id));
+  return turnedBy(["halfR", "halfL"]) && !turnedBy(["wingR", "wingL"]);
+}
+
+function innerKeelFold(piece: Piece): number {
+  if (piece.z <= 1e-9 || !inKeel(piece)) return -1;
+  return piece.chain.find((index) => FOLDS[index].id === "halfR" || FOLDS[index].id === "halfL") ?? -1;
+}
+
+/**
  * The paper: no thickness, a face each way. A flap folded over shows its back, and the
  * back is shaded by its own normal. Thin slabs with an ink hull were tried first; where
  * two pieces of the flat sheet met, their side walls and hulls fought at the seam and
@@ -303,12 +338,36 @@ function pieceFaces(outline: V2[]) {
  */
 function edgeGeometry(piece: Piece, all: Piece[]) {
   const folds = edgeFolds(piece);
-  const covers = edgeCovers(piece, all);
+  const keel = inKeel(piece);
+  const inner = innerKeelFold(piece);
+  // In the keel, a line on the crease or a wing root is the keel's outline from outside,
+  // its bottom or its top, whatever lay over it while the sheet was flat: it always
+  // draws. The flaps' other lines go as the halves shut them in, or sooner, as before,
+  // when a layer pressed flat lands on them.
+  //
+  // Near the nose the keel's bottom is drawn by the edge flaps' folded-in edges, not the
+  // base layer's crease. Stacked a few layers up while flat, those flaps come out a hair
+  // past the far wall once the halves shut, and that sliver of paper covers the base
+  // line; their own edges are the line that shows there. Further back the base line is
+  // the only one, and is widened below.
+  const onCrease = edgesOf(piece.outline).map(([a, b]) =>
+    [a, b].every((p) => Math.abs(apply(piece.map, p)[0]) < 1e-6),
+  );
+  const base = piece.z <= 1e-9;
+  const covers = edgeCovers(piece, all).map((cover, i) => {
+    if (keel && (OUTLINE_FOLDS.has(folds[i]) || onCrease[i])) return -1;
+    return cover >= 0 || inner < 0 ? cover : inner;
+  });
   const runs = edgesOf(piece.outline).map(([a, b], i) => {
     const tube = inkTube(new THREE.LineCurve3(new THREE.Vector3(a[0], a[1], 0), new THREE.Vector3(b[0], b[1], 0)), 1);
     const count = tube.getAttribute("position").count;
     tube.setAttribute("fold", new THREE.BufferAttribute(new Float32Array(count).fill(folds[i]), 1));
     tube.setAttribute("cover", new THREE.BufferAttribute(new Float32Array(count).fill(covers[i]), 1));
+    // The base layer's own crease: the keel's bottom, its line centred on the hinge both
+    // walls turn about, so the far wall covers half of it. At the plane's lighter line
+    // weight the half left showing broke up into a gap along the keel.
+    const buried = keel && base && onCrease[i] && OUTLINE_FOLDS.has(folds[i]) ? 1 : 0;
+    tube.setAttribute("buried", new THREE.BufferAttribute(new Float32Array(count).fill(buried), 1));
     return tube;
   });
   return mergeGeometries(runs);
@@ -318,12 +377,16 @@ const PAPER_INK_VERTEX = /* glsl */ `
 attribute vec3 centre;
 attribute float fold;
 attribute float cover;
+attribute float buried;
 uniform float radius;
 uniform float reveal[${FOLDS.length}];
 uniform float settled[${FOLDS.length}];
 void main() {
   float shown = fold < -0.5 ? 1.0 : reveal[int(fold + 0.5)];
   if (cover > -0.5) shown *= 1.0 - settled[int(cover + 0.5)];
+  // A line half buried in the keel's far wall is drawn wider once the keel is shut, so
+  // the part that shows is a whole line. Twice as wide showed as more than one.
+  if (buried > 0.5) shown *= 1.0 + 0.6 * settled[int(fold + 0.5)];
   vec3 p = centre + (position - centre) * radius * shown;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
 }
@@ -337,7 +400,58 @@ void main() {
 }
 `;
 
-const INK = new THREE.Color(PALETTE.ink);
+/**
+ * The plane's ink: the page's softer ink, not its black. Every fold of a dart is drawn,
+ * and at the black every other mark uses, the folds outweighed the paper.
+ */
+const INK = new THREE.Color(PALETTE.inkSoft);
+
+/**
+ * The paper itself: matte, and lit in one long soft ramp rather than in steps. The marks'
+ * cel shading gives every facet one of three tones, which suits a cube or a keycap; on a
+ * sheet it read as glossy card, hard-edged between faces, and its lit tone was pure
+ * white, brighter than the page the plane sits on. These are the page's own paper,
+ * warmed a touch in the light and a warm grey in the shade, close together.
+ */
+const PAPER_LIT = new THREE.Color("#fdfbf6");
+const PAPER_SHADE = new THREE.Color("#e6e0d4");
+const PAPER_LIGHT = new THREE.Vector3(-2.4, 3, 1.2).normalize();
+
+const PAPER_FACE_VERTEX = /* glsl */ `
+varying vec3 vNormal;
+varying vec2 vSheet;
+void main() {
+  vNormal = normalize(normalMatrix * normal);
+  vSheet = position.xy;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const PAPER_FACE_FRAGMENT = /* glsl */ `
+uniform vec3 lit;
+uniform vec3 shade;
+uniform vec3 light;
+varying vec3 vNormal;
+varying vec2 vSheet;
+void main() {
+  float d = dot(normalize(vNormal), light);
+  vec3 c = mix(shade, lit, smoothstep(-0.75, 0.85, d));
+  // Paper takes light a little unevenly: a breath of tone down the sheet, 2% at most.
+  c *= 1.0 - 0.02 * smoothstep(-0.65, 0.65, -vSheet.y);
+  gl_FragColor = vec4(c, 1.0);
+  #include <colorspace_fragment>
+}
+`;
+
+function PaperFace() {
+  return (
+    <shaderMaterial
+      vertexShader={PAPER_FACE_VERTEX}
+      fragmentShader={PAPER_FACE_FRAGMENT}
+      uniforms={{ lit: { value: PAPER_LIT }, shade: { value: PAPER_SHADE }, light: { value: PAPER_LIGHT } }}
+    />
+  );
+}
 
 let sheet: {
   hinges: Hinge[];
@@ -398,16 +512,46 @@ function pose(nose: THREE.Vector3, up: THREE.Vector3) {
   return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
 }
 
+/** The nose in flight, for a flight that rolls the plane about it. */
+export const PLANE_NOSE = new THREE.Vector3(0.64, 0.62, -0.25).normalize();
+/** Where the nose points on screen in flight, radians from +x, y up: its heading at rest. */
+export const PLANE_HEADING = Math.atan2(PLANE_NOSE.y, PLANE_NOSE.x);
+
 /** The sheet, lying back a little and turned, so the crease and the folds read as folds. */
 const FLAT = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.42, 0.22, 0.06));
 /**
- * In flight: nose to the upper right, seen from above, so both wings show their full
- * spread. Seen from the side, the dart's 45 degree nose made it a needle at 36px.
+ * In flight: nose to the upper right, seen from above and off to its right side, so both
+ * wings still show their spread and the keel's near face hangs below them, shaded. Seen
+ * straight from above (up 0.87 toward the reader) the wings covered the keel entirely;
+ * seen from the side, the dart's 45 degree nose made it a needle at 36px.
  */
-const FLYING = pose(new THREE.Vector3(0.62, 0.62, -0.3), new THREE.Vector3(-0.35, 0.35, 0.87));
+const FLYING = pose(PLANE_NOSE, new THREE.Vector3(-0.25, 0.72, 0.6));
 
 /** How much of the unit box the paper fills, by its longer side on screen. */
 const FILL = 0.92;
+
+/**
+ * The plane's line width in px for a plane `size` px tall: a third of the weight every
+ * other mark draws with, 1.1px at the opening's 300px and 0.6px in flight, where the
+ * other marks never go under 1px. Thinner than a pixel, a line is drawn fainter rather
+ * than narrower, which is the point: at full weight, and then at half, every fold of a
+ * dart drawn outweighed the paper it was folded in. Small, in the header's 36px, it
+ * keeps the whole pixel every mark has there, or it would barely be drawn at all.
+ */
+const planeInkPx = (size: number) => {
+  const floor = THREE.MathUtils.lerp(1, 0.6, THREE.MathUtils.smoothstep(size, 60, 140));
+  return THREE.MathUtils.clamp(size * 0.011 * 0.34, floor, 2);
+};
+
+/**
+ * How much wider the folded plane is drawn than the sheet folds it, across its wings
+ * only: length and keel stay as folded. The dart's second fold fixes how short its
+ * sheet can be for its width, and the author wanted the plane a fifth broader than that
+ * allows. 1.6 is what a fifth takes on screen, measured across the drawn plane: seen
+ * from above and off to one side, the wings' span is foreshortened, and 1.2 widened the
+ * plane by 7%. Stretched as it turns to fly, so the flat sheet folds true to scale.
+ */
+const SPREAD = 1.6;
 
 const X_AXIS = new THREE.Vector3(1, 0, 0);
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
@@ -418,6 +562,7 @@ export function PaperPlane({ drive }: MarkProps) {
   const root = useRef<THREE.Group>(null);
   const fit = useRef<THREE.Group>(null);
   const turn = useRef<THREE.Group>(null);
+  const spread = useRef<THREE.Group>(null);
   const pieces = useRef<(THREE.Group | null)[]>([]);
   const inks = useRef<(THREE.Mesh | null)[]>([]);
   const state = useRef({ bank: 0, pitch: 0 });
@@ -465,6 +610,9 @@ export function PaperPlane({ drive }: MarkProps) {
     x.lift.setFromAxisAngle(X_AXIS, NOSE_UP * easeOutBack(span(p, 0.9, 1), 2.2));
     x.q.multiply(x.lift);
     turn.current.quaternion.copy(x.q);
+    // Across the wings, the sheet's x once it is folded. The framing below leaves it
+    // out, so the plane is not shrunk to make room for the width it gains.
+    if (spread.current) spread.current.scale.x = 1 + (SPREAD - 1) * flying;
 
     // Framing from the paper as it lies this frame, the idle motion left out, so the
     // sheet fills the box and the plane fills it too, and a bank never rescales it.
@@ -506,11 +654,18 @@ export function PaperPlane({ drive }: MarkProps) {
     FOLDS.forEach((fold, i) => {
       const angle = Math.abs(angles[fold.id]);
       x.reveal[i] = THREE.MathUtils.smoothstep(angle, 0.03, 0.09);
-      x.settled[i] = fold.flat ? THREE.MathUtils.smoothstep(angle, Math.PI - 0.5, Math.PI - 0.08) : 0;
+      // A half settles as it shuts the keel, which hides the flaps folded inside it.
+      x.settled[i] = fold.flat
+        ? THREE.MathUtils.smoothstep(angle, Math.PI - 0.5, Math.PI - 0.08)
+        : fold.id === "halfR" || fold.id === "halfL"
+          ? THREE.MathUtils.smoothstep(angle, 1.0, 1.4)
+          : 0;
     });
+    // Posed now, so it may be seen; see the root group below.
+    root.current.visible = true;
     root.current.getWorldScale(x.size);
     inks.current.forEach((ink) => {
-      setInkWidth(ink, x.size.y);
+      setInkWidth(ink, x.size.y, planeInkPx(x.size.y));
       if (!ink) return;
       const uniforms = (ink.material as THREE.ShaderMaterial).uniforms;
       uniforms.reveal.value = x.reveal;
@@ -519,31 +674,36 @@ export function PaperPlane({ drive }: MarkProps) {
   });
 
   return (
-    <group ref={root}>
+    // Hidden until the first frame has posed it. Mounted in the middle of a frame, the
+    // plane was drawn once before its own frame callback had run: every piece flat at
+    // the origin with its outline showing, a stack of rings round the sheet for one frame.
+    <group ref={root} visible={false}>
       <group ref={fit}>
         <group ref={turn}>
-          {parts.pieces.map((piece, i) => (
-            <group key={i} ref={(node) => void (pieces.current[i] = node)}>
-              <mesh geometry={piece.front}>
-                <Cel color="paper" />
-              </mesh>
-              <mesh geometry={piece.back}>
-                <Cel color="paper" />
-              </mesh>
-              <mesh ref={(node) => void (inks.current[i] = node)} geometry={piece.edges}>
-                <shaderMaterial
-                  vertexShader={PAPER_INK_VERTEX}
-                  fragmentShader={PAPER_INK_FRAGMENT}
-                  uniforms={{
-                    radius: { value: 0.01 },
-                    reveal: { value: new Array<number>(FOLDS.length).fill(0) },
-                    settled: { value: new Array<number>(FOLDS.length).fill(0) },
-                    ink: { value: INK },
-                  }}
-                />
-              </mesh>
-            </group>
-          ))}
+          <group ref={spread}>
+            {parts.pieces.map((piece, i) => (
+              <group key={i} ref={(node) => void (pieces.current[i] = node)}>
+                <mesh geometry={piece.front}>
+                  <PaperFace />
+                </mesh>
+                <mesh geometry={piece.back}>
+                  <PaperFace />
+                </mesh>
+                <mesh ref={(node) => void (inks.current[i] = node)} geometry={piece.edges}>
+                  <shaderMaterial
+                    vertexShader={PAPER_INK_VERTEX}
+                    fragmentShader={PAPER_INK_FRAGMENT}
+                    uniforms={{
+                      radius: { value: 0.01 },
+                      reveal: { value: new Array<number>(FOLDS.length).fill(0) },
+                      settled: { value: new Array<number>(FOLDS.length).fill(0) },
+                      ink: { value: INK },
+                    }}
+                  />
+                </mesh>
+              </group>
+            ))}
+          </group>
         </group>
       </group>
     </group>
