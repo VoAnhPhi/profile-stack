@@ -57,11 +57,6 @@ function Ready() {
   return null;
 }
 
-function NoWebGL() {
-  useEffect(() => setMarksState("failed"), []);
-  return null;
-}
-
 export default function MarkLayer() {
   const prefs = useHeaderPrefs();
   const slots = useSlots();
@@ -146,7 +141,11 @@ export default function MarkLayer() {
         flat
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
-        fallback={<NoWebGL />}
+        // No `fallback` that reports failure: R3F renders `fallback` inside the
+        // <canvas> element on every render, so a component there marked the layer
+        // failed on every machine, and the opening never flew the mark. A missing
+        // context is caught before this chunk loads (hasWebGL) and a failed one by
+        // MarkBoundary.
         style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "4rem", pointerEvents: "none", zIndex: 60 }}
       >
         <Ready />
