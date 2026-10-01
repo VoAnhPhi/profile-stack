@@ -57,9 +57,11 @@ export function Hero() {
           </p>
         </Reveal>
 
+        {/* 18px at every width, not the lead's 18-22px: at 22 beside the name the two
+            paragraphs read too large, the author's call. The other leads keep theirs. */}
         <Reveal delay={220} className="mt-6 max-w-[46ch] space-y-4">
           {SITE.intro.map((paragraph) => (
-            <p key={paragraph} className="text-lead text-ink-soft">
+            <p key={paragraph} className="text-[1.125rem] leading-normal text-ink-soft">
               {paragraph}
             </p>
           ))}
