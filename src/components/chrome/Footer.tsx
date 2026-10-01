@@ -52,7 +52,7 @@ export function Footer() {
               fontVariationSettings: '"SOFT" 40, "WONK" 1, "opsz" 144',
             }}
           >
-            Vo Anh Phi
+            {SITE.nameShort}
           </p>
         </div>
       </div>

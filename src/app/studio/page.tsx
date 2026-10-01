@@ -5,7 +5,7 @@ import { Studio } from "@/components/studio/Studio";
 
 export const metadata: Metadata = {
   title: "Studio",
-  description: "Choose the mark in the header of this site, and see how it opens.",
+  description: "Choose the mark in the header of this site, and replay how it opens.",
 };
 
 export default function StudioPage() {

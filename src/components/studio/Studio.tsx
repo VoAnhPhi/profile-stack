@@ -46,9 +46,9 @@ const CONNECTIONS = [
 type ConnectionId = (typeof CONNECTIONS)[number]["id"];
 
 const RULES = [
-  ["250 ms", "Nothing but paper at first. A page that is ready by then simply appears."],
-  ["800 ms", "Once it shows, it stays long enough to read as a moment, not a flicker."],
-  ["2.6 s", "Never longer. A slow connection gets the page anyway; the rest loads behind it."],
+  ["4.8 s", "A first visit always gets all of it: a sheet folds itself into a plane as the count runs."],
+  ["Play", "While the page loads, the plane follows your pointer, or a tap on a touch screen."],
+  ["8 s", "Never longer, and Skip or Esc ends it at any time. The rest loads behind the page."],
 ] as const;
 
 /* Preview drives, one per card, outside React like every other mark input. */
@@ -75,12 +75,12 @@ const ENTRY_STAGE: Record<EntryId, Drive> = {
 function describe(report: OpeningReport | null) {
   if (!report) return "Replays the opening a first visit gets, against the connection you pick.";
   switch (report.outcome) {
-    case "skipped":
-      return `Ready at ${report.readyAt} ms, inside the 250 ms grace: no opening at all.`;
     case "shown":
-      return `Ready at ${report.readyAt} ms. Shown for ${report.shownFor} ms, then handed to the header.`;
+      return `Ready at ${report.readyAt} ms. Shown for ${report.shownFor} ms, then the plane flew off.`;
     case "capped":
-      return "Still loading at 2.6 s, so the page was handed over anyway. The rest would load behind it.";
+      return "Still loading at 8 s, so the page was handed over anyway. The rest would load behind it.";
+    case "skipped":
+      return `Skipped after ${report.shownFor} ms. The page would have been ready at ${report.readyAt} ms.`;
   }
 }
 
@@ -204,8 +204,8 @@ export function Studio() {
         Make the header <span className="italic text-accent">yours.</span>
       </h1>
       <p className="text-lead mt-6 max-w-[56ch] text-ink-soft">
-        Choose what sits in the corners of every page and see how the site opens. Your
-        choice is kept in this browser only - nothing is sent anywhere.
+        Choose what sits in the corners of every page, and replay how the site opens.
+        Your choice is kept in this browser only - nothing is sent anywhere.
       </p>
 
       <section aria-labelledby="studio-mark" className="mt-20">
@@ -217,7 +217,7 @@ export function Studio() {
         </div>
         <p className="mt-3 max-w-[60ch] text-ink-soft">
           It looks where your pointer is and leans as you scroll. Drag the bar to take it
-          apart - that is how it builds itself while the site opens.
+          apart and watch how it is built.
         </p>
 
         <div role="radiogroup" aria-labelledby="studio-mark" className="mt-8 grid gap-6 sm:grid-cols-2">
@@ -306,8 +306,8 @@ export function Studio() {
           The opening
         </h2>
         <p className="mt-3 max-w-[60ch] text-ink-soft">
-          It runs once per visit, and only when the page is slow enough to need it. The
-          count follows what has actually loaded and waits at 94% until everything is in.
+          It runs once per visit. The count follows what has actually loaded, waits at 94%
+          until everything is in, and never runs faster than the fold.
         </p>
 
         <ol className="mt-8 grid gap-4 md:grid-cols-3">

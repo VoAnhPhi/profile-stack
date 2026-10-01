@@ -525,33 +525,128 @@ html[data-opening="skip"] .opening {
   background: var(--canvas);
 }
 
-/* Under the mark, which sits a little above centre at up to 300px tall. */
-.opening__count {
+/* Text round the paper, set in its corners like an editorial page's running heads and
+   kept uneven on purpose: small labels in three corners, the count large in the fourth.
+   The frame fades as one; each corner arrives on its own (Opening.tsx). */
+.opening__frame {
   position: absolute;
-  left: 50%;
-  top: calc(50% + min(20vh, 172px));
-  translate: -50% 0;
-  opacity: 0;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
+  inset: 0;
 }
 
-.opening__meta {
+/* Hidden until the opening's script brings them in, so first paint has no flash of
+   them shown and then hidden again. */
+.opening__corner {
   position: absolute;
-  bottom: 1.6rem;
-  right: var(--gutter);
-  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   color: var(--muted);
+  opacity: 0;
+}
+
+.opening__corner--tl {
+  top: 1.4rem;
+  left: var(--gutter);
+}
+
+.opening__corner--tr {
+  top: 1.4rem;
+  right: var(--gutter);
+  align-items: flex-end;
+  gap: 1.1rem;
+  text-align: right;
+}
+
+.opening__geo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.opening__corner--bl {
+  bottom: 1.6rem;
+  left: var(--gutter);
+}
+
+.opening__corner--br {
+  bottom: 1rem;
+  right: var(--gutter);
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.opening__name {
+  font-size: clamp(1.625rem, 2.6vw, 2.5rem);
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* On a wide screen the city has its own corner; on a phone it sits under the role. */
+.opening__place {
+  display: none;
+}
+
+.opening__step {
+  display: flex;
+  gap: 0.9rem;
+}
+
+.opening__count {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(5rem, 13vw, 10.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 html.is-opening,
 html.is-opening body {
   overflow: hidden;
+}
+
+/* While it runs the paper takes the pointer: a tap points the plane, and a click can no
+   longer land on a link of the page hidden under it. No browser gesture either - a
+   drag on a phone would pull the page to refresh. */
+html.is-opening .opening {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+/* Top right, first thing in its corner, where a skip usually is. */
+.opening__skip {
+  opacity: 0;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--ink);
+  transition: border-color var(--dur-hover) var(--ease-editorial);
+}
+
+.opening__skip:hover,
+.opening__skip:focus-visible {
+  border-color: var(--ink);
+}
+
+/* A phone keeps three corners: the coordinates and the clock give way, the city moves
+   under the role, and the step and the open line sit above the count rather than beside
+   it - at 390 the two ran into each other. Up there they also clear the bottom left,
+   where the framework's dev badge sits while developing. */
+@media (max-width: 639px) {
+  .opening__geo {
+    display: none;
+  }
+
+  .opening__place {
+    display: block;
+  }
+
+  .opening__corner--bl {
+    bottom: 7.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,7 +8,10 @@ import { useSmoothScroll } from "@/components/providers/SmoothScroll";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { useHeaderPrefs } from "@/lib/headerPrefs";
 import { HEADER_FIT, renderEntry, renderMark } from "./registry";
+import { PLANE_HEADING, PLANE_NOSE, PaperPlane } from "./PaperPlane";
+import { createFlight } from "./planeFlight";
 import {
+  FOLD_END,
   OPENING,
   makeDrive,
   setAnchor,
@@ -20,13 +23,20 @@ import {
   useOpening,
   useSlots,
 } from "./runtime";
-import { Flown, Placed, Rig, easeInOutCubic } from "./shared";
+import { Flown, Placed, Rig, span } from "./shared";
 
 /**
  * Everything 3D outside the studio: the mark in the header's left slot, the way
- * into the studio in its right slot, and the mark that assembles and flies during
+ * into the studio in its right slot, and the paper plane that folds and flies during
  * the opening. Loaded in its own chunk after hydration; until it arrives the header
  * shows its 2D posters and the opening shows only paper and a count.
+ *
+ * The opening's plane is not the header's mark. It used to be - whichever mark the
+ * reader had chosen assembled in the middle and flew into its slot - but the plane is
+ * the one that belongs to a loader, folded from a sheet while the page is made and
+ * sent off once it is, and the author wants the mascot in the header from the start.
+ * So the header draws its mark throughout, under the paper, and the plane leaves by
+ * the window's edge.
  *
  * Two canvases, because they need different layers and different sizes:
  *
@@ -44,6 +54,7 @@ import { Flown, Placed, Rig, easeInOutCubic } from "./shared";
 const HEADER = makeDrive();
 const ENTRY = makeDrive();
 const FLOWN = makeDrive(0);
+const flight = createFlight(PLANE_HEADING);
 
 /** Tells the opening the 3D layer can draw, after its first real frame. */
 function Ready() {
@@ -77,12 +88,11 @@ export default function MarkLayer() {
     setAnchor(ENTRY, slots.entry);
   }, [slots]);
 
-  // The flown mark aims its look from the header slot, not from mid-screen, so at
-  // hand-over it already looks where the header's own copy looks.
+  // The plane has no anchor: it takes no look from the pointer of its own, the flight
+  // turns and rolls it.
   useEffect(() => {
     screenTrack.current = document.getElementById("opening");
-    setAnchor(FLOWN, slots.mark);
-  }, [slots.mark]);
+  }, []);
 
   useEffect(() => {
     setStill(prefersReducedMotion);
@@ -108,31 +118,13 @@ export default function MarkLayer() {
     };
   }, [lenisRef]);
 
-  /**
-   * Where the flown mark is: centred and large while the load runs, then along a
-   * shallow arc into the header slot, landing at exactly the size the slot draws
-   * it - which is what makes the hand-over invisible.
-   */
-  const flightPlace = () => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const big = Math.min(vh * 0.34, vw * 0.5, 300);
-    const lift = Math.min(vh * 0.06, 48);
-    const slot = markTrack.current?.getBoundingClientRect();
-    const pulse = 1 + Math.sin(OPENING.pulse * Math.PI) * 0.1;
-    setProgress(FLOWN, OPENING.progress);
-    if (!slot) return { x: 0, y: lift, size: big * pulse };
-    const e = easeInOutCubic(OPENING.flight);
-    const sx = slot.left + slot.width / 2 - vw / 2;
-    const sy = vh / 2 - (slot.top + slot.height / 2);
-    return {
-      x: sx * e,
-      y: lift + (sy - lift) * e + Math.sin(e * Math.PI) * vh * 0.06,
-      size: (big + (slot.height * HEADER_FIT - big) * e) * pulse,
-    };
+  /** The plane folds over the first part of the count and flies the rest; planeFlight.ts has how. */
+  const flightPlace = (dt: number) => {
+    setProgress(FLOWN, span(OPENING.progress, 0, FOLD_END));
+    const box = screenTrack.current?.getBoundingClientRect() ?? new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+    return flight(dt, box);
   };
 
-  const headerShows = phase === "landed" || phase === "done";
   const openingShows = phase === "showing" || phase === "leaving" || phase === "landed";
 
   return (
@@ -149,7 +141,7 @@ export default function MarkLayer() {
         style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "4rem", pointerEvents: "none", zIndex: 60 }}
       >
         <Ready />
-        <View track={markTrack as RefObject<HTMLElement>} visible={headerShows}>
+        <View track={markTrack as RefObject<HTMLElement>}>
           <Rig />
           <Placed drive={HEADER} fit={HEADER_FIT}>
             {renderMark(prefs.mark, HEADER)}
@@ -172,7 +164,9 @@ export default function MarkLayer() {
         >
           <View track={screenTrack as RefObject<HTMLElement>}>
             <Rig />
-            <Flown place={flightPlace}>{renderMark(prefs.mark, FLOWN)}</Flown>
+            <Flown place={flightPlace} rollAxis={PLANE_NOSE}>
+              <PaperPlane drive={FLOWN} />
+            </Flown>
           </View>
         </Canvas>
       ) : null}

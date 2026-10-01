@@ -100,28 +100,48 @@ export function useSlots(): Slots {
 /* The opening                                                                  */
 
 /**
- *   grace    paper only; nothing is shown unless the load outlasts SHOW_DELAY
- *   showing  the count runs and the mark assembles with the load
- *   leaving  the mark flies to the header and the paper fades
- *   landed   the header's own mark is showing; the flown one stays a beat longer,
- *            drawn in the same place, so no frame goes by with neither on screen
+ *   grace    paper only, before the opening's script has run
+ *   showing  the count runs, the plane folds and flies
+ *   leaving  the plane flies off and the paper fades
+ *   landed   the paper is gone; the flown plane has a beat left to clear the frame
  *   done     the page is the reader's
  */
 export type OpeningPhase = "grace" | "showing" | "leaving" | "landed" | "done";
 
 /** Per-frame values the mark layer draws from. Owned and written by Opening. */
 export const OPENING = {
-  /** Assembly of the mark in the middle of the screen, 0 to 1. */
+  /** The count, 0 to 1. The plane folds over the first part of it, then flies. */
   progress: 0,
-  /** A single beat when the load completes, 0 to 1. */
-  pulse: 0,
-  /** Flight from the middle to the header slot, 0 to 1. */
+  /** The plane's exit, off the edge of the window, 0 to 1. */
   flight: 0,
 };
 
-/** How the last run went, for the studio to explain. */
+/**
+ * The share of the count the plane's fold takes: about 3.5s at the opening's pace, which
+ * is a stage of the fold every 0.85s. From here to the end of the load it is in the air,
+ * so a slow page is time to play rather than time spent watching a number. Here rather
+ * than with the flight so the opening can read it without three.js.
+ */
+export const FOLD_END = 0.72;
+
+/**
+ * Where a tap asked the plane to fly, in viewport px, and until when (performance.now()).
+ * A touch screen has no pointer to follow, so the reader points by tapping instead.
+ */
+export const FLIGHT_TARGET = { x: 0, y: 0, until: 0 };
+
+export function aimFlight(x: number, y: number, holdFor = 2600) {
+  FLIGHT_TARGET.x = x;
+  FLIGHT_TARGET.y = y;
+  FLIGHT_TARGET.until = performance.now() + holdFor;
+}
+
+/**
+ * How the last run went, for the studio to explain: ran its course, cut off at the cap
+ * with the page still loading, or ended early by the reader.
+ */
 export type OpeningReport = Readonly<{
-  outcome: "skipped" | "shown" | "capped";
+  outcome: "shown" | "capped" | "skipped";
   readyAt: number;
   shownFor: number;
 }>;
@@ -161,6 +181,11 @@ export function useOpening(): OpeningState {
 
 export function setOpeningValues(values: Partial<typeof OPENING>) {
   Object.assign(OPENING, values);
+}
+
+/** Where the opening's plane folds: centred, raised by `lift`, and `size` px tall. */
+export function openingStage(vw: number, vh: number) {
+  return { size: Math.min(vh * 0.34, vw * 0.5, 300), lift: Math.min(vh * 0.06, 48) };
 }
 
 /**

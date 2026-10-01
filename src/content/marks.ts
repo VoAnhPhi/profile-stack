@@ -11,7 +11,7 @@ export const MARK_COPY: { id: MarkId; name: string; blurb: string }[] = [
   {
     id: "cube",
     name: "Cube",
-    blurb: "A paper box that folds itself shut while the site opens, then turns as you scroll.",
+    blurb: "A paper box that folds itself shut, then turns as you scroll.",
   },
   {
     id: "monogram",
@@ -21,17 +21,17 @@ export const MARK_COPY: { id: MarkId; name: string; blurb: string }[] = [
   {
     id: "phin",
     name: "Phin",
-    blurb: "A coffee filter dripping into a glass. On the way in, the coffee is the load.",
+    blurb: "A coffee filter dripping into a glass, drop by drop.",
   },
   {
     id: "keycap",
     name: "Keycap",
-    blurb: "A key printed with the P of the name. It clicks onto its switch on the way in, and presses down when you come near.",
+    blurb: "A key printed with the P of the name. It clicks onto its switch, and presses down when you come near.",
   },
   {
     id: "plane",
     name: "Paper plane",
-    blurb: "A sheet that folds itself into a plane while the site opens. Then it glides, and banks toward you.",
+    blurb: "The opening's own: a sheet that folds itself into a dart while the site loads. Here it glides, and banks toward you.",
   },
 ];
 

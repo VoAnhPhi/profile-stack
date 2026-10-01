@@ -6,11 +6,17 @@
 export const SITE = {
   name: "Võ Đoàn Anh Phi",
   nameLatin: "Vo Doan Anh Phi",
+  /** The short form, unaccented: the footer's wordmark and the opening's corner. */
+  nameShort: "Vo Anh Phi",
   /** Split for per-line masked reveal in the hero. */
   nameLines: ["Võ Đoàn", "Anh Phi"],
   role: "Software Engineer",
   discipline: "Full-stack",
   location: "Ho Chi Minh City, Viet Nam",
+  /** The city centre, for the opening's corner. Not an address. */
+  coordinates: "10.78° N, 106.70° E",
+  timeZone: "Asia/Ho_Chi_Minh",
+  timeZoneLabel: "GMT+7",
   email: "voanhphi.dev@gmail.com",
   phone: "0866463002",
 
