@@ -48,10 +48,19 @@ const HL = 0.62;
  */
 const KEEL = 0.3;
 /**
- * The spacing of layers folded flat onto each other: enough that no layer fights the one
- * under it, little enough that the ink of a fold's layers reads as one line.
+ * The spacing of layers folded flat onto each other, in sheet units, which orders the
+ * stack; `LAYER_PX` is what it comes to on screen.
  */
 const LAYER = 0.004;
+/**
+ * A layer's height over the one under it as drawn, in px whatever the plane's size:
+ * enough that no layer fights the one under it in depth (some 250 steps of a 24-bit
+ * buffer), little enough that the ink of a fold's layers reads as one line. Left at
+ * LAYER, the stack grew with the plane: at the studio's and the opening's size the
+ * layers at the nose sat 4 to 9px apart, each drawing its own copy of every line
+ * through it, and the nose came out as a block of ink.
+ */
+const LAYER_PX = 0.03;
 
 type V2 = readonly [number, number];
 
@@ -345,11 +354,10 @@ function edgeGeometry(piece: Piece, all: Piece[]) {
   // draws. The flaps' other lines go as the halves shut them in, or sooner, as before,
   // when a layer pressed flat lands on them.
   //
-  // Near the nose the keel's bottom is drawn by the edge flaps' folded-in edges, not the
-  // base layer's crease. Stacked a few layers up while flat, those flaps come out a hair
-  // past the far wall once the halves shut, and that sliver of paper covers the base
-  // line; their own edges are the line that shows there. Further back the base line is
-  // the only one, and is widened below.
+  // Near the nose the edge flaps' folded-in edges lie on the crease as well, a few layers
+  // up while flat. The layers sit a fraction of a px apart (LAYER_PX), so once the halves
+  // shut those edges and the base layer's crease draw as one line. Further back the base
+  // line is the only one, and is widened below.
   const onCrease = edgesOf(piece.outline).map(([a, b]) =>
     [a, b].every((p) => Math.abs(apply(piece.map, p)[0]) < 1e-6),
   );
@@ -368,17 +376,60 @@ function edgeGeometry(piece: Piece, all: Piece[]) {
     // weight the half left showing broke up into a gap along the keel.
     const buried = keel && base && onCrease[i] && OUTLINE_FOLDS.has(folds[i]) ? 1 : 0;
     tube.setAttribute("buried", new THREE.BufferAttribute(new Float32Array(count).fill(buried), 1));
+    // A wing root starts back from the nose: see ROOT_GAP. Its end on the nose (`tip`)
+    // moves along it (`along`), and the whole line goes once that passes its far end (`reach`).
+    const tip = new Float32Array(count);
+    const along = new Float32Array(count * 2);
+    const reach = new Float32Array(count);
+    const [from, to] = atNose(a) ? [a, b] : [b, a];
+    if (WING_FOLDS.has(folds[i]) && atNose(from)) {
+      const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+      const centre = tube.getAttribute("centre");
+      for (let v = 0; v < count; v++) {
+        tip[v] = atNose([centre.getX(v), centre.getY(v)]) ? 1 : 0;
+        along[v * 2] = (to[0] - from[0]) / length;
+        along[v * 2 + 1] = (to[1] - from[1]) / length;
+        reach[v] = length;
+      }
+    }
+    tube.setAttribute("tip", new THREE.BufferAttribute(tip, 1));
+    tube.setAttribute("along", new THREE.BufferAttribute(along, 2));
+    tube.setAttribute("reach", new THREE.BufferAttribute(reach, 1));
     return tube;
   });
   return mergeGeometries(runs);
 }
+
+const atNose = (p: V2) => Math.hypot(p[0] - NOSE[0], p[1] - NOSE[1]) < 1e-6;
+
+const WING_FOLDS = new Set(FOLDS.flatMap((fold, index) => (fold.id === "wingR" || fold.id === "wingL" ? [index] : [])));
+const WING_L = FOLDS.findIndex((fold) => fold.id === "wingL");
+
+/**
+ * Where the wing roots start, in line widths back from the nose. Every fold of a dart
+ * runs to its nose, and the two roots run there side by side, the keel's slit between
+ * them no wider than 2px even at the tail in the header. There they drew one stroke
+ * twice as heavy as the plane's edges, and filled the point's V with ink for a fifth of
+ * its length.
+ *
+ *   nose   both start this far back, so the point is drawn by its two edges alone
+ *   apart  the left one waits until the slit has opened to this: one stroke where the
+ *          two would read as one, both where the slit shows. In the header the left
+ *          root is gone; in the studio and the opening it starts a sixth of the way
+ *          back. At 1.5 its first stretch lay half over the right one, a lump mid-line.
+ */
+const ROOT_GAP = { nose: 6, apart: 2.5 };
 
 const PAPER_INK_VERTEX = /* glsl */ `
 attribute vec3 centre;
 attribute float fold;
 attribute float cover;
 attribute float buried;
+attribute float tip;
+attribute vec2 along;
+attribute float reach;
 uniform float radius;
+uniform float slit;
 uniform float reveal[${FOLDS.length}];
 uniform float settled[${FOLDS.length}];
 void main() {
@@ -387,7 +438,13 @@ void main() {
   // A line half buried in the keel's far wall is drawn wider once the keel is shut, so
   // the part that shows is a whole line. Twice as wide showed as more than one.
   if (buried > 0.5) shown *= 1.0 + 0.6 * settled[int(fold + 0.5)];
-  vec3 p = centre + (position - centre) * radius * shown;
+  // A line's width in sheet units is twice its radius, whatever the size it is drawn at.
+  float width = 2.0 * radius;
+  float gap = ${ROOT_GAP.nose.toFixed(1)} * width;
+  if (int(fold + 0.5) == ${WING_L}) gap = max(gap, ${ROOT_GAP.apart.toFixed(1)} * width / slit);
+  if (reach > 0.0 && gap >= reach) shown = 0.0;
+  vec3 end = centre + vec3(along, 0.0) * tip * min(gap, reach);
+  vec3 p = end + (position - centre) * radius * shown;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
 }
 `;
@@ -553,6 +610,14 @@ const planeInkPx = (size: number) => {
  */
 const SPREAD = 1.6;
 
+/**
+ * How fast the wing roots part, across per unit along a root, for ROOT_GAP: the keel's
+ * walls stand `halves` up from flat, and the plane is drawn `spread` wide across.
+ */
+const ROOT_LENGTH = Math.hypot(KEEL, 2 * HL);
+const slitOf = (halves: number, spread: number) =>
+  Math.max(1e-4, (2 * KEEL * Math.abs(Math.cos(halves)) * spread) / ROOT_LENGTH);
+
 const X_AXIS = new THREE.Vector3(1, 0, 0);
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
@@ -587,17 +652,22 @@ export function PaperPlane({ drive }: MarkProps) {
     const x = scratch.current;
     if (!root.current || !fit.current || !turn.current) return;
 
-    // Each piece: its hinges applied innermost first, each a turn about a line.
+    // Each piece: its hinges applied innermost first, each a turn about a line, its
+    // height scaled so a layer sits LAYER_PX over the one under it. The px per sheet
+    // unit is last frame's framing, which moves too slowly for the lag to show.
     const angles = foldAngles(p);
+    root.current.getWorldScale(x.size);
+    const stack = Math.min(1, LAYER_PX / (LAYER * Math.max(x.size.y * fit.current.scale.x, 1e-3)));
     parts.pieces.forEach((piece, i) => {
       const m = (x.matrices[i] ??= new THREE.Matrix4()).identity();
       piece.chain.forEach((index) => {
         const hinge = parts.hinges[index];
         const angle = angles[hinge.id] * hinge.sign;
         if (angle === 0) return;
-        x.hinge.makeTranslation(-hinge.origin.x, -hinge.origin.y, -hinge.origin.z);
+        const height = hinge.origin.z * stack;
+        x.hinge.makeTranslation(-hinge.origin.x, -hinge.origin.y, -height);
         x.step.makeRotationAxis(hinge.axis, angle).multiply(x.hinge);
-        x.hinge.makeTranslation(hinge.origin.x, hinge.origin.y, hinge.origin.z).multiply(x.step);
+        x.hinge.makeTranslation(hinge.origin.x, hinge.origin.y, height).multiply(x.step);
         m.premultiply(x.hinge);
       });
       const group = pieces.current[i];
@@ -661,15 +731,16 @@ export function PaperPlane({ drive }: MarkProps) {
           ? THREE.MathUtils.smoothstep(angle, 1.0, 1.4)
           : 0;
     });
+    const slit = slitOf(angles.halfR, 1 + (SPREAD - 1) * flying);
     // Posed now, so it may be seen; see the root group below.
     root.current.visible = true;
-    root.current.getWorldScale(x.size);
     inks.current.forEach((ink) => {
       setInkWidth(ink, x.size.y, planeInkPx(x.size.y));
       if (!ink) return;
       const uniforms = (ink.material as THREE.ShaderMaterial).uniforms;
       uniforms.reveal.value = x.reveal;
       uniforms.settled.value = x.settled;
+      uniforms.slit.value = slit;
     });
   });
 
@@ -695,6 +766,7 @@ export function PaperPlane({ drive }: MarkProps) {
                     fragmentShader={PAPER_INK_FRAGMENT}
                     uniforms={{
                       radius: { value: 0.01 },
+                      slit: { value: 1 },
                       reveal: { value: new Array<number>(FOLDS.length).fill(0) },
                       settled: { value: new Array<number>(FOLDS.length).fill(0) },
                       ink: { value: INK },

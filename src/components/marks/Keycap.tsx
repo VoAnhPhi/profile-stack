@@ -40,11 +40,27 @@ import { P_GLYPH } from "./monogramGlyph";
 /* --------------------------------------------------------------------------- */
 /* Ink along a path                                                             */
 
-const INK_PATH_VERTEX = /* glsl */ `
+/**
+ * The rim needs a line of its own only where the wall under it shows. Where that wall
+ * turns from the reader, the rim is the cap's outline and the hull draws it; drawn there
+ * too, the rim's line on top of the hull's made the top of the cap half as heavy again
+ * as its foot. Where the wall shows narrower than a line, the hull's line along its foot
+ * already covers it, and a second line beside it came through as a speckled double. So
+ * the line comes in as the wall opens from three quarters of a line's width to one and
+ * a half.
+ * View space is CSS px, so the wall's width on screen and the line's compare directly.
+ */
+const RIM_VERTEX = /* glsl */ `
 attribute vec3 centre;
+attribute vec3 wall;
+attribute vec3 wallNormal;
 uniform float radius;
 void main() {
-  vec3 p = centre + (position - centre) * radius;
+  float facing = normalize(normalMatrix * wallNormal).z;
+  float across = length((modelViewMatrix * vec4(wall, 0.0)).xyz) * facing;
+  float line = 2.0 * radius * length(modelViewMatrix[0].xyz);
+  float shown = smoothstep(0.75, 1.5, across / line);
+  vec3 p = centre + (position - centre) * radius * shown;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
 }
 `;
@@ -80,11 +96,11 @@ export function inkTube(path: THREE.Curve<THREE.Vector3>, segments: number, clos
   return geometry;
 }
 
-/** The material for an `inkTube`. Its width is set with `setInkWidth`. */
-function InkPathMaterial() {
+/** The material for the rim's `inkTube`. Its width is set with `setInkWidth`. */
+function RimMaterial() {
   return (
     <shaderMaterial
-      vertexShader={INK_PATH_VERTEX}
+      vertexShader={RIM_VERTEX}
       fragmentShader={INK_PATH_FRAGMENT}
       uniforms={{ radius: { value: 0.01 }, ink: { value: INK } }}
     />
@@ -327,10 +343,53 @@ function legendGeometry() {
   return geometry;
 }
 
-/** The ink round the top: the rim where the dish meets the walls. */
+/**
+ * The ink round the top: the rim where the dish meets the walls. Each vertex carries the
+ * wall below it, from the cap's foot up to the rim, and that wall's outward normal, for
+ * the shader to tell how much of the wall shows.
+ */
 function rimGeometry() {
+  const skirt = outline(SKIRT);
   const points = outline(TOP).map(onDish);
-  return inkTube(new THREE.CatmullRomCurve3(points, true, "centripetal"), points.length * 2, true);
+  const n = points.length;
+  const rises = points.map((p, i) => p.clone().sub(at(skirt[i], 0)));
+  const normals = points.map((p, i) => {
+    const along = points[(i + 1) % n].clone().sub(points[(i + n - 1) % n]);
+    const normal = new THREE.Vector3().crossVectors(along, rises[i]).normalize();
+    return normal.x * p.x + normal.z * (p.z - TOP.z) < 0 ? normal.negate() : normal;
+  });
+  const geometry = inkTube(new THREE.CatmullRomCurve3(points, true, "centripetal"), n * 2, true);
+  // The tube's rings fall between the outline's points: each takes the wall of the
+  // outline's segment nearest its centre, blended along that segment.
+  const centre = geometry.getAttribute("centre");
+  const wall = new Float32Array(centre.count * 3);
+  const wallNormal = new Float32Array(centre.count * 3);
+  const c = new THREE.Vector3();
+  const ab = new THREE.Vector3();
+  const ac = new THREE.Vector3();
+  const foot = new THREE.Vector3();
+  const rise = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  for (let v = 0; v < centre.count; v++) {
+    c.fromBufferAttribute(centre, v);
+    let best = Infinity;
+    for (let k = 0; k < n; k++) {
+      const a = points[k];
+      const next = (k + 1) % n;
+      ab.subVectors(points[next], a);
+      const t = THREE.MathUtils.clamp(ac.subVectors(c, a).dot(ab) / ab.lengthSq(), 0, 1);
+      const d = foot.copy(a).addScaledVector(ab, t).distanceToSquared(c);
+      if (d >= best) continue;
+      best = d;
+      rise.lerpVectors(rises[k], rises[next], t);
+      normal.lerpVectors(normals[k], normals[next], t).normalize();
+    }
+    rise.toArray(wall, v * 3);
+    normal.toArray(wallNormal, v * 3);
+  }
+  geometry.setAttribute("wall", new THREE.BufferAttribute(wall, 3));
+  geometry.setAttribute("wallNormal", new THREE.BufferAttribute(wallNormal, 3));
+  return geometry;
 }
 
 let parts: {
@@ -490,7 +549,7 @@ export function Keycap({ drive }: MarkProps) {
             <Ink />
           </mesh>
           <mesh ref={rim} geometry={geometry.rim}>
-            <InkPathMaterial />
+            <RimMaterial />
           </mesh>
           {/* The ghost, then the print over it, each a hair above the dish. */}
           <mesh geometry={geometry.legend} position={[0, 0.003, 0]}>
