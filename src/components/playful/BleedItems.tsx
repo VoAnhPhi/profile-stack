@@ -337,7 +337,10 @@ export function BleedItems({ preset }: { preset: BleedPreset }) {
                 alt=""
                 width={item.w}
                 height={item.h}
-                sizes={`${Math.ceil(item.w * 1.1)}px`}
+                // No `sizes`: drawn at its own width (`--bleed-scale` tops out at
+                // 1.04), a 1x and 2x pair is all it needs. `sizes` listed every
+                // width up to 3840 for each of the page's 63 stickers, near a
+                // quarter of the home page's HTML.
                 loading={preset === "hero" ? "eager" : "lazy"}
                 className="bleed-sticker"
               />
