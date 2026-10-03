@@ -8,6 +8,7 @@ import { MarkLayerMount } from "@/components/marks/MarkLayerMount";
 import { MarkLogos } from "@/components/marks/MarkLogos";
 import { InkFilter } from "@/components/icons/InkFilter";
 import { PaperField } from "@/components/playful/PaperField";
+import { OPENING_BOOT } from "@/components/chrome/openingBoot";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -67,6 +68,8 @@ export default function RootLayout({
         <Cursor />
         <SmoothScroll>
           <Opening />
+          {/* Right after the opening's markup, so its count and clock exist when it runs. */}
+          <script dangerouslySetInnerHTML={{ __html: OPENING_BOOT }} />
           {children}
           <MarkLayerMount />
         </SmoothScroll>

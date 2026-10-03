@@ -40,6 +40,19 @@ function getObserver(): IntersectionObserver {
   return observer;
 }
 
+/**
+ * Reveals at once every reveal under `root` that has entered or passed the viewport,
+ * for content that was drawn in place and is about to be handed back to its entrance:
+ * whatever the observer has not reached yet would otherwise drop to hidden on screen.
+ */
+export function revealOnScreen(root: ParentNode) {
+  for (const element of root.querySelectorAll("[data-reveal]:not([data-inview])")) {
+    if (element.getBoundingClientRect().top >= window.innerHeight) continue;
+    reveal(element);
+    observer?.unobserve(element);
+  }
+}
+
 export function observeReveal(element: Element | null): () => void {
   if (!element) return () => {};
 

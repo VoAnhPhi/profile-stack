@@ -100,7 +100,7 @@ export function useSlots(): Slots {
 /* The opening                                                                  */
 
 /**
- *   grace    paper only, before the opening's script has run
+ *   grace    paper and the inline boot's count, before the opening's script has run
  *   showing  the count runs, the plane folds and flies
  *   leaving  the plane flies off and the paper fades
  *   landed   the paper is gone; the flown plane has a beat left to clear the frame
@@ -116,13 +116,8 @@ export const OPENING = {
   flight: 0,
 };
 
-/**
- * The share of the count the plane's fold takes: about 3.5s at the opening's pace, which
- * is a stage of the fold every 0.85s. From here to the end of the load it is in the air,
- * so a slow page is time to play rather than time spent watching a number. Here rather
- * than with the flight so the opening can read it without three.js.
- */
-export const FOLD_END = 0.72;
+/** With the opening's policy, which the layout's inline boot reads too. */
+export { FOLD_END } from "@/components/chrome/openingBoot";
 
 /**
  * Where a tap asked the plane to fly, in viewport px, and until when (performance.now()).

@@ -494,10 +494,13 @@ html[data-marks="ready"] .mark-slot__poster {
    and the motion; the mark in the middle is drawn by the mark layer's own canvas
    above this (z 95).
 
-   Styled to survive without JS: the failsafe below lifts the paper after 3s, and
-   Opening.tsx cancels it the moment it mounts. The inline script in layout.tsx
-   hides it before first paint for a session that has seen it, and under
-   `reduce` it is never shown at all.
+   Styled to survive without JS: with scripting off it is never shown, and should
+   the script fail, the failsafe below lifts the paper at the opening's own cap.
+   Opening.tsx cancels the failsafe the moment it mounts. It used to fire at 3s,
+   which on a slow phone was before the script had arrived: the paper lifted on a
+   page not yet drawn, then came back once the script ran. The inline script in
+   layout.tsx hides it before first paint for a session that has seen it, and
+   under `reduce` it is never shown at all.
 --------------------------------------------------------------------------- */
 
 .opening {
@@ -505,7 +508,17 @@ html[data-marks="ready"] .mark-slot__poster {
   inset: 0;
   z-index: 90;
   pointer-events: none;
-  animation: opening-failsafe 0s linear 3s forwards;
+  /* Its box is the viewport whatever is in it, so the count changing every few frames
+     lays out the paper alone, not the page under it. */
+  contain: strict;
+  /* CAP in openingBoot.ts. */
+  animation: opening-failsafe 0s linear 8s forwards;
+}
+
+@media (scripting: none) {
+  .opening {
+    display: none;
+  }
 }
 
 @keyframes opening-failsafe {
@@ -533,8 +546,9 @@ html[data-opening="skip"] .opening {
   inset: 0;
 }
 
-/* Hidden until the opening's script brings them in, so first paint has no flash of
-   them shown and then hidden again. */
+/* They arrive from the first paint, one after another round the page, by CSS: on a
+   slow phone the script that used to bring them in landed seconds after the paper,
+   and the paper sat blank until it did. A replay brings them in from script. */
 .opening__corner {
   position: absolute;
   display: flex;
@@ -542,6 +556,30 @@ html[data-opening="skip"] .opening {
   gap: 0.4rem;
   color: var(--muted);
   opacity: 0;
+  animation: opening-corner 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s both;
+}
+
+.opening__corner--tr {
+  animation-delay: 0.24s;
+}
+
+.opening__corner--bl {
+  animation-delay: 0.33s;
+}
+
+.opening__corner--br {
+  animation-delay: 0.42s;
+}
+
+@keyframes opening-corner {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .opening__corner--tl {
@@ -1016,6 +1054,18 @@ a:hover .sticker__chip,
   .sticker[data-reveal][data-inview="true"] {
     transform: none;
     scale: 1;
+  }
+
+  /* A first visit: the hero is under the opening's paper, so its entrance would play
+     unseen, and on a slow phone it waited for a script seconds behind the paper. It
+     is drawn in place from the first paint instead. Opening.tsx marks the opening
+     done, so a later visit to the home page in the same session gets the entrance,
+     as a session that skips the opening always does. */
+  html:not([data-opening]) #top [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    will-change: auto;
   }
 }
 

@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { SITE } from "@/content/site";
 import { useSmoothScroll } from "@/components/providers/SmoothScroll";
+import { revealOnScreen } from "@/lib/reveal";
 import {
-  FOLD_END,
   aimFlight,
   getMarksState,
   onReplay,
@@ -13,6 +13,18 @@ import {
   setOpeningValues,
   type OpeningReport,
 } from "@/components/marks/runtime";
+import {
+  CAP,
+  FOLD_END,
+  FOLD_STEPS,
+  IN_THE_AIR,
+  PACE,
+  PLANE_WAIT,
+  STEP_COUNT,
+  WAIT_CEILING,
+  WEIGHT,
+  takeBoot,
+} from "./openingBoot";
 
 /**
  * The opening: a sheet of paper over the first paint that folds itself into a plane,
@@ -49,6 +61,11 @@ import {
  * the images the first screen needs, the load event, and the 3D layer itself - and
  * waits at 94% until all of it is in; the pace only ever holds it back.
  *
+ * Until this file has hydrated, the boot inlined by the layout keeps the count on the
+ * same rules (openingBoot.ts), and the corners come in by CSS, so on a slow phone the
+ * paper is a loading screen from the first paint rather than a blank sheet. This file
+ * carries on from where the boot got to.
+ *
  * The header's mark is drawn throughout, under the paper, so it is simply there when the
  * paper lifts.
  *
@@ -56,34 +73,12 @@ import {
  * arrives in its own chunk, draws the plane from the shared state in runtime.ts.
  */
 
-const PACE = 4800;
-/** How long the count waits for the 3D layer before it runs without it. */
-const PLANE_WAIT = 1500;
-const CAP = 8000;
 const SKIP_AFTER = 1200;
 /** The plane's exit, from the moment the count is done. */
 const EXIT = 0.9;
-const WAIT_CEILING = 0.94;
-
-/**
- * The fold, step by step, for the corner that names the step under way: where each
- * ends, as a share of the fold. Mirrors `foldAngles` in PaperPlane.tsx; change both.
- */
-const FOLD_STEPS = [
-  { until: 0.15, text: "A blank sheet" },
-  { until: 0.4, text: "Creased down the middle" },
-  { until: 0.53, text: "Corners in to the crease" },
-  { until: 0.65, text: "And in once more" },
-  { until: 0.8, text: "Folded in half" },
-  { until: 0.92, text: "Wings down" },
-  { until: 1, text: "Nose up" },
-] as const;
-const STEP_COUNT = FOLD_STEPS.length + 1;
 const SEEN_KEY = "opening:seen";
 
-const WEIGHT = { fonts: 0.25, images: 0.3, load: 0.2, marks: 0.25 } as const;
-
-/** What the browser has genuinely finished, 0 to 1. */
+/** What the browser has genuinely finished, 0 to 1. The boot's `progress` mirrors it. */
 function readProgress(fontsDone: boolean): number {
   const loadDone = document.readyState === "complete";
   // Eager images only: lazy ones are not the first screen's business. An <img>
@@ -145,9 +140,12 @@ export function Opening() {
       else lenisRef.current?.start();
     };
 
+    // Written only when the figure changes: rewriting the same text every frame still
+    // costs a style and layout pass.
     const paint = (value: number) => {
       const n = Math.round(value * 100);
-      count.textContent = n >= 100 ? "100" : String(n).padStart(2, "0");
+      const text = n >= 100 ? "100" : String(n).padStart(2, "0");
+      if (count.textContent !== text) count.textContent = text;
     };
 
     // The time in the city the corner names, a second at a time.
@@ -173,8 +171,7 @@ export function Opening() {
       if (index === shownStep) return;
       shownStep = index;
       stepNumber.textContent = `${String(index + 1).padStart(2, "0")} / ${String(STEP_COUNT).padStart(2, "0")}`;
-      stepText.textContent =
-        FOLD_STEPS[index]?.text ?? (touch ? "In the air. Tap, and it follows" : "In the air. Point, and it follows");
+      stepText.textContent = FOLD_STEPS[index]?.text ?? (touch ? IN_THE_AIR.touch : IN_THE_AIR.pointer);
       if (animate) gsap.fromTo(step, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "power2.out", overwrite: true });
     };
     const stepFor = (count: number) => {
@@ -195,34 +192,46 @@ export function Opening() {
       const started = simulated ? performance.now() : 0;
       const tweens: gsap.core.Animation[] = [];
       let phase: "showing" | "leaving" | "done" = "showing";
-      let shown = 0;
-      // The pace runs from here, not from navigation: the paper was up before this
-      // script ran, and that time was not the opening's to spend.
-      const shownAt = performance.now() - started;
+      // A first visit carries on from the inline boot, which has kept the count since
+      // the paper went up (openingBoot.ts). A replay starts from nothing.
+      const boot = simulated ? null : takeBoot();
+      let shown = boot?.shown ?? 0;
+      // The pace runs from when the count started, not from navigation: the paper may
+      // have been up before any script ran, and that time was not the opening's to spend.
+      const shownAt = boot?.shownAt ?? performance.now() - started;
       /** When the plane could first be drawn, or the count stopped waiting for it. */
-      let planeAt: number | null = null;
+      let planeAt: number | null = boot?.planeAt ?? null;
 
       setOpening({ phase: "showing" });
-      setOpeningValues({ progress: 0, flight: 0 });
+      setOpeningValues({ progress: shown, flight: 0 });
       gsap.set(root, { autoAlpha: 1 });
       gsap.set(frame, { autoAlpha: 1 });
-      gsap.set([...corners, skip], { autoAlpha: 0 });
-      paint(0);
+      gsap.set(skip, { autoAlpha: 0 });
+      paint(Math.min(shown, 0.99));
       tickClock();
       shownStep = -1;
-      showStep(0, false);
+      showStep(stepFor(shown), false);
       lock(true);
-      if (simulated) tweens.push(gsap.fromTo(ground, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }));
-      else gsap.set(ground, { autoAlpha: 1 });
-      tweens.push(
-        // The corners arrive one after another, round the page, not all at once.
-        gsap.fromTo(
-          corners,
-          { autoAlpha: 0, y: 8 },
-          { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.09, delay: 0.15, ease: "power2.out" },
-        ),
-        gsap.to(skip, { autoAlpha: 1, duration: 0.3, delay: SKIP_AFTER / 1000, ease: "power2.out" }),
-      );
+      if (simulated) {
+        tweens.push(gsap.fromTo(ground, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }));
+        // On a first visit the corners came in by CSS at first paint (globals.css). A
+        // replay brings them in the same way from here, once the CSS entrance, which
+        // would hold them at its end state over any value set here, is off.
+        corners.forEach((corner) => (corner.style.animation = "none"));
+        tweens.push(
+          gsap.fromTo(
+            corners,
+            { autoAlpha: 0, y: 8 },
+            { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.09, delay: 0.15, ease: "power2.out" },
+          ),
+        );
+      } else {
+        gsap.set(ground, { autoAlpha: 1 });
+      }
+      // Skip comes SKIP_AFTER into the count, which on a slow phone the boot started
+      // long before this ran.
+      const skipIn = Math.max(0, SKIP_AFTER - (performance.now() - started - shownAt)) / 1000;
+      tweens.push(gsap.to(skip, { autoAlpha: 1, duration: 0.3, delay: skipIn, ease: "power2.out" }));
 
       const real = (t: number) =>
         simulated
@@ -239,6 +248,12 @@ export function Opening() {
         if (document.activeElement === skip) skip.blur();
         gsap.set(root, { autoAlpha: 0 });
         lock(false);
+        // The hero drawn in place under the paper (globals.css) gets its entrance
+        // again from here on, should the reader come back to it. What is on screen
+        // stays: on a slow phone the observer may not have reached it yet.
+        const hero = document.getElementById("top");
+        if (hero) revealOnScreen(hero);
+        html.dataset.opening = "done";
         if (!simulated) {
           try {
             window.sessionStorage.setItem(SEEN_KEY, "1");
@@ -337,7 +352,10 @@ export function Opening() {
     window.addEventListener("keydown", onKey);
     root.addEventListener("pointerdown", onPoint);
 
-    if (html.dataset.opening === "skip") {
+    // A script that arrives after the cap finds the paper already lifted by the CSS
+    // failsafe, and must not bring it back over a page the reader is already using.
+    if (html.dataset.opening === "skip" || performance.now() >= CAP) {
+      takeBoot();
       gsap.set(root, { autoAlpha: 0 });
       setOpening({ phase: "done" });
     } else {
@@ -383,15 +401,24 @@ export function Opening() {
             <p className="label text-ink">{SITE.location}</p>
             <p className="label">{SITE.coordinates}</p>
             <p className="label tabular-nums">
-              <span ref={clockRef}>--:--:--</span> {SITE.timeZoneLabel}
+              {/* The boot writes this, the step and the count before React hydrates: each
+                  is one text node, which suppressHydrationWarning lets differ. */}
+              <span ref={clockRef} data-opening-clock suppressHydrationWarning>
+                --:--:--
+              </span>{" "}
+              {SITE.timeZoneLabel}
             </p>
           </div>
         </div>
 
         <div className="opening__corner opening__corner--bl" aria-hidden="true">
           <p ref={stepRef} className="label opening__step">
-            <span className="tabular-nums">01 / {String(STEP_COUNT).padStart(2, "0")}</span>
-            <span className="text-ink">{FOLD_STEPS[0].text}</span>
+            <span className="tabular-nums" suppressHydrationWarning>
+              {`01 / ${String(STEP_COUNT).padStart(2, "0")}`}
+            </span>
+            <span className="text-ink" suppressHydrationWarning>
+              {FOLD_STEPS[0].text}
+            </span>
           </p>
           <p className="label flex items-center gap-2 text-ink">
             <span className="inline-block size-1.5 rounded-full bg-accent" />
@@ -401,7 +428,7 @@ export function Opening() {
 
         <div className="opening__corner opening__corner--br" aria-hidden="true">
           <p className="label">Loading the page</p>
-          <span ref={countRef} className="opening__count">
+          <span ref={countRef} className="opening__count" suppressHydrationWarning>
             00
           </span>
         </div>
