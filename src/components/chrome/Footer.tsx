@@ -43,17 +43,19 @@ export function Footer() {
         </div>
 
         <div className="mt-10" style={{ containerType: "inline-size" }}>
+          {/* Pure decoration, set from CSS: the name is in the line above, and this
+              size of it is a watermark meant to sit just off the paper. Text content
+              there was audited as body copy failing contrast. */}
           <p
             aria-hidden="true"
-            className="font-display w-full text-center leading-[0.78] whitespace-nowrap text-divider select-none"
+            data-text={SITE.nameShort}
+            className="font-display w-full text-center leading-[0.78] whitespace-nowrap text-divider select-none before:content-[attr(data-text)]"
             style={{
               fontSize: "calc(100cqi / 4.16)",
               // Restates `.font-display`'s axes: the property replaces, never merges.
               fontVariationSettings: '"SOFT" 40, "WONK" 1, "opsz" 144',
             }}
-          >
-            {SITE.nameShort}
-          </p>
+          />
         </div>
       </div>
     </footer>

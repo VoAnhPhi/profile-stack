@@ -44,7 +44,11 @@ export function HeroFlip() {
           data-cursor-label={flipped ? "Turn back" : "Turn it over"}
           onClick={() => setPinned((value) => !value)}
         >
-          <span className="hero-flip__face hero-flip__face--front">
+          {/* Both faces are the button's picture, not its name: a button's content is
+              presentational, so it was only ever read by its label, and the faces say so
+              rather than leave a name that skips the text on them. The label starts with
+              the hint's "Turn", for a reader who speaks what they see. */}
+          <span aria-hidden="true" className="hero-flip__face hero-flip__face--front">
             <Image
               src="/img/me/hero-card.webp"
               alt=""
@@ -59,7 +63,7 @@ export function HeroFlip() {
             </span>
           </span>
 
-          <span className="hero-flip__face hero-flip__face--back">
+          <span aria-hidden="true" className="hero-flip__face hero-flip__face--back">
             <span className="label hero-flip__stamp">
               <span aria-hidden="true" className="hero-flip__dot" />
               {SITE.availability}
