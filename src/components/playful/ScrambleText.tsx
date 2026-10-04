@@ -124,9 +124,13 @@ export function ScrambleText({ text, className }: { text: string; className?: st
      * An offscreen probe carrying the row's own font is the only way to know a
      * symbol's width before committing to it; reading it back off the live element
      * would mean rendering the crush first.
+     *
+     * Every string goes in at once, each on a line of its own so no pair kerns, and is
+     * read back after one layout. Setting one string and reading it, then the next,
+     * forced a layout per character, about 280ms across the page's rows on a phone.
      */
     const measure = () => {
-      const probe = document.createElement("span");
+      const probe = document.createElement("div");
       probe.style.cssText =
         "position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden;pointer-events:none";
       const cs = getComputedStyle(root);
@@ -143,15 +147,19 @@ export function ScrambleText({ text, className }: { text: string; className?: st
       ] as const) {
         probe.style[property] = cs[property];
       }
+      const strings = [...inners.map((el) => el.dataset.ch ?? ""), ...GLYPHS];
+      const spans = strings.map((value) => {
+        const line = probe.appendChild(document.createElement("div"));
+        const span = line.appendChild(document.createElement("span"));
+        span.textContent = value;
+        return span;
+      });
       document.body.appendChild(probe);
-      const widthOf = (value: string) => {
-        probe.textContent = value;
-        return probe.getBoundingClientRect().width;
-      };
-
-      baseWidth = inners.map((el) => widthOf(el.dataset.ch ?? ""));
-      glyphWidth = GLYPHS.map(widthOf);
+      const widths = spans.map((span) => span.getBoundingClientRect().width);
       probe.remove();
+
+      baseWidth = widths.slice(0, inners.length);
+      glyphWidth = widths.slice(inners.length);
 
       rowFontSize = parseFloat(cs.fontSize) || 16;
       rowLineHeight = parseFloat(cs.lineHeight) || rowFontSize * 1.2;
@@ -314,6 +322,10 @@ export function ScrambleText({ text, className }: { text: string; className?: st
       resizeFrame = requestAnimationFrame(remeasure);
     };
 
+    // Only a fine pointer scrambles. On a touch screen, and under reduced motion, the
+    // widths would be measured for nothing, on a phone in the middle of loading.
+    if (!hasFinePointer || prefersReducedMotion) return;
+
     // Measuring before the webfont lands would record the fallback face's metrics.
     if (document.fonts?.status === "loaded") measure();
     else document.fonts?.ready.then(measure).catch(measure);
@@ -322,7 +334,6 @@ export function ScrambleText({ text, className }: { text: string; className?: st
     // own size and the observer would feed itself.
     window.addEventListener("resize", onResize);
 
-    const pointerLive = hasFinePointer && !prefersReducedMotion;
     const onMove = (event: PointerEvent) => {
       // A held button is a drag, and a drag over text is a selection. Parking the
       // pointer for the duration means what gets highlighted, and copied, is the real
@@ -347,11 +358,9 @@ export function ScrambleText({ text, className }: { text: string; className?: st
       schedule();
     };
 
-    if (pointerLive) {
-      window.addEventListener("pointermove", onMove, { passive: true });
-      window.addEventListener("scroll", onScroll, { passive: true });
-      document.documentElement.addEventListener("pointerleave", onLeave);
-    }
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onLeave);
 
     return () => {
       window.removeEventListener("resize", onResize);

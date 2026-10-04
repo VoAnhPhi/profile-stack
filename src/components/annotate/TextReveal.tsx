@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import { useOpening } from "@/components/marks/runtime";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -26,20 +27,34 @@ type Common = {
   className?: string;
 };
 
+/**
+ * Whether the opening has finished, and from then on. Until it has, the page is under
+ * its paper: no reveal can be seen, and splitting there, about 150ms on a phone, only
+ * took frames from the plane folding over it.
+ */
+function useOpened() {
+  const { phase } = useOpening();
+  const [opened, setOpened] = useState(false);
+  if (phase === "done" && !opened) setOpened(true);
+  return opened;
+}
+
 function useSplitReveal(
   build: (el: HTMLElement) => gsap.Context | undefined,
   enabled: boolean,
 ) {
   const ref = useRef<HTMLDivElement>(null);
+  const opened = useOpened();
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || !enabled) return;
+    if (!el || !enabled || !opened) return;
 
     let context: gsap.Context | undefined;
     let observer: ResizeObserver | undefined;
+    let approach: IntersectionObserver | undefined;
     let cancelled = false;
-    let lastWidth = el.offsetWidth;
+    let lastWidth = 0;
 
     const run = () => {
       if (cancelled) return;
@@ -47,10 +62,9 @@ function useSplitReveal(
       context = build(el);
     };
 
-    // Split only once the face is actually available. Splitting against a
-    // fallback font produces line boxes that are wrong the moment it swaps.
-    document.fonts.ready.then(() => {
+    const start = () => {
       if (cancelled) return;
+      lastWidth = el.offsetWidth;
       run();
 
       observer = new ResizeObserver(() => {
@@ -61,14 +75,35 @@ function useSplitReveal(
         run();
       });
       observer.observe(el);
+    };
+
+    // Split only once the face is actually available. Splitting against a
+    // fallback font produces line boxes that are wrong the moment it swaps.
+    //
+    // And only once the block is within a screen of the window. Splitting lays out
+    // every word to find its line and hands ScrollTrigger a measure of the page, and
+    // done at load for blocks far down the page, it ran on a phone still loading. A
+    // screen ahead, the reveal's start state is set while the block is out of sight.
+    document.fonts.ready.then(() => {
+      if (cancelled) return;
+      approach = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          approach?.disconnect();
+          start();
+        },
+        { rootMargin: "100% 0px" },
+      );
+      approach.observe(el);
     });
 
     return () => {
       cancelled = true;
+      approach?.disconnect();
       observer?.disconnect();
       context?.revert();
     };
-  }, [build, enabled]);
+  }, [build, enabled, opened]);
 
   return ref;
 }
@@ -157,25 +192,24 @@ export function WordBlur({ children, as: Tag = "p", className }: Common) {
 
 function buildWordBlur(el: HTMLElement) {
   return gsap.context(() => {
-    const split = new SplitText(el, { type: "words", wordsClass: "blur-word" });
+    // No aria: the words stay in order in the paragraph and read as it. SplitText's
+    // default names the element with its own text, and a `p` may not carry a name.
+    const split = new SplitText(el, { type: "words", wordsClass: "blur-word", aria: "none" });
 
-    gsap.fromTo(
-      split.words,
-      { opacity: 0.001, y: 10, filter: "blur(10px)" },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        ease: "none",
-        duration: 1,
-        stagger: 0.35,
-        scrollTrigger: {
-          trigger: el,
-          start: "top 88%",
-          end: "bottom 62%",
-          scrub: 0.7,
-        },
+    // From the start state `.blur-word` sets in globals.css (why there, it says).
+    gsap.to(split.words, {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      ease: "none",
+      duration: 1,
+      stagger: 0.35,
+      scrollTrigger: {
+        trigger: el,
+        start: "top 88%",
+        end: "bottom 62%",
+        scrub: 0.7,
       },
-    );
+    });
   }, el);
 }

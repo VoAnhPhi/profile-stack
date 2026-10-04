@@ -967,6 +967,21 @@ html.is-opening .opening {
 }
 
 /* ---------------------------------------------------------------------------
+   Word blur
+
+   Each word's start state, held by its class rather than written by GSAP. Tweened
+   from it, GSAP read one word's style and wrote it back before reading the next,
+   a style pass per word: ~100ms on a phone, as the opening's paper lifted. From the
+   class it reads every word once and writes them together.
+--------------------------------------------------------------------------- */
+
+.blur-word {
+  opacity: 0.001;
+  transform: translateY(10px);
+  filter: blur(10px);
+}
+
+/* ---------------------------------------------------------------------------
    Stickers
 
    Irregular tilt is the cheapest of plnty.app's three playfulness levers and the
