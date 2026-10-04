@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { createContext, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { useFrame, type ThreeElements } from "@react-three/fiber";
 import { OrthographicCamera, Outlines } from "@react-three/drei";
@@ -52,6 +52,23 @@ export const PAINT = {
 } as const;
 
 export type MarkProps = { drive: Drive };
+
+/**
+ * Whether the marks under it are drawn in the header's 40px slots rather than on the
+ * studio's stage. A mark built from pictures loads them at a size to match: at 40px
+ * the GPU only ever samples a quarter-size copy of a sheet drawn for the stage.
+ */
+export const SmallMarks = createContext(false);
+
+/**
+ * A value built on first use and kept: for geometry a mark shares between its instances.
+ * Built at module scope instead, every mark's shapes were cut when the 3D layer loaded,
+ * the entries' extrusions alone 125ms on a phone, for a header that shows one of them.
+ */
+export function once<T>(build: () => T): () => T {
+  let value: T | undefined;
+  return () => (value ??= build());
+}
 
 /**
  * Three light steps per ramp, not two or four: two read as a flat decal at 36px,

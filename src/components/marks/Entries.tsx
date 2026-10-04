@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { Cel, DropShadow, Ink, PAINT, PALETTE, blendCel, leanOf, nearness, type MarkProps } from "./shared";
+import { Cel, DropShadow, Ink, PAINT, PALETTE, blendCel, leanOf, nearness, once, type MarkProps } from "./shared";
 
 /**
  * The objects that stand where the CV pill was: the way into the studio. Each has
@@ -39,7 +39,7 @@ const lathe = (points: [number, number][], segments = 24) =>
  * The board: a round-shouldered oval with a bite out of its left edge and a thumb
  * hole beside the bite - the silhouette alone says palette.
  */
-const BOARD = (() => {
+const BOARD = once(() => {
   const rx = 0.47;
   const ry = 0.37;
   const at = (a: number) => new THREE.Vector2(rx * Math.cos(a), ry * Math.sin(a));
@@ -65,7 +65,7 @@ const BOARD = (() => {
   });
   geometry.translate(0, 0, -0.025);
   return geometry;
-})();
+});
 
 const BOARD_TOP = 0.025 + 0.02;
 
@@ -103,7 +103,7 @@ export function PaletteEntry({ drive }: MarkProps) {
     <>
       <DropShadow width={0.9} height={0.7} radius={0.3} />
       <group ref={root}>
-        <mesh geometry={BOARD}>
+        <mesh geometry={BOARD()}>
           <Cel color="paper" />
           <Ink />
         </mesh>
@@ -215,23 +215,23 @@ export function DialEntry({ drive }: MarkProps) {
  * paint read as two things: the first cut loaded the whole tuft in the same red as
  * a round stroke beside it, and the two ran together into something like a cable.
  */
-const BRISTLES = lathe([
+const BRISTLES = once(() => lathe([
   [0, 0],
   [0.3, 0.03],
   [0.36, 0.22],
   [0.34, 0.42],
   [0, 0.42],
-]);
-const DIPPED = lathe([
+]));
+const DIPPED = once(() => lathe([
   [0, 0],
   [0.34, 0],
   [0.28, 0.22],
   [0.14, 0.4],
   [0, 0.46],
-]);
+]));
 
 /** The swoosh: a flat crescent of paint, fat in the middle, fine at both ends. */
-const SWOOSH = (() => {
+const SWOOSH = once(() => {
   const shape = new THREE.Shape();
   shape.moveTo(-0.46, -0.2);
   shape.quadraticCurveTo(-0.02, -0.46, 0.44, -0.24);
@@ -246,7 +246,7 @@ const SWOOSH = (() => {
   });
   geometry.translate(0, 0, -0.04);
   return geometry;
-})();
+});
 
 /** Where the brush rests, and the turn that puts it at forty-five degrees. */
 const REST = { x: 0.06, y: 0.12, tilt: -Math.PI / 4 };
@@ -271,7 +271,7 @@ export function BrushEntry({ drive }: MarkProps) {
 
   return (
     <group ref={root}>
-      <mesh geometry={SWOOSH}>
+      <mesh geometry={SWOOSH()}>
         <Cel color={PALETTE.accent} />
         <Ink />
       </mesh>
@@ -299,11 +299,11 @@ export function BrushEntry({ drive }: MarkProps) {
         </mesh>
         {/* Bristles: cream, dipped in the accent at the point. */}
         <group position={[0, -0.085, 0]} rotation={[Math.PI, 0, 0]} scale={[0.22, 0.3, 0.22]}>
-          <mesh geometry={BRISTLES}>
+          <mesh geometry={BRISTLES()}>
             <Cel color="paper" />
             <Ink />
           </mesh>
-          <mesh geometry={DIPPED} position={[0, 0.42, 0]}>
+          <mesh geometry={DIPPED()} position={[0, 0.42, 0]}>
             <Cel color={PALETTE.accent} />
             <Ink />
           </mesh>
@@ -361,7 +361,7 @@ function star(points: number, outer: number, inner: number) {
 
 /* Toggle: a switch that flips on as you come near. */
 
-const TRACK = slab(roundedRect(0.84, 0.44, 0.22), 0.1, 0.03);
+const TRACK = once(() => slab(roundedRect(0.84, 0.44, 0.22), 0.1, 0.03));
 
 export function ToggleEntry({ drive }: MarkProps) {
   const root = useRef<THREE.Group>(null);
@@ -384,7 +384,7 @@ export function ToggleEntry({ drive }: MarkProps) {
     <>
       <DropShadow width={0.86} height={0.44} radius={0.22} />
       <group ref={root}>
-        <mesh geometry={TRACK}>
+        <mesh geometry={TRACK()}>
           <Cel ref={track} color="paper" />
           <Ink />
         </mesh>
@@ -400,8 +400,8 @@ export function ToggleEntry({ drive }: MarkProps) {
 
 /* Faders: three sliders on a plate; they ride the page and jump when you reach for them. */
 
-const PLATE = slab(roundedRect(0.84, 0.8, 0.12), 0.06, 0.02);
-const CAP = slab(roundedRect(0.2, 0.13, 0.04), 0.08, 0.015);
+const PLATE = once(() => slab(roundedRect(0.84, 0.8, 0.12), 0.06, 0.02));
+const CAP = once(() => slab(roundedRect(0.2, 0.13, 0.04), 0.08, 0.015));
 const FADERS = [
   { x: -0.26, rest: 0.1, colour: PAINT.ember },
   { x: 0, rest: -0.12, colour: PAINT.amber },
@@ -434,7 +434,7 @@ export function FadersEntry({ drive }: MarkProps) {
     <>
       <DropShadow width={0.84} height={0.74} radius={0.12} />
       <group ref={root}>
-        <mesh geometry={PLATE}>
+        <mesh geometry={PLATE()}>
           <Cel color="paper" />
           <Ink />
         </mesh>
@@ -444,7 +444,7 @@ export function FadersEntry({ drive }: MarkProps) {
               <boxGeometry args={[0.04, 0.58, 0.02]} />
               <meshBasicMaterial color={PALETTE.inkSoft} />
             </mesh>
-            <mesh ref={(node) => void (caps.current[i] = node)} geometry={CAP} position={[fader.x, fader.rest, 0.1]}>
+            <mesh ref={(node) => void (caps.current[i] = node)} geometry={CAP()} position={[fader.x, fader.rest, 0.1]}>
               <Cel color={fader.colour} />
               <Ink />
             </mesh>
@@ -457,7 +457,7 @@ export function FadersEntry({ drive }: MarkProps) {
 
 /* Gear: a cog that turns with the page, and spins up as you come near. */
 
-const GEAR = (() => {
+const GEAR = once(() => {
   const teeth = 8;
   const root = 0.34;
   const tip = 0.47;
@@ -479,16 +479,16 @@ const GEAR = (() => {
   hole.absarc(0, 0, 0.12, 0, Math.PI * 2, true);
   shape.holes.push(hole);
   return slab(shape, 0.1, 0.03);
-})();
+});
 
-const HUB = (() => {
+const HUB = once(() => {
   const ring = new THREE.Shape();
   ring.absarc(0, 0, 0.2, 0, Math.PI * 2, false);
   const hole = new THREE.Path();
   hole.absarc(0, 0, 0.12, 0, Math.PI * 2, true);
   ring.holes.push(hole);
   return slab(ring, 0.14, 0.015);
-})();
+});
 
 export function GearEntry({ drive }: MarkProps) {
   const root = useRef<THREE.Group>(null);
@@ -512,11 +512,11 @@ export function GearEntry({ drive }: MarkProps) {
       <DropShadow width={0.9} height={0.86} radius={0.43} />
       <group ref={root}>
         <group ref={cog}>
-          <mesh geometry={GEAR}>
+          <mesh geometry={GEAR()}>
             <Cel color="paper" />
             <Ink />
           </mesh>
-          <mesh geometry={HUB}>
+          <mesh geometry={HUB()}>
             <Cel color={PALETTE.accent} />
             <Ink />
           </mesh>
@@ -528,8 +528,8 @@ export function GearEntry({ drive }: MarkProps) {
 
 /* Wand: a star on a stick; it sparkles as you come near. */
 
-const WAND_STAR = slab(star(5, 0.23, 0.1), 0.07, 0.025);
-const SPARKLE = slab(star(4, 0.075, 0.022), 0.02, 0.006);
+const WAND_STAR = once(() => slab(star(5, 0.23, 0.1), 0.07, 0.025));
+const SPARKLE = once(() => slab(star(4, 0.075, 0.022), 0.02, 0.006));
 const SPARKLES = [
   { x: 0.32, y: 0.44, phase: 0 },
   { x: -0.16, y: 0.5, phase: 1.3 },
@@ -573,7 +573,7 @@ export function WandEntry({ drive }: MarkProps) {
           <Ink />
         </mesh>
         {/* The lit gold of the phin's crema: the icon amber read as a muddy brown star. */}
-        <mesh ref={tip} geometry={WAND_STAR} position={[0, 0.3, 0]}>
+        <mesh ref={tip} geometry={WAND_STAR()} position={[0, 0.3, 0]}>
           <Cel color={PALETTE.crema} />
           <Ink />
         </mesh>
@@ -582,7 +582,7 @@ export function WandEntry({ drive }: MarkProps) {
         <mesh
           key={i}
           ref={(node) => void (sparkles.current[i] = node)}
-          geometry={SPARKLE}
+          geometry={SPARKLE()}
           position={[sparkle.x, sparkle.y, 0.05]}
         >
           <Cel color={PALETTE.accent} />
@@ -594,7 +594,7 @@ export function WandEntry({ drive }: MarkProps) {
 
 /* Swatches: a fan of colour cards on a rivet; it fans open as you come near. */
 
-const CARD = (() => {
+const CARD = once(() => {
   const shape = roundedRect(0.18, 0.66, 0.05);
   const hole = new THREE.Path();
   hole.absarc(0, -0.25, 0.028, 0, Math.PI * 2, true);
@@ -602,7 +602,7 @@ const CARD = (() => {
   const geometry = slab(shape, 0.02, 0.008);
   geometry.translate(0, 0.25, 0); // the rivet at the origin
   return geometry;
-})();
+});
 const CARDS = [PAINT.azure, PAINT.moss, PAINT.amber, PAINT.rose, PAINT.ember];
 
 export function SwatchesEntry({ drive }: MarkProps) {
@@ -627,7 +627,7 @@ export function SwatchesEntry({ drive }: MarkProps) {
     <group ref={root} position={[0, -0.3, 0]}>
       {CARDS.map((colour, i) => (
         <group key={i} ref={(node) => void (cards.current[i] = node)} position={[0, 0, i * 0.026]}>
-          <mesh geometry={CARD}>
+          <mesh geometry={CARD()}>
             <Cel color={colour} />
             <Ink />
           </mesh>
@@ -645,7 +645,7 @@ export function SwatchesEntry({ drive }: MarkProps) {
 /* Roller: a paint roller over the stripe it laid; it rolls again as you come near. */
 
 const ROLLER_R = 0.14;
-const FRAME = new THREE.TubeGeometry(
+const FRAME = once(() => new THREE.TubeGeometry(
   new THREE.CatmullRomCurve3(
     [
       [0.27, 0, 0],
@@ -658,7 +658,7 @@ const FRAME = new THREE.TubeGeometry(
   32,
   0.02,
   10,
-);
+));
 
 export function RollerEntry({ drive }: MarkProps) {
   const root = useRef<THREE.Group>(null);
@@ -695,7 +695,7 @@ export function RollerEntry({ drive }: MarkProps) {
           <Cel color={PALETTE.accent} />
           <Ink />
         </mesh>
-        <mesh geometry={FRAME}>
+        <mesh geometry={FRAME()}>
           <Cel color={PALETTE.metal} />
           <Ink />
         </mesh>

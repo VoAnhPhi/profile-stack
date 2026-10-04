@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useContext, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
@@ -11,6 +11,7 @@ import {
   grow,
   leanOf,
   nearness,
+  SmallMarks,
   span,
   type MarkProps,
 } from "./shared";
@@ -57,20 +58,29 @@ import {
  * and in the shirt's slot blue where the collar's lining shows. The eyes were once the drawing
  * itself sliding over a white carried in behind the iris: at the edge of a look the drawn iris
  * rim stayed behind as a second outline and a lash came away with the iris.
- * depth.png, the front's depth at 16 bits across red and
+ * depth.webp, the front's depth at 16 bits across red and
  * green (at 8 bits its steps were steep enough to split a lock of the fringe); views.webp and
- * views-depth.png, the other seven views and their depths, packed the same way. About 560KB,
- * fetched only when this mark is chosen.
+ * views-depth.webp, the other seven views and their depths, packed the same way. The depths
+ * are lossless WebP, bit for bit the PNGs they were cut as. About 480KB, fetched only when
+ * this mark is chosen.
+ *
+ * public/img/mascot/small/: the four picture sheets at a quarter size, each pixel the mean of
+ * a 4x4 block, which is the mip level the GPU samples at 40px anyway. The header loads these:
+ * the full sheets are 9 million pixels to decode and upload for a mark that is 80 device
+ * pixels tall, and on a phone that upload was a single 550ms frame in the middle of the
+ * opening's fold. About 230KB, most of it the depths, which are shared.
  */
 
-const SHEETS = [
-  "/img/mascot/turnaround.webp",
-  "/img/mascot/eyes.webp",
-  "/img/mascot/eyes-mask.png",
-  "/img/mascot/depth.png",
-  "/img/mascot/views.webp",
-  "/img/mascot/views-depth.png",
+const sheets = (dir: string) => [
+  `${dir}/turnaround.webp`,
+  `${dir}/eyes.webp`,
+  `${dir}/eyes-mask.png`,
+  "/img/mascot/depth.webp",
+  `${dir}/views.webp`,
+  "/img/mascot/views-depth.webp",
 ];
+const SHEETS = sheets("/img/mascot");
+const SMALL_SHEETS = sheets("/img/mascot/small");
 
 /** The front's rect in the mark's unit box (x0, y0, x1, y1, y up) and its layers in the sheet (u0, v0, u1, v1, v up). */
 const FRONT = {
@@ -87,7 +97,7 @@ type View = Readonly<{ angle: number; plane: readonly number[]; uv: readonly num
 
 /**
  * The other views, by angle: positive turns the face to the viewer's right. Each with its rect
- * in the unit box, in views.webp, and in views-depth.png. -25 is the drawn 3/4, -94 the drawn
+ * in the unit box, in views.webp, and in views-depth.webp. -25 is the drawn 3/4, -94 the drawn
  * side as it measures against the sculpt, 180 the drawn back. The drawn-to-match views were
  * asked for at 45, 90 and 135 degrees; their angles here are where each agrees best with its
  * neighbours, turned to meet them halfway - asked-for angles doubled the picture in between.
@@ -384,26 +394,41 @@ function follow(spring: Spring, target: number, dt: number) {
   return spring[0];
 }
 
+/** Sheets already set up, so a remount does not flag them for upload again. */
+const prepared = new WeakSet<THREE.Texture>();
+
+/**
+ * Sets the sheets up, once each. At module scope, not inline: useTexture reruns its
+ * callback whenever it is handed a new one, an inline arrow is new on every render, and
+ * every rerun flagged all six sheets for upload again. The header re-renders at each turn
+ * of the opening, so the set went up four times, three of them as the paper lifted.
+ */
+function prepareSheets(loaded: THREE.Texture | THREE.Texture[]) {
+  const textures = loaded as THREE.Texture[];
+  if (textures.every((texture) => prepared.has(texture))) return;
+  const [frames, eyeSheet, maskSheet, depth, others, otherDepth] = textures;
+  for (const texture of [frames, others]) {
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.premultiplyAlpha = true;
+    texture.needsUpdate = true;
+  }
+  for (const texture of [eyeSheet, maskSheet]) {
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.needsUpdate = true;
+  }
+  // Data, not pictures: no mip levels, and never resampled at upload.
+  for (const texture of [depth, otherDepth]) {
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+  }
+  textures.forEach((texture) => prepared.add(texture));
+}
+
 export function Mascot({ drive }: MarkProps) {
-  const [map, eyes, mask, depthMap, views, viewDepth] = useTexture(SHEETS, (textures) => {
-    const [frames, eyeSheet, maskSheet, depth, others, otherDepth] = textures as THREE.Texture[];
-    for (const texture of [frames, others]) {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.premultiplyAlpha = true;
-      texture.needsUpdate = true;
-    }
-    for (const texture of [eyeSheet, maskSheet]) {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.needsUpdate = true;
-    }
-    // Data, not pictures: no mip levels, and never resampled at upload.
-    for (const texture of [depth, otherDepth]) {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.generateMipmaps = false;
-      texture.minFilter = THREE.LinearFilter;
-      texture.needsUpdate = true;
-    }
-  });
+  const small = useContext(SmallMarks);
+  const [map, eyes, mask, depthMap, views, viewDepth] = useTexture(small ? SMALL_SHEETS : SHEETS, prepareSheets);
   const uniforms = useMemo(
     () => ({
       map: { value: map },
