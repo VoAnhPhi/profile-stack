@@ -1,6 +1,6 @@
 /**
- * Identity and contact. Every value here is taken from the CV
- * (CV_Software Engineer_Vo Doan Anh Phi.pdf) - nothing invented.
+ * Identity and contact. Every value here is taken from the CV, the October 2026
+ * "Software Engineer" one served at `cvPath` - nothing invented.
  */
 
 export const SITE = {

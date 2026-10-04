@@ -982,6 +982,136 @@ html.is-opening .opening {
 }
 
 /* ---------------------------------------------------------------------------
+   CV
+
+   The /cv page's sheets (CvViewer.tsx). Each is the page's own shape, so nothing
+   moves when the drawing lands, and white, as the PDF is, on the site's paper.
+--------------------------------------------------------------------------- */
+
+.cv-sheets {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.cv-sheet {
+  /* pdf.js sizes its text layer in these; --total-scale-factor is set per sheet. */
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+  position: relative;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px rgba(17, 17, 17, 0.04),
+    0 26px 50px -34px rgba(17, 17, 17, 0.3);
+}
+
+.cv-sheet__art,
+.cv-sheet__art canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cv-sheet__status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+@media (scripting: none) {
+  .cv-sheet__wait {
+    display: none;
+  }
+}
+
+/* The document's own links, laid over the words they cover. */
+.cv-link {
+  position: absolute;
+  z-index: 2;
+  border-radius: 3px;
+  transition: background-color var(--dur-hover) var(--ease-editorial);
+}
+
+.cv-link:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.cv-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* pdf.js's text layer, transparent text over the canvas for selecting and finding.
+   From pdfjs-dist 6's web/pdf_viewer.css (Apache-2.0), cut to what a page that only
+   shows a document needs; follow that file if pdfjs-dist moves a major version. */
+.cv-sheet .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 1;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.cv-sheet .textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+
+.cv-sheet .textLayer > :not(.markedContent),
+.cv-sheet .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.cv-sheet .textLayer .markedContent {
+  display: contents;
+}
+
+/* The site's selection is solid accent with paper text; over a drawn page that would
+   hide the words being selected. */
+.cv-sheet .textLayer ::selection {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: transparent;
+}
+
+.cv-sheet .textLayer br::selection {
+  background: transparent;
+}
+
+.cv-sheet .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+
+/* ---------------------------------------------------------------------------
    Stickers
 
    Irregular tilt is the cheapest of plnty.app's three playfulness levers and the

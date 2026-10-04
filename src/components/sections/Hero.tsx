@@ -83,14 +83,15 @@ export function Hero() {
           </Link>
 
           <a
-            href={SITE.cvPath}
-            download
+            href="/cv"
+            target="_blank"
+            rel="noopener"
             data-cursor
-            data-cursor-label="PDF, 1.5 MB"
+            data-cursor-label="Opens in a new tab"
             className="inline-flex items-center gap-2 rounded-full border border-divider px-5 py-2.5 transition-colors duration-200 hover:border-ink"
           >
             <Icon name="link" size={18} />
-            <span>Download CV</span>
+            <span>View CV</span>
           </a>
         </Reveal>
         </div>

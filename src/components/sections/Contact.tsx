@@ -69,13 +69,14 @@ export function Contact() {
             <li className="flex items-center gap-2.5">
               <Sticker name="link" index={7} size={18} delay={160} />
               <a
-                href={SITE.cvPath}
-                download
+                href="/cv"
+                target="_blank"
+                rel="noopener"
                 data-cursor
-                data-cursor-label="PDF, 1.5 MB"
+                data-cursor-label="Opens in a new tab"
                 className="underline decoration-divider underline-offset-4 transition-colors duration-150 hover:text-accent hover:decoration-accent"
               >
-                Download CV
+                View CV
               </a>
             </li>
           </ul>

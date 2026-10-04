@@ -45,8 +45,11 @@ export const viewport: Viewport = {
  * Runs before first paint, ahead of the opening's paper in the document: a session
  * that has already seen the opening, or a reader who prefers reduced motion, gets
  * the page with no paper at all rather than a flash of it until hydration.
+ *
+ * So does the CV. "View CV" opens it in a new tab, which starts a session of its own,
+ * and a reader who asked for the CV should not sit through the loader first.
  */
-const OPENING_SKIP = `try{if(sessionStorage.getItem("opening:seen")||matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.opening="skip"}catch(e){}`;
+const OPENING_SKIP = `try{if(sessionStorage.getItem("opening:seen")||matchMedia("(prefers-reduced-motion: reduce)").matches||/^\\/cv\\/?$/.test(location.pathname))document.documentElement.dataset.opening="skip"}catch(e){}`;
 
 export default function RootLayout({
   children,
