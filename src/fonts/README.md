@@ -6,11 +6,17 @@ name's Đ never pulls in a second one.
 
 | File | Source (github.com/google/fonts, `ofl/`) | Notes |
 | --- | --- | --- |
-| `fraunces.woff2` | `fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf` | all four axes |
-| `fraunces-italic.woff2` | `fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf` | all four axes |
-| `geist.woff2` | `geist/Geist[wght].ttf` | |
-| `geist-mono.woff2` | `geistmono/GeistMono[wght].ttf` | |
+| `fraunces.woff2` | `fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf` | wght 460-500; opsz, SOFT, WONK whole |
+| `fraunces-italic.woff2` | `fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf` | wght 460-500, SOFT 40-100, WONK pinned to 1; opsz whole |
+| `geist.woff2` | `geist/Geist[wght].ttf` | wght 400-500 |
+| `geist-mono.woff2` | `geistmono/GeistMono[wght].ttf` | wght 400-500 |
 | `playpen-sans-400.woff2` | `playpensans/PlaypenSans[wght].ttf` | pinned to 400 first |
+
+The axis ranges are what `src/app/globals.css` sets and no more: each range left out
+is a master's worth of outlines, 110KB across the four files, all of it fetched
+before the first paint. `src/lib/fonts.ts` declares the same ranges, so a weight
+outside them shows up as the browser's fake bold. To use one, cut again with a wider
+range.
 
 All are under the SIL Open Font License 1.1, with no Reserved Font Name: the
 `OFL-*.txt` files beside them (Geist Mono shares Geist's).
@@ -23,9 +29,15 @@ U="U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308
 # Playpen only: one weight, before subsetting.
 python -m fontTools.varLib.instancer "PlaypenSans[wght].ttf" wght=400 -o PlaypenSans-400.ttf
 
-# Each source, here Fraunces upright. tnum and pnum on top of the default features,
+# The rest: only the axis ranges the CSS uses, before subsetting.
+python -m fontTools.varLib.instancer "Fraunces[SOFT,WONK,opsz,wght].ttf" wght=460:500 -o Fraunces-cut.ttf
+python -m fontTools.varLib.instancer "Fraunces-Italic[SOFT,WONK,opsz,wght].ttf" wght=460:500 SOFT=40:100 WONK=1 -o Fraunces-Italic-cut.ttf
+python -m fontTools.varLib.instancer "Geist[wght].ttf" wght=400:500 -o Geist-cut.ttf
+python -m fontTools.varLib.instancer "GeistMono[wght].ttf" wght=400:500 -o GeistMono-cut.ttf
+
+# Each cut, here Fraunces upright. tnum and pnum on top of the default features,
 # as Google serves them: the labels and counts set tabular figures.
-python -m fontTools.subset "Fraunces[SOFT,WONK,opsz,wght].ttf" --unicodes="$U" \
+python -m fontTools.subset "Fraunces-cut.ttf" --unicodes="$U" \
   --layout-features+=tnum,pnum --flavor=woff2 --output-file=fraunces.woff2
 ```
 

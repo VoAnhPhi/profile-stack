@@ -21,22 +21,29 @@ import localFont from "next/font/local";
  * set in italic, and with only the upright file present the browser faked it by
  * slanting the upright - no italic letterforms at all, just a sheared roman.
  *
- * All four axes are kept (opsz, wght, SOFT, WONK): globals.css sets SOFT and WONK
- * per use, and opsz follows the size.
+ * opsz, SOFT and WONK are kept: globals.css sets SOFT and WONK per use, and opsz
+ * follows the size. wght is cut to 460-500, the two weights the CSS sets, and the
+ * italic to SOFT 40-100 at WONK 1, where every italic on the site sits. Each axis
+ * range left out is a master's worth of outlines the browser no longer fetches, 92KB
+ * across the pair, ahead of the first paint. A new weight, or a plainer italic, means
+ * cutting again with a wider range (src/fonts/README.md): the faces declare only what
+ * they hold, so a weight outside it shows as the browser's fake bold, not silently as
+ * 500.
  */
 export const fraunces = localFont({
   src: [
-    { path: "../fonts/fraunces.woff2", weight: "100 900", style: "normal" },
-    { path: "../fonts/fraunces-italic.woff2", weight: "100 900", style: "italic" },
+    { path: "../fonts/fraunces.woff2", weight: "460 500", style: "normal" },
+    { path: "../fonts/fraunces-italic.woff2", weight: "460 500", style: "italic" },
   ],
   variable: "--font-fraunces",
   display: "swap",
   adjustFontFallback: "Times New Roman",
 });
 
+/** Cut to 400-500 like Fraunces: body copy and `font-medium` are all it is set at. */
 export const geist = localFont({
   src: "../fonts/geist.woff2",
-  weight: "100 900",
+  weight: "400 500",
   variable: "--font-geist",
   display: "swap",
 });
@@ -44,7 +51,7 @@ export const geist = localFont({
 /** Metadata, labels and figures. Three of the four reference sites label in mono. */
 export const geistMono = localFont({
   src: "../fonts/geist-mono.woff2",
-  weight: "100 900",
+  weight: "400 500",
   variable: "--font-geist-mono",
   display: "swap",
 });
