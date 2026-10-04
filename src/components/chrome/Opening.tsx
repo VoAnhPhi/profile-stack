@@ -23,6 +23,7 @@ import {
   STEP_COUNT,
   WAIT_CEILING,
   WEIGHT,
+  clockAt,
   takeBoot,
 } from "./openingBoot";
 
@@ -124,11 +125,20 @@ export function Opening() {
     // The CSS failsafe hides the paper if this never runs. It has run.
     root.style.animation = "none";
 
-    let fontsDone = document.fonts?.status === "loaded";
-    document.fonts?.ready.then(
-      () => (fontsDone = true),
-      () => (fontsDone = true),
-    );
+    // Whether the fonts are in, for a first visit without the boot's count (it could not
+    // find its elements). With the boot, its own record is read: asking FontFaceSet in
+    // here as well forced a style and layout pass in the middle of hydration.
+    const fonts = { done: false, watched: false };
+    const watchFonts = () => {
+      if (fonts.watched) return;
+      fonts.watched = true;
+      if (!document.fonts || document.fonts.status === "loaded") fonts.done = true;
+      else
+        document.fonts.ready.then(
+          () => (fonts.done = true),
+          () => (fonts.done = true),
+        );
+    };
 
     let stopRun: (() => void) | null = null;
     /** Ends the run in progress early, when there is one. */
@@ -149,19 +159,12 @@ export function Opening() {
     };
 
     // The time in the city the corner names, a second at a time.
-    const time = new Intl.DateTimeFormat("en-GB", {
-      timeZone: SITE.timeZone,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    });
     let second = -1;
     const tickClock = () => {
       const now = Date.now();
       if (Math.floor(now / 1000) === second) return;
       second = Math.floor(now / 1000);
-      clock.textContent = time.format(now);
+      clock.textContent = clockAt(now);
     };
 
     // A pointer to follow, or only taps.
@@ -201,6 +204,8 @@ export function Opening() {
       const shownAt = boot?.shownAt ?? performance.now() - started;
       /** When the plane could first be drawn, or the count stopped waiting for it. */
       let planeAt: number | null = boot?.planeAt ?? null;
+      if (!simulated && !boot) watchFonts();
+      const fontsDone = () => (boot ? boot.fontsDone : fonts.done);
 
       setOpening({ phase: "showing" });
       setOpeningValues({ progress: shown, flight: 0 });
@@ -238,7 +243,7 @@ export function Opening() {
           ? t >= simulated.readyAt
             ? 1
             : WAIT_CEILING * (1 - Math.pow(1 - t / simulated.readyAt, 2))
-          : readProgress(fontsDone);
+          : readProgress(fontsDone());
 
       const finish = (report: OpeningReport) => {
         phase = "done";

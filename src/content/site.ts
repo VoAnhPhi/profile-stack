@@ -15,7 +15,13 @@ export const SITE = {
   location: "Ho Chi Minh City, Viet Nam",
   /** The city centre, for the opening's corner. Not an address. */
   coordinates: "10.78° N, 106.70° E",
-  timeZone: "Asia/Ho_Chi_Minh",
+  /**
+   * The city's offset from UTC, in hours. Viet Nam has kept UTC+7 all year, with no
+   * daylight saving, so the opening's clock adds it to UTC itself. Naming the zone to
+   * Intl instead loaded the time-zone database on the first call: 150-390ms on a phone,
+   * in a script that holds up the page's first paint.
+   */
+  utcOffsetHours: 7,
   timeZoneLabel: "GMT+7",
   email: "voanhphi.dev@gmail.com",
   phone: "0866463002",

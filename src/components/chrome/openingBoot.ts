@@ -64,8 +64,21 @@ export type OpeningBoot = {
   shownAt: number;
   /** When the count stopped waiting for the plane, or null while it still waits. */
   planeAt: number | null;
+  /** Whether the fonts are in. Kept up to date after `stop`, for Opening.tsx to read. */
+  fontsDone: boolean;
   stop: () => void;
 };
+
+/**
+ * The time in the city, HH:MM:SS, from UTC plus its fixed offset (site.ts says why not
+ * Intl). The boot below writes the same thing in ES2017; change them together.
+ */
+export function clockAt(now: number) {
+  const city = new Date(now + SITE.utcOffsetHours * 3600000);
+  return [city.getUTCHours(), city.getUTCMinutes(), city.getUTCSeconds()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join(":");
+}
 
 /** Stops the boot and hands over where it got to, once; null when it never ran. */
 export function takeBoot(): OpeningBoot | null {
@@ -85,7 +98,7 @@ const config = {
   steps: FOLD_STEPS,
   air: IN_THE_AIR,
   weight: WEIGHT,
-  timeZone: SITE.timeZone,
+  utcOffset: SITE.utcOffsetHours * 3600000,
 };
 
 /**
@@ -96,6 +109,11 @@ const config = {
  * It writes the page only when a figure changes. It runs while the page is still
  * parsing and hydrating, and writing the count every frame, even the same figure,
  * cost a style and layout pass a frame on a phone already short of time.
+ *
+ * It asks FontFaceSet from its first frame, not as it runs: `document.fonts`, its
+ * status or its ready promise alike, made Chrome style and lay out everything parsed
+ * so far before the parser could go on, ~150ms on a phone, then again once the rest
+ * of the page was in. In a frame the browser lays out anyway, the question is free.
  */
 export const OPENING_BOOT = `(function (c) {
   var html = document.documentElement;
@@ -106,20 +124,25 @@ export const OPENING_BOOT = `(function (c) {
   if (!count || !step || !clock) return;
   var number = step.children[0], text = step.children[1];
   var touch = matchMedia("(hover: none)").matches;
-  var fonts = document.fonts, fontsDone = !fonts || fonts.status === "loaded";
-  if (fonts) fonts.ready.then(function () { fontsDone = true; }, function () { fontsDone = true; });
-  var time = new Intl.DateTimeFormat("en-GB", { timeZone: c.timeZone, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
   var pad = function (n) { return String(n).padStart(2, "0"); };
-  var frame = 0, second = -1, shownStep = 0, painted = "00";
-  var boot = { shown: 0, shownAt: performance.now(), planeAt: null, stop: function () { cancelAnimationFrame(frame); } };
+  var time = function (now) { var d = new Date(now + c.utcOffset); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()); };
+  var frame = 0, second = -1, shownStep = 0, painted = "00", asked = false;
+  var boot = { shown: 0, shownAt: performance.now(), planeAt: null, fontsDone: false, stop: function () { cancelAnimationFrame(frame); if (!asked) watchFonts(); } };
+  function watchFonts() {
+    asked = true;
+    var fonts = document.fonts;
+    if (!fonts || fonts.status === "loaded") { boot.fontsDone = true; return; }
+    fonts.ready.then(function () { boot.fontsDone = true; }, function () { boot.fontsDone = true; });
+  }
   function progress() {
     var load = document.readyState === "complete";
     var eager = Array.prototype.filter.call(document.images, function (img) { return img.loading !== "lazy"; });
     var ready = eager.filter(function (img) { return img.complete && img.naturalWidth > 0; }).length;
     var images = eager.length ? ready / eager.length : load ? 1 : 0;
-    return c.weight.fonts * (fontsDone ? 1 : 0) + c.weight.images * images + c.weight.load * (load ? 1 : 0);
+    return c.weight.fonts * (boot.fontsDone ? 1 : 0) + c.weight.images * images + c.weight.load * (load ? 1 : 0);
   }
   function tick() {
+    if (!asked) watchFonts();
     var t = performance.now();
     if (t >= c.cap) return;
     if (boot.planeAt === null && t - boot.shownAt >= c.planeWait) boot.planeAt = t;
@@ -135,7 +158,7 @@ export const OPENING_BOOT = `(function (c) {
       text.textContent = index < c.steps.length ? c.steps[index].text : touch ? c.air.touch : c.air.pointer;
     }
     var now = Date.now();
-    if (Math.floor(now / 1000) !== second) { second = Math.floor(now / 1000); clock.textContent = time.format(now); }
+    if (Math.floor(now / 1000) !== second) { second = Math.floor(now / 1000); clock.textContent = time(now); }
     frame = requestAnimationFrame(tick);
   }
   window.__openingBoot = boot;
