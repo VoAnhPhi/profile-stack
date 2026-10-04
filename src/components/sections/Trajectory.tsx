@@ -21,6 +21,8 @@ import { Icon, type IconName } from "@/components/icons/Icon";
  */
 
 const ENTRY_ICON: Record<string, IconName> = {
+  acta: "chart",
+  "trieu-an": "qr",
   hopper: "wallet",
   "nhangonsaigon-work": "schema",
   iuh: "flask",
@@ -80,18 +82,20 @@ export function Trajectory() {
 
               <p className="text-lead mt-5 max-w-[52ch] text-ink-soft">{entry.summary}</p>
 
-              <ul className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
-                {entry.figures.map((figure) => (
-                  <li key={figure.label}>
-                    <p className="font-display text-[1.5rem] leading-none tabular-nums text-accent">
-                      {figure.value}
-                    </p>
-                    <p className="label mt-1.5 normal-case tracking-normal">
-                      {figure.label}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              {entry.figures.length ? (
+                <ul className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+                  {entry.figures.map((figure) => (
+                    <li key={figure.label}>
+                      <p className="font-display text-[1.5rem] leading-none tabular-nums text-accent">
+                        {figure.value}
+                      </p>
+                      <p className="label mt-1.5 normal-case tracking-normal">
+                        {figure.label}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <ul className="mt-6 max-w-[56ch] space-y-2">
                 {entry.points.map((point) => (

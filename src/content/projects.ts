@@ -189,7 +189,7 @@ export const PROJECTS: Project[] = [
     cover: "/img/work/nhangonsaigon/01-search.webp",
     coverFrame: "browser",
     metrics: [
-      { value: "5+", label: "REST APIs integrated" },
+      { value: "15+", label: "REST APIs integrated" },
       { value: "4", label: "months, delivered" },
     ],
     overview:

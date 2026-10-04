@@ -33,8 +33,47 @@ export type TrajectoryEntry = {
 
 export const TRAJECTORY: TrajectoryEntry[] = [
   {
-    id: "hopper",
+    id: "acta",
     index: "01",
+    kind: "work",
+    role: "Full-Stack Developer",
+    org: "ACTA",
+    period: "Aug 2026 - Present",
+    // U+2060 WORD JOINER after the hyphen, as in site.ts: at 390 the line broke inside
+    // "e-commerce".
+    summary:
+      "Internal management, social and e-⁠commerce systems, built end to end on Next.js, NestJS and PostgreSQL.",
+    points: [
+      "Daily reports, approvals, KPIs and scheduled jobs, with department-based access",
+      "One component library - tables, dynamic forms, modals - shared by 4 modules",
+      "Production data fixed at the source: reward points reconciled, orders corrected",
+    ],
+    figures: [
+      { value: "4", label: "modules on one UI kit" },
+      { value: "~30%", label: "faster, with AI tooling" },
+    ],
+    stack: ["Next.js", "React", "NestJS", "PostgreSQL"],
+  },
+  {
+    id: "trieu-an",
+    index: "02",
+    kind: "work",
+    role: "Mobile Front-End Developer",
+    org: "Trieu An Mobile",
+    period: "Jun 2026 - Sep 2026",
+    summary: "A patient app in React Native: profiles, settings, notifications and appointments.",
+    points: [
+      "Data layer on TanStack Query, with optimistic updates that roll back",
+      "No-login appointment lookup, from the screen to a rate-limited Laravel API",
+      "i18n across existing flows; Jest tests for forms and business-logic hooks",
+    ],
+    // The CV gives this role no figures, and figures here are countable claims only.
+    figures: [],
+    stack: ["React Native", "TanStack Query", "React Hook Form", "Yup", "Jest"],
+  },
+  {
+    id: "hopper",
+    index: "03",
     kind: "work",
     role: "R&D and Full-stack Developer",
     org: "Hopper Solution & Education",
@@ -43,13 +82,14 @@ export const TRAJECTORY: TrajectoryEntry[] = [
     summary:
       "Fintech SaaS. I built the money flows, the permissions around them, and the schemas underneath.",
     points: [
-      "NestJS APIs for deposit, saving, budgeting and eKYC",
-      "PostgreSQL schemas sized to stay auditable",
-      "RBAC across the whole platform",
+      "React frontend for deposit, saving, budgeting and eKYC",
+      "RBAC for 3 roles, from protected routes to the API",
+      "NestJS APIs on PostgreSQL schemas kept auditable",
     ],
     figures: [
-      { value: "15+", label: "REST APIs" },
+      { value: "25+", label: "REST APIs" },
       { value: "4", label: "core modules" },
+      { value: "3", label: "user roles" },
       { value: "3", label: "engineers" },
     ],
     stack: ["NestJS", "PostgreSQL", "React", "TypeScript", "RBAC"],
@@ -57,7 +97,7 @@ export const TRAJECTORY: TrajectoryEntry[] = [
   },
   {
     id: "nhangonsaigon-work",
-    index: "02",
+    index: "04",
     kind: "work",
     role: "Freelance Front-End Developer",
     org: "NhaNgonSaiGon",
@@ -69,7 +109,7 @@ export const TRAJECTORY: TrajectoryEntry[] = [
       "Layout shift cut on listing pages, mobile first",
     ],
     figures: [
-      { value: "5+", label: "APIs integrated" },
+      { value: "15+", label: "APIs integrated" },
       { value: "4", label: "months, delivered" },
     ],
     stack: ["React", "JavaScript", "REST API"],
@@ -77,7 +117,7 @@ export const TRAJECTORY: TrajectoryEntry[] = [
   },
   {
     id: "iuh",
-    index: "03",
+    index: "05",
     kind: "education",
     role: "B.Eng Software Engineering",
     org: "Industrial University of Ho Chi Minh City",
