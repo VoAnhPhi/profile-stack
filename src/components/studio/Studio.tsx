@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { ENTRY_COPY, MARK_COPY } from "@/content/marks";
+import { CAP } from "@/components/chrome/openingBoot";
 import {
   resetPrefs,
   setPrefs,
@@ -45,6 +46,9 @@ const CONNECTIONS = [
 ] as const;
 type ConnectionId = (typeof CONNECTIONS)[number]["id"];
 
+/** A duration in ms as the rules print it: "7.8 s". */
+const seconds = (ms: number) => `${ms / 1000} s`;
+
 const RULES = [
   ["4.8 s", "A first visit always gets all of it: a sheet folds itself into a plane as the count runs."],
   ["Play", "While the page loads, the plane follows your pointer, or a tap on a touch screen."],
@@ -78,7 +82,7 @@ function describe(report: OpeningReport | null) {
     case "shown":
       return `Ready at ${report.readyAt} ms. Shown for ${report.shownFor} ms, then the plane flew off.`;
     case "capped":
-      return "Still loading at 8 s, so the page was handed over anyway. The rest would load behind it.";
+      return `Still loading at ${seconds(CAP)}, so the page was handed over anyway. The rest would load behind it.`;
     case "skipped":
       return `Skipped after ${report.shownFor} ms. The page would have been ready at ${report.readyAt} ms.`;
   }

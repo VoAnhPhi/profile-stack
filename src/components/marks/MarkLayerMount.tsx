@@ -13,9 +13,8 @@ import { hasWebGL, setMarksState } from "./runtime";
  *
  * Once the page has loaded, not as soon as it hydrates: the chunk is a quarter of a
  * megabyte, and on a phone it was fetched alongside the fonts and images the first
- * screen was still waiting on. The opening counts it in its progress and does not
- * wait for it past PLANE_WAIT, so a slow connection gets the paper and the count
- * either way.
+ * screen was still waiting on. The opening holds its count's last points for it, and
+ * never past the cap, so a slow connection gets the paper and the count either way.
  */
 const MarkLayer = dynamic(
   async () => {

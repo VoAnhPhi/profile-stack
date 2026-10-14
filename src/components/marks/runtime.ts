@@ -116,9 +116,6 @@ export const OPENING = {
   flight: 0,
 };
 
-/** With the opening's policy, which the layout's inline boot reads too. */
-export { FOLD_END } from "@/components/chrome/openingBoot";
-
 /**
  * Where a tap asked the plane to fly, in viewport px, and until when (performance.now()).
  * A touch screen has no pointer to follow, so the reader points by tapping instead.

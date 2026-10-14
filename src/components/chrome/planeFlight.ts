@@ -1,10 +1,15 @@
-import { FLIGHT_TARGET, FOLD_END, INPUT, OPENING, openingStage } from "./runtime";
-import { clamp01, easeOutCubic, span } from "./shared";
+import { FLIGHT_TARGET, INPUT, OPENING, openingStage } from "@/components/marks/runtime";
+import { FOLD_END } from "./openingBoot";
 
 /** Where the plane is this frame: px from the middle of the window, y up, and its turn and roll. */
 export type FlightPlace = { x: number; y: number; size: number; turn: number; bank: number };
 
+// Here rather than from the marks' helpers, which bring three.js with them: this runs in
+// the main bundle, with the opening.
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const clamp01 = (v: number) => clamp(v, 0, 1);
+const span = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 /** An angle brought into -PI..PI. */
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -66,7 +71,7 @@ export function createFlight(rest: number) {
       s.vy = Math.sin(s.heading) * cruise * 0.7;
     }
     s.air += dt;
-    // Smaller in the air than on the table, so there is room to fly round the dishes.
+    // Smaller in the air than on the table, so there is room to fly round the window.
     const size = big + (big * 0.55 - big) * easeOutCubic(clamp01(s.air / 0.9));
 
     if (OPENING.flight > 0) {
@@ -133,10 +138,8 @@ export function createFlight(rest: number) {
     // rolls into the turn by its rate. A left turn is a positive rate, y up, and a
     // positive roll about the nose drops the right wing, so the roll takes the rate's
     // opposite sign; with the same sign it would bank out of its turns. The roll is held
-    // to 7 degrees. The plane is drawn with its wings already tilted about 52 degrees
-    // from the reader, so the keel shows; any real bank on top of that turned them
-    // edge-on in every turn one way, and at 49 and then 20 degrees it flew most of its
-    // course as a thin needle.
+    // to 7 degrees: when the plane was drawn in 3D, any more turned its wings edge-on in
+    // every turn one way, and it flew most of its course as a thin needle.
     const turn = clamp(wrap(Math.atan2(s.vy, s.vx) - s.heading), -5 * dt, 5 * dt);
     s.heading = wrap(s.heading + turn);
     s.bank += (clamp(-(turn / dt) * 0.05, -0.12, 0.12) - s.bank) * (1 - Math.exp(-dt * 6));

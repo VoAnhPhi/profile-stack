@@ -51,6 +51,7 @@ export function Header() {
 
   return (
     <header
+      data-site-header
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ${
         scrolled
           ? "border-b border-divider bg-canvas/80 backdrop-blur-md"

@@ -569,10 +569,8 @@ function pose(nose: THREE.Vector3, up: THREE.Vector3) {
   return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
 }
 
-/** The nose in flight, for a flight that rolls the plane about it. */
-export const PLANE_NOSE = new THREE.Vector3(0.64, 0.62, -0.25).normalize();
-/** Where the nose points on screen in flight, radians from +x, y up: its heading at rest. */
-export const PLANE_HEADING = Math.atan2(PLANE_NOSE.y, PLANE_NOSE.x);
+/** The nose in flight. */
+const PLANE_NOSE = new THREE.Vector3(0.64, 0.62, -0.25).normalize();
 
 /** The sheet, lying back a little and turned, so the crease and the folds read as folds. */
 const FLAT = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.42, 0.22, 0.06));

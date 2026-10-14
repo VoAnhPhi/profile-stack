@@ -490,9 +490,9 @@ html[data-marks="ready"] .mark-slot__poster {
 /* ---------------------------------------------------------------------------
    Opening
 
-   Paper over the first paint, a count, and the name. Opening.tsx owns the policy
-   and the motion; the mark in the middle is drawn by the mark layer's own canvas
-   above this (z 95).
+   A paper sky over the first paint, a count, and the name. Opening.tsx owns the
+   policy and the motion; the mark in the middle is drawn by the mark layer's own
+   canvas above this (z 95).
 
    Styled to survive without JS: with scripting off it is never shown, and should
    the script fail, the failsafe below lifts the paper at the opening's own cap.
@@ -512,7 +512,7 @@ html[data-marks="ready"] .mark-slot__poster {
      lays out the paper alone, not the page under it. */
   contain: strict;
   /* CAP in openingBoot.ts. */
-  animation: opening-failsafe 0s linear 8s forwards;
+  animation: opening-failsafe 0s linear 11s forwards;
 }
 
 @media (scripting: none) {
@@ -536,6 +536,125 @@ html[data-opening="skip"] .opening {
   position: absolute;
   inset: 0;
   background: var(--canvas);
+}
+
+/* The sky (OpeningSky.tsx). One paper throughout, a shade darker toward the front, the
+   layers told apart by the shadow each casts upward on the one behind. The near band is
+   as dark as it goes: the muted label over it keeps 4.5:1. */
+.sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(#f6f3ed, var(--canvas) 55%);
+}
+
+/* Rises with the count, which the boot and Opening.tsx write to `--p`; fully up when
+   the page is in. `translate`, so the exit's transform composes with it. */
+.sky__sun {
+  position: absolute;
+  left: 66%;
+  bottom: 36vh;
+  width: clamp(36px, 5vmin, 56px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.92;
+  translate: 0 calc((1 - var(--p, 0)) * 5vh);
+}
+
+/* Each layer: an outer box that comes in (CSS here, at first paint) and goes out
+   (Opening.tsx), and an inner one that sways against the plane. `translate` for the
+   entrance and `transform` for the rest, so neither overrides the other; `backwards`,
+   so the entrance holds nothing once it is done. */
+.sky__rise {
+  position: absolute;
+}
+
+.sky__drift {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.sky__drift svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Wider than the window by the furthest sway, so no edge shows. */
+.sky__band {
+  left: -48px;
+  right: -48px;
+  bottom: -2px;
+  animation: sky-rise 0.8s var(--ease-editorial) backwards;
+}
+
+.sky__band--far {
+  height: 44vh;
+  fill: #f3efe8;
+  filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.9)) drop-shadow(0 -5px 10px rgb(80 62 34 / 0.07));
+  animation-delay: 0.08s;
+}
+
+.sky__band--mid {
+  height: 31vh;
+  fill: #efeae1;
+  filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.9)) drop-shadow(0 -6px 14px rgb(80 62 34 / 0.09));
+  animation-delay: 0.19s;
+}
+
+.sky__band--near {
+  height: 18vh;
+  fill: #ebe6dc;
+  filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.9)) drop-shadow(0 -8px 18px rgb(80 62 34 / 0.11));
+  animation-delay: 0.3s;
+}
+
+.sky__cloud {
+  filter: drop-shadow(0 4px 8px rgb(80 62 34 / 0.1)) drop-shadow(0 0 0.5px rgb(80 62 34 / 0.25));
+  animation: sky-float 0.8s var(--ease-editorial) backwards;
+}
+
+.sky__cloud--left {
+  left: 9%;
+  top: 26vh;
+  width: clamp(120px, 16vw, 240px);
+  fill: #fefdfb;
+  animation-delay: 0.46s;
+}
+
+.sky__cloud--right {
+  right: 7%;
+  top: 17vh;
+  width: clamp(90px, 11vw, 170px);
+  fill: #fdfcf9;
+  animation-delay: 0.3s;
+}
+
+/* Over the whole sky, still while the layers under it sway. A noise tile darkened to
+   the paper's own brown, a few percent deep. Plain alpha, not `multiply` as the page's
+   grain is: on paper this light the two come within 1% of each other, and a blend
+   over layers that move would be redone across the window every frame. */
+.sky__grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42  0 0 0 0 .39  0 0 0 0 .33  0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes sky-rise {
+  from {
+    translate: 0 100%;
+  }
+}
+
+@keyframes sky-float {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
 }
 
 /* Text round the paper, set in its corners like an editorial page's running heads and
@@ -563,12 +682,8 @@ html[data-opening="skip"] .opening {
   animation-delay: 0.24s;
 }
 
-.opening__corner--bl {
-  animation-delay: 0.33s;
-}
-
 .opening__corner--br {
-  animation-delay: 0.42s;
+  animation-delay: 0.33s;
 }
 
 @keyframes opening-corner {
@@ -590,21 +705,6 @@ html[data-opening="skip"] .opening {
 .opening__corner--tr {
   top: 1.4rem;
   right: var(--gutter);
-  align-items: flex-end;
-  gap: 1.1rem;
-  text-align: right;
-}
-
-.opening__geo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
-}
-
-.opening__corner--bl {
-  bottom: 1.6rem;
-  left: var(--gutter);
 }
 
 .opening__corner--br {
@@ -620,16 +720,6 @@ html[data-opening="skip"] .opening {
   color: var(--ink);
 }
 
-/* On a wide screen the city has its own corner; on a phone it sits under the role. */
-.opening__place {
-  display: none;
-}
-
-.opening__step {
-  display: flex;
-  gap: 0.9rem;
-}
-
 .opening__count {
   font-family: var(--font-display);
   font-weight: 500;
@@ -640,9 +730,77 @@ html[data-opening="skip"] .opening {
   font-variant-numeric: tabular-nums;
 }
 
+/* The plane (OpeningPlane.tsx). At first paint a sheet in the middle, raised and sized
+   as `openingStage` (runtime.ts) has the flight start it; Opening.tsx moves, sizes and
+   turns it from there, its transform replacing the raise here and keeping the centring.
+   The centring is in the transform, not a `translate` beside it: the CSS build drops a
+   `translate` that shares a rule with a `transform`. Lines in the drawing's own units,
+   `--plane-ink`, which Opening.tsx sets against the plane's scale so they come to the
+   same light weight on the table and in the air; until it runs, what that comes to on
+   the table at its largest. */
+.opening__plane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(34vh, 50vw, 300px);
+  aspect-ratio: 1;
+  transform: translate(-50%, calc(-50% - min(6vh, 48px)));
+  pointer-events: none;
+  /* No will-change: as a layer of its own it was drawn once at full size and the bitmap
+     shrunk for the air, and on a 1x screen its thin lines broke into dots. Drawn again
+     at the size it is, each frame, they stay whole; it is a few hundred px of SVG. */
+  filter: drop-shadow(0 10px 14px rgb(60 48 30 / 0.16));
+}
+
+.opening__plane svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The 3D plane's paper, lit and in shade (PaperPlane.tsx). */
+.opening__plane-body {
+  fill: #fdfbf6;
+  stroke: var(--ink-soft);
+  stroke-width: var(--plane-ink, 0.0043);
+  stroke-linejoin: round;
+}
+
+.opening__plane-shade {
+  fill: #e6e0d4;
+}
+
+.opening__plane-lines {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: calc(var(--plane-ink, 0.0043) * 0.75);
+  stroke-linecap: round;
+}
+
 html.is-opening,
 html.is-opening body {
   overflow: hidden;
+}
+
+/* From the first paint of a first visit to the paper's last frame (layout.tsx sets it,
+   Opening.tsx lifts it). The paper is fixed, and a fixed box stops short of the
+   scrollbar's gutter, which `scrollbar-gutter: stable` keeps even with the page locked:
+   a strip of plain page down the right of the sky. So the gutter goes for the while,
+   and its width comes back as padding, which keeps the page under the paper the width
+   it will be once the scrollbar returns, and as `--opening-inset`, which does the same
+   for the window-wide fixed layers. Without it, all of them stepped 7.5px as the
+   paper lifted. */
+html.opening-lock {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+  padding-right: var(--opening-gutter, 0px);
+  --opening-inset: var(--opening-gutter, 0px);
+}
+
+[data-site-header],
+[data-paper-field] {
+  right: var(--opening-inset, 0px);
 }
 
 /* While it runs the paper takes the pointer: a tap points the plane, and a click can no
@@ -667,24 +825,6 @@ html.is-opening .opening {
 .opening__skip:hover,
 .opening__skip:focus-visible {
   border-color: var(--ink);
-}
-
-/* A phone keeps three corners: the coordinates and the clock give way, the city moves
-   under the role, and the step and the open line sit above the count rather than beside
-   it - at 390 the two ran into each other. Up there they also clear the bottom left,
-   where the framework's dev badge sits while developing. */
-@media (max-width: 639px) {
-  .opening__geo {
-    display: none;
-  }
-
-  .opening__place {
-    display: block;
-  }
-
-  .opening__corner--bl {
-    bottom: 7.25rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
