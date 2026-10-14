@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone design prototypes, opened straight from disk. Their scripts are
+    // classic scripts sharing globals between files, which the module rules misread.
+    "docs/**",
   ]),
 ]);
 
