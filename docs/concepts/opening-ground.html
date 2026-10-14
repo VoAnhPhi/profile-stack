@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Opening ground concepts</title>
+<style>
+  /* Fonts straight from the repo, so the corners read exactly as on the site. */
+  @font-face { font-family: "Fraunces"; src: url("../../src/fonts/fraunces.woff2") format("woff2"); font-weight: 460 500; font-style: normal; }
+  @font-face { font-family: "Fraunces"; src: url("../../src/fonts/fraunces-italic.woff2") format("woff2"); font-weight: 460 500; font-style: italic; }
+  @font-face { font-family: "Geist"; src: url("../../src/fonts/geist.woff2") format("woff2"); font-weight: 400 500; }
+  @font-face { font-family: "Geist Mono"; src: url("../../src/fonts/geist-mono.woff2") format("woff2"); font-weight: 400 500; }
+
+  /* Tokens copied from src/app/globals.css. */
+  :root {
+    --canvas: #fafaf8;
+    --canvas-sunk: #f2f0ec;
+    --ink: #111111;
+    --ink-soft: #33332f;
+    --muted: #6b675f;
+    --divider: #eae7e1;
+    --accent: #b42318;
+    --gutter: clamp(1.25rem, 4vw, 3.5rem);
+    --display: "Fraunces", ui-serif, Georgia, serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --body: "Geist", system-ui, sans-serif;
+
+    /* Written every frame by the script below. */
+    --cx: 50vw; --cy: 45vh; --s: 300px;
+    --p: 0; --fold: 0; --air: 0; --mx: 0; --my: 0; --leave: 0;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--canvas); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; }
+
+  .label { font-family: var(--mono); font-size: 0.75rem; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .text-ink { color: var(--ink); }
+
+  /* ---------------------------------------------------------------- page under the paper */
+  .page { position: fixed; inset: 0; display: grid; place-content: center; gap: 1.2rem; padding: var(--gutter); }
+  .page h1 { font-family: var(--display); font-style: italic; font-weight: 500; font-size: clamp(2.4rem, 8.4vw, 6rem); line-height: 0.92; letter-spacing: -0.03em; font-variation-settings: "SOFT" 100, "WONK" 1; }
+
+  /* ---------------------------------------------------------------- the opening */
+  .opening { position: fixed; inset: 0; z-index: 90; contain: strict; touch-action: none; }
+  .ground { position: absolute; inset: 0; background: var(--canvas); overflow: hidden; }
+  .concept { position: absolute; inset: 0; display: none; }
+  .opening[data-concept="a"] .concept--a,
+  .opening[data-concept="b"] .concept--b,
+  .opening[data-concept="c"] .concept--c { display: block; }
+
+  /* Paper grain, shared: one tiny SVG noise tile, multiplied in at a few percent. */
+  .grain {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.5; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .39  0 0 0 0 .33  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* ================================================================ A. Fold diagram */
+  .a-grid {
+    position: absolute; inset: -40px;
+    background-image:
+      linear-gradient(rgba(17, 17, 17, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 17, 17, 0.07) 1px, transparent 1px),
+      linear-gradient(rgba(17, 17, 17, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 17, 17, 0.035) 1px, transparent 1px);
+    background-size: 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+    background-position: calc(var(--cx) + 40px) calc(var(--cy) + 40px);
+    -webkit-mask-image: radial-gradient(ellipse 60% 62% at calc(var(--cx) + 40px) calc(var(--cy) + 40px), #000 35%, transparent 100%);
+            mask-image: radial-gradient(ellipse 60% 62% at calc(var(--cx) + 40px) calc(var(--cy) + 40px), #000 35%, transparent 100%);
+    transform: translate(calc(var(--mx) * -6px), calc(var(--my) * -6px));
+    opacity: calc(1 - var(--leave));
+  }
+  .a-diagram {
+    position: absolute; left: var(--cx); top: var(--cy);
+    width: calc(var(--s) * 2.6); height: calc(var(--s) * 2.6);
+    transform:
+      translate(-50%, -50%)
+      translate(calc(var(--mx) * 14px), calc(var(--my) * 14px))
+      scale(calc(1 + var(--leave) * 0.05));
+    opacity: calc((1 - var(--air) * 0.55) * (1 - var(--leave)));
+    overflow: visible;
+  }
+  .a-diagram text { font-family: var(--mono); font-size: 0.034px; letter-spacing: 0.08em; fill: var(--muted); }
+  .a-diagram .num { font-size: 0.03px; fill: var(--canvas); text-anchor: middle; dominant-baseline: central; }
+
+  /* ================================================================ B. Ream */
+  .concept--b { background: var(--canvas-sunk); }
+  .b-sheet {
+    --w: min(56vh, 72vw, 520px);
+    position: absolute; left: 50%; top: 50%;
+    width: var(--w); height: calc(var(--w) * 1.414);
+    margin: calc(var(--w) * -0.707) 0 0 calc(var(--w) * -0.5);
+    background: #fdfcfa;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(80, 64, 40, 0.06), 0 1px 2px rgba(80, 64, 40, 0.06), 0 18px 40px -18px rgba(80, 64, 40, 0.28);
+    will-change: transform;
+  }
+  .b-sheet--grid {
+    background-image: linear-gradient(rgba(17, 17, 17, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(17, 17, 17, 0.055) 1px, transparent 1px);
+    background-size: 18px 18px; background-position: 9px 9px; background-color: #fdfcfa;
+  }
+  .b-sheet--ruled {
+    background-image: linear-gradient(90deg, transparent 13%, rgba(180, 35, 24, 0.28) 13%, rgba(180, 35, 24, 0.28) calc(13% + 1px), transparent calc(13% + 1px)), linear-gradient(transparent 23px, rgba(17, 17, 17, 0.07) 23px);
+    background-size: 100% 100%, 100% 24px; background-position: 0 0, 0 40px; background-color: #fdfcfa;
+  }
+  .b-proof { position: absolute; inset: 9% 10%; display: flex; flex-direction: column; gap: 3.2%; }
+  .b-proof i { display: block; height: 1.1%; background: rgba(17, 17, 17, 0.08); border-radius: 1px; }
+  .b-proof i.h { height: 5.5%; width: 62%; background: rgba(17, 17, 17, 0.1); }
+  .b-proof i.h2 { height: 5.5%; width: 44%; margin-bottom: 4%; background: rgba(180, 35, 24, 0.1); }
+  .b-proof i.s { width: 70%; }
+  .b-proof i.m { width: 84%; }
+  .b-proof .crop { position: absolute; width: 14px; height: 14px; border: 0 solid rgba(17, 17, 17, 0.35); }
+  .b-sheet--top { background: #fefdfb; }
+  .b-ghost {
+    position: absolute; inset: 0; border: 1px dashed rgba(51, 51, 47, 0.32); border-radius: 2px;
+  }
+  .b-ghost span { position: absolute; left: 10px; top: 8px; }
+
+  /* ================================================================ C. Paper-cut sky */
+  .concept--c { background: linear-gradient(#f6f3ed, var(--canvas) 55%); }
+  .c-sun {
+    position: absolute; left: 66%; bottom: 36vh; width: clamp(36px, 5vmin, 56px); aspect-ratio: 1; border-radius: 50%;
+    background: var(--accent);
+    transform: translate(calc(var(--mx) * -3px), calc((1 - var(--p)) * 5vh + var(--leave) * 14vh));
+    opacity: calc(0.92 * (1 - var(--leave)));
+  }
+  .c-band { position: absolute; left: -48px; right: -48px; bottom: -2px; will-change: transform; }
+  .c-band svg { display: block; width: 100%; height: 100%; }
+  .c-band--far  { height: 44vh; filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.9)) drop-shadow(0 -5px 10px rgba(80, 62, 34, 0.07)); }
+  .c-band--mid  { height: 31vh; filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.9)) drop-shadow(0 -6px 14px rgba(80, 62, 34, 0.09)); }
+  .c-band--near { height: 18vh; filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.9)) drop-shadow(0 -8px 18px rgba(80, 62, 34, 0.11)); }
+  .c-cloud { position: absolute; will-change: transform; filter: drop-shadow(0 4px 8px rgba(80, 62, 34, 0.1)) drop-shadow(0 0 0.5px rgba(80, 62, 34, 0.25)); }
+  .c-cloud--1 { left: 9%; top: 26vh; width: clamp(120px, 16vw, 240px); }
+  .c-cloud--2 { right: 7%; top: 17vh; width: clamp(90px, 11vw, 170px); }
+
+  /* ---------------------------------------------------------------- the plane (stand-in) */
+  .plane { position: absolute; left: 0; top: 0; width: var(--s); height: var(--s); margin: calc(var(--s) * -0.5) 0 0 calc(var(--s) * -0.5); pointer-events: none; will-change: transform; filter: drop-shadow(0 10px 14px rgba(60, 48, 30, 0.16)); }
+  .plane svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ---------------------------------------------------------------- corners (globals.css) */
+  .frame { position: absolute; inset: 0; pointer-events: none; }
+  .corner { position: absolute; display: flex; flex-direction: column; gap: 0.4rem; color: var(--muted); }
+  .corner--tl { top: 1.4rem; left: var(--gutter); }
+  .corner--tr { top: 1.4rem; right: var(--gutter); align-items: flex-end; gap: 1.1rem; text-align: right; }
+  .corner--bl { bottom: 1.6rem; left: var(--gutter); }
+  .corner--br { bottom: 1rem; right: var(--gutter); align-items: flex-end; gap: 0.25rem; }
+  .geo { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+  .name { font-family: var(--display); font-style: italic; font-weight: 500; font-variation-settings: "SOFT" 100, "WONK" 1; letter-spacing: -0.03em; font-size: clamp(1.625rem, 2.6vw, 2.5rem); line-height: 1; color: var(--ink); }
+  .place { display: none; }
+  .step { display: flex; gap: 0.9rem; }
+  .count { font-family: var(--display); font-weight: 500; font-size: clamp(5rem, 13vw, 10.5rem); line-height: 0.8; letter-spacing: -0.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 0.5rem; vertical-align: 1px; }
+  .skip { pointer-events: auto; padding: 0.55rem 0.95rem; border: 1px solid var(--divider); border-radius: 999px; background: var(--canvas); color: var(--ink); cursor: pointer; transition: border-color 200ms; }
+  .skip:hover { border-color: var(--ink); }
+  @media (max-width: 639px) {
+    .geo { display: none; }
+    .place { display: block; }
+    .corner--bl { bottom: 7.25rem; }
+  }
+
+  /* ---------------------------------------------------------------- demo controls (not part of the design) */
+  .demo {
+    position: fixed; z-index: 200; left: 50%; top: 1rem; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+    width: max-content; max-width: min(46rem, calc(100vw - 2rem)); padding: 0.45rem; border-radius: 14px;
+    background: rgba(17, 17, 17, 0.88); color: #f5f3ee; font: 500 12px/1.2 var(--body);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
+  }
+  .demo button { font: inherit; color: inherit; background: transparent; border: 0; padding: 0.45rem 0.7rem; border-radius: 9px; cursor: pointer; }
+  .demo button:hover { background: rgba(255, 255, 255, 0.1); }
+  .demo button[aria-pressed="true"] { background: #f5f3ee; color: var(--ink); }
+  .demo .sep { width: 1px; align-self: stretch; background: rgba(255, 255, 255, 0.16); margin: 0 0.15rem; }
+  .demo input[type="range"] { width: 120px; accent-color: #f5f3ee; }
+  .demo .note { flex-basis: 100%; width: 0; text-align: center; padding: 0.15rem 0.5rem 0.25rem; color: rgba(245, 243, 238, 0.72); font-weight: 400; line-height: 1.45; }
+  .demo.is-hidden > :not(.demo__toggle) { display: none; }
+  /* Narrower than the gap between the top corners: under the plane instead. */
+  @media (max-width: 1099px) {
+    .demo { top: var(--cy); transform: translate(-50%, calc(var(--s) * 0.5 + 1.25rem)); }
+  }
+  @media (max-width: 639px) {
+    .demo input[type="range"] { width: 90px; }
+    .demo .note { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page" aria-hidden="true">
+  <p class="label">Software Engineer / Full-stack</p>
+  <h1>Võ Đoàn<br />Anh Phi</h1>
+</main>
+
+<div class="opening" id="opening" data-concept="a">
+  <div class="ground" id="ground">
+
+    <!-- A. Fold diagram: a cutting-mat grid, and the plane's own fold diagram drawn step by step behind it. -->
+    <div class="concept concept--a">
+      <div class="a-grid"></div>
+      <svg class="a-diagram" id="aDiagram" viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"></svg>
+    </div>
+
+    <!-- B. Ream: the sheet the plane is folded from is the top of a stack. -->
+    <div class="concept concept--b" id="bStack">
+      <div class="b-sheet" data-depth="0.25"></div>
+      <div class="b-sheet b-sheet--grid" data-depth="0.45"></div>
+      <div class="b-sheet b-sheet--ruled" data-depth="0.65"></div>
+      <div class="b-sheet" data-depth="0.82">
+        <div class="b-proof">
+          <i class="h"></i><i class="h2"></i>
+          <i></i><i class="m"></i><i></i><i class="s"></i>
+          <i></i><i class="m"></i><i class="s"></i>
+        </div>
+      </div>
+      <div class="b-sheet b-sheet--top" data-depth="1" id="bTop">
+        <div class="b-ghost"><span class="label">Sheet 01</span></div>
+      </div>
+    </div>
+
+    <!-- C. Paper-cut sky: three cut bands and two clouds, stacked with paper shadows. -->
+    <div class="concept concept--c" id="cSky">
+      <div class="c-sun"></div>
+      <div class="c-cloud c-cloud--2" data-depth="0.35"><svg viewBox="0 0 200 84"><g fill="#fdfcf9"><circle cx="42" cy="58" r="22"/><circle cx="78" cy="42" r="30"/><circle cx="120" cy="40" r="34"/><circle cx="156" cy="54" r="24"/><rect x="20" y="56" width="166" height="24" rx="12"/></g></svg></div>
+      <div class="c-band c-band--far" data-depth="0.3"><svg viewBox="0 0 2400 400" preserveAspectRatio="xMidYMax slice"><path fill="#f3efe8"/></svg></div>
+      <div class="c-cloud c-cloud--1" data-depth="0.6"><svg viewBox="0 0 200 84"><g fill="#fefdfb"><circle cx="36" cy="60" r="18"/><circle cx="70" cy="46" r="28"/><circle cx="112" cy="36" r="34"/><circle cx="152" cy="50" r="26"/><circle cx="180" cy="64" r="14"/><rect x="18" y="58" width="176" height="22" rx="11"/></g></svg></div>
+      <div class="c-band c-band--mid" data-depth="0.6"><svg viewBox="0 0 2400 400" preserveAspectRatio="xMidYMax slice"><path fill="#efeae1"/></svg></div>
+      <div class="c-band c-band--near" data-depth="1"><svg viewBox="0 0 2400 400" preserveAspectRatio="xMidYMax slice"><path fill="#ebe6dc"/></svg></div>
+    </div>
+
+    <div class="grain"></div>
+  </div>
+
+  <!-- The plane layer. On the site this is the 3D canvas; here a flat stand-in so the ground has something to answer to. -->
+  <div class="plane" id="plane">
+    <svg viewBox="-0.62 -0.62 1.24 1.24" aria-hidden="true">
+      <polygon id="planeBody" fill="#fdfbf6" stroke="#33332f" stroke-width="0.008" stroke-linejoin="round" />
+      <polygon id="planeShade" fill="#e6e0d4" opacity="0" />
+      <path id="planeLines" fill="none" stroke="#33332f" stroke-width="0.006" stroke-linecap="round" />
+    </svg>
+  </div>
+
+  <div class="frame" id="frame">
+    <div class="corner corner--tl" aria-hidden="true">
+      <p class="name">Vo Anh Phi</p>
+      <p class="label text-ink">Software Engineer / Full-stack</p>
+      <p class="label place">Ho Chi Minh City, Viet Nam</p>
+    </div>
+    <div class="corner corner--tr">
+      <button type="button" class="skip label" id="skip">Skip</button>
+      <div class="geo" aria-hidden="true">
+        <p class="label text-ink">Ho Chi Minh City, Viet Nam</p>
+        <p class="label">10.78° N, 106.70° E</p>
+        <p class="label"><span id="clock">--:--:--</span> GMT+7</p>
+      </div>
+    </div>
+    <div class="corner corner--bl" aria-hidden="true">
+      <p class="label step"><span id="stepNum">01 / 08</span><span class="text-ink" id="stepText">A blank sheet</span></p>
+      <p class="label text-ink"><span class="dot"></span>Open to work</p>
+    </div>
+    <div class="corner corner--br" aria-hidden="true">
+      <p class="label">Loading the page</p>
+      <span class="count" id="count">00</span>
+    </div>
+  </div>
+</div>
+
+<div class="demo" id="demo">
+  <button type="button" data-pick="a" aria-pressed="true">A · Sơ đồ gấp</button>
+  <button type="button" data-pick="b" aria-pressed="false">B · Chồng giấy</button>
+  <button type="button" data-pick="c" aria-pressed="false">C · Trời giấy cắt</button>
+  <span class="sep"></span>
+  <button type="button" id="replay">Chạy lại (R)</button>
+  <input type="range" id="scrub" min="0" max="100" value="0" aria-label="Kéo tiến độ" />
+  <button type="button" id="auto" aria-pressed="true">Tự chạy</button>
+  <span class="sep"></span>
+  <button type="button" class="demo__toggle" id="hide">Ẩn (H)</button>
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------- policy, from openingBoot.ts */
+  var PACE = 4800, FOLD_END = 0.72, CEIL = 0.94, EXIT = 0.9;
+  var PLANE_AT = 350, READY_AT = 5600; // simulated: 3D layer arrives, page finishes loading
+  var STEPS = [
+    { until: 0.15, text: "A blank sheet" },
+    { until: 0.4, text: "Creased down the middle" },
+    { until: 0.53, text: "Corners in to the crease" },
+    { until: 0.65, text: "And in once more" },
+    { until: 0.8, text: "Folded in half" },
+    { until: 0.92, text: "Wings down" },
+    { until: 1, text: "Nose up" }
+  ];
+  var NOTES = {
+    a: "Lưới bàn cắt + sơ đồ gấp vẽ dần theo từng bước. Nét đỏ là bước đang gấp; khi bay, sơ đồ mờ xuống.",
+    b: "Máy bay gấp từ tờ trên cùng của xấp giấy. Các tờ dưới xòe dần theo tiến độ, tản ra khi giấy nhấc lên.",
+    c: "Ba dải giấy cắt và mây xếp lớp bằng bóng giấy. Mặt trời lên theo tiến độ; các lớp trượt theo độ sâu."
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var root = document.documentElement;
+  var opening = $("opening"), ground = $("ground"), frame = $("frame"), planeEl = $("plane");
+  var countEl = $("count"), stepNum = $("stepNum"), stepText = $("stepText"), clockEl = $("clock");
+  var scrub = $("scrub"), autoBtn = $("auto");
+
+  var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
+  var lerp = function (a, b, t) { return a + (b - a) * t; };
+  var ease = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+  var easeOut = function (t) { return 1 - Math.pow(1 - t, 3); };
+  var easeIn = function (t) { return t * t * t; };
+  var span = function (v, a, b) { return clamp((v - a) / (b - a), 0, 1); };
+  var pad = function (n) { return String(n).padStart(2, "0"); };
+
+  /* ---------------------------------------------------------------- stage geometry, from runtime.ts openingStage */
+  var vw, vh, S, CX, CY;
+  function measure() {
+    vw = innerWidth; vh = innerHeight;
+    S = Math.min(vh * 0.34, vw * 0.5, 300);
+    CX = vw / 2; CY = vh / 2 - Math.min(vh * 0.06, 48);
+    root.style.setProperty("--s", S + "px");
+    root.style.setProperty("--cx", CX + "px");
+    root.style.setProperty("--cy", CY + "px");
+  }
+  addEventListener("resize", measure);
+  measure();
+
+  /* ================================================================ A. diagram */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  var aSvg = $("aDiagram");
+  var aDefs = el("defs", {}, aSvg);
+  // Sheet coords match the plane's: half width 0.5, half length 0.62, nose up.
+  var HW = 0.5, HL = 0.62;
+  var DASH = "0.022 0.014", DASHDOT = "0.03 0.012 0.004 0.012";
+  // Each fold line: when it draws (by fold share), its dash, and where its number sits.
+  var A_LINES = [
+    { from: 0.15, to: 0.38, d: "M0 -0.62 L0 0.62", dash: DASH, n: 1, at: [0.05, 0.25] },
+    { from: 0.4, to: 0.5, d: "M0 -0.62 L0.5 -0.12 M0 -0.62 L-0.5 -0.12", dash: DASH, n: 2, at: [0.3, -0.38] },
+    { from: 0.53, to: 0.63, d: "M0 -0.62 L0.5 0.587 M0 -0.62 L-0.5 0.587", dash: DASH, n: 3, at: [0.3, 0.12] },
+    { from: 0.65, to: 0.78, d: "M0 -0.62 L0 0.62", dash: DASHDOT, n: 4, at: [-0.05, 0.42], offset: -0.006 },
+    { from: 0.8, to: 0.9, d: "M0.02 -0.6 L0.22 0.62 M-0.02 -0.6 L-0.22 0.62", dash: DASH, n: 5, at: [0.2, 0.44] }
+  ];
+  // Fold arrows: a curve from where paper starts to where it lands, shown during its step.
+  var A_ARROWS = [
+    { from: 0.15, to: 0.4, p0: [-0.42, 0.1], c: [-0.2, -0.12], p1: [0.34, 0.1] },
+    { from: 0.4, to: 0.53, p0: [0.44, -0.56], c: [0.38, -0.3], p1: [0.1, -0.36] },
+    { from: 0.53, to: 0.65, p0: [0.47, 0.1], c: [0.36, 0.3], p1: [0.12, 0.12] },
+    { from: 0.65, to: 0.8, p0: [-0.36, 0.36], c: [0, 0.05], p1: [0.34, 0.36] },
+    { from: 0.8, to: 0.92, p0: [0.12, 0.3], c: [0.42, 0.22], p1: [0.4, 0.5] },
+    { from: 0.92, to: 1, p0: [0.08, -0.5], c: [0.02, -0.72], p1: [-0.08, -0.74] }
+  ];
+
+  // Crop marks and proof targets: the printer's marks round the sheet.
+  var marks = el("g", { stroke: "#33332f", "stroke-width": 0.004, opacity: 0.45, fill: "none" }, aSvg);
+  var M = 0.06, G = 0.03;
+  [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (c) {
+    var x = c[0] * HW, y = c[1] * HL;
+    el("path", { d: "M" + (x + c[0] * G) + " " + y + " h" + c[0] * M + " M" + x + " " + (y + c[1] * G) + " v" + c[1] * M }, marks);
+  });
+  [[0, -HL - 0.09], [0, HL + 0.09]].forEach(function (p) {
+    el("circle", { cx: p[0], cy: p[1], r: 0.022 }, marks);
+    el("path", { d: "M" + (p[0] - 0.04) + " " + p[1] + " h0.08 M" + p[0] + " " + (p[1] - 0.04) + " v0.08" }, marks);
+  });
+  var cap = el("text", { x: -HW, y: -HL - 0.13 }, aSvg); cap.textContent = "Dart / fig. 1";
+  var cap2 = el("text", { x: HW, y: HL + 0.16, "text-anchor": "end" }, aSvg); cap2.textContent = "210 × 260";
+
+  var sheetOutline = el("rect", { x: -HW, y: -HL, width: 2 * HW, height: 2 * HL, fill: "none", stroke: "#33332f", "stroke-width": 0.004, pathLength: 1, "stroke-dasharray": "1 1" }, aSvg);
+
+  var aLines = A_LINES.map(function (l, i) {
+    var mask = el("mask", { id: "am" + i, maskUnits: "userSpaceOnUse", x: -1.1, y: -1.1, width: 2.2, height: 2.2 }, aDefs);
+    var reveal = el("path", { d: l.d, stroke: "#fff", "stroke-width": 0.03, fill: "none", pathLength: 1, "stroke-dasharray": "1 1", "stroke-dashoffset": 1 }, mask);
+    var g = el("g", { transform: "translate(" + (l.offset || 0) + " 0)" }, aSvg);
+    var line = el("path", { d: l.d, fill: "none", "stroke-width": 0.005, "stroke-dasharray": l.dash, "stroke-linecap": "round", mask: "url(#am" + i + ")" }, g);
+    var badge = el("g", { transform: "translate(" + l.at[0] + " " + l.at[1] + ")" }, aSvg);
+    var dot = el("circle", { r: 0.026 }, badge);
+    var num = el("text", { class: "num" }, badge); num.textContent = l.n;
+    return { spec: l, reveal: reveal, line: line, badge: badge, dot: dot };
+  });
+  var aArrows = A_ARROWS.map(function (a) {
+    // Arrowhead along the curve's last tangent.
+    var dx = a.p1[0] - a.c[0], dy = a.p1[1] - a.c[1], len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, h = 0.035;
+    var hx1 = a.p1[0] - ux * h - uy * h * 0.6, hy1 = a.p1[1] - uy * h + ux * h * 0.6;
+    var hx2 = a.p1[0] - ux * h + uy * h * 0.6, hy2 = a.p1[1] - uy * h - ux * h * 0.6;
+    var g = el("g", { fill: "none", stroke: "#b42318", "stroke-width": 0.005, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0 }, aSvg);
+    var curve = el("path", { d: "M" + a.p0 + " Q" + a.c + " " + a.p1, pathLength: 1, "stroke-dasharray": "1 1", "stroke-dashoffset": 1 }, g);
+    el("path", { d: "M" + hx1 + " " + hy1 + " L" + a.p1 + " L" + hx2 + " " + hy2 }, g);
+    return { spec: a, g: g, curve: curve };
+  });
+
+  function renderA(st) {
+    var f = st.fold;
+    sheetOutline.setAttribute("stroke-dashoffset", 1 - easeOut(span(f, 0, 0.15)));
+    aLines.forEach(function (o) {
+      var l = o.spec, k = span(f, l.from, l.to), current = f >= l.from && f < l.to + 0.02;
+      o.reveal.setAttribute("stroke-dashoffset", 1 - ease(k));
+      var color = current ? "#b42318" : "#6b675f";
+      o.line.setAttribute("stroke", color);
+      o.line.setAttribute("opacity", current ? 1 : 0.7);
+      o.dot.setAttribute("fill", current ? "#b42318" : "#6b675f");
+      o.badge.setAttribute("opacity", span(f, l.from, l.from + 0.04));
+    });
+    aArrows.forEach(function (o) {
+      var a = o.spec, k = span(f, a.from, a.from + (a.to - a.from) * 0.7);
+      var out = 1 - span(f, a.to - 0.02, a.to + 0.04);
+      o.curve.setAttribute("stroke-dashoffset", 1 - easeOut(k));
+      o.g.setAttribute("opacity", (f >= a.from ? 1 : 0) * out * (1 - st.air));
+    });
+  }
+
+  /* ================================================================ B. ream */
+  var bSheets = Array.prototype.slice.call(document.querySelectorAll(".b-sheet"));
+  var bTop = $("bTop"), bGhost = bTop.querySelector(".b-ghost");
+  // Rest pose per sheet, bottom to top: rotation (deg) and offset (share of sheet width).
+  var B_POSE = [
+    { r: -6.5, x: -0.07, y: 0.035, exit: [-1, 0.6] },
+    { r: 4, x: 0.06, y: -0.025, exit: [1, -0.5] },
+    { r: -2.4, x: -0.03, y: 0.012, exit: [-0.8, -0.9] },
+    { r: 1.1, x: 0.018, y: -0.01, exit: [0.9, 0.8] },
+    { r: 0, x: 0, y: 0, exit: [0, -1] }
+  ];
+  function renderB(st) {
+    var w = bSheets[0].getBoundingClientRect ? bSheets[0].offsetWidth : 400;
+    // Fans out as the count runs: tidy at 55%, settled open at the end. One-shot, driven by the count.
+    var spread = 0.55 + 0.45 * easeOut(st.p);
+    bSheets.forEach(function (s, i) {
+      var pose = B_POSE[i], depth = +s.dataset.depth;
+      var lv = easeIn(span(st.leave, 0.05 + (4 - i) * 0.06, 0.75 + (4 - i) * 0.06));
+      var x = pose.x * w * spread + st.mx * depth * 18 + pose.exit[0] * lv * vw * 0.75;
+      var y = pose.y * w * spread + st.my * depth * 12 + pose.exit[1] * lv * vh * 0.75;
+      var r = pose.r * spread + pose.exit[0] * lv * 14 + st.mx * depth * 0.6;
+      s.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px) rotate(" + r.toFixed(2) + "deg)";
+    });
+    // The top sheet is the one being folded: it leaves its place as the crease goes in.
+    var gone = easeOut(span(st.fold, 0.08, 0.4));
+    bTop.style.backgroundColor = "rgba(254,253,251," + (1 - gone) + ")";
+    bTop.style.boxShadow = gone > 0.99 ? "none" : "";
+    bTop.style.opacity = 1;
+    bGhost.style.opacity = gone * (1 - st.air * 0.4);
+  }
+
+  /* ================================================================ C. sky */
+  // Seeded so the shapes are the same on every load.
+  function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+  function scallops(seed, base, rMin, rMax, wobble) {
+    var r = rng(seed), x = -60, y = base, d = "M-60 400 L-60 " + base;
+    while (x < 2460) {
+      var rad = lerp(rMin, rMax, r()), nx = x + rad * lerp(1.5, 1.95, r()), ny = base + (r() - 0.5) * wobble;
+      d += " A" + rad.toFixed(1) + " " + rad.toFixed(1) + " 0 0 1 " + nx.toFixed(1) + " " + ny.toFixed(1);
+      x = nx; y = ny;
+    }
+    return d + " L2460 400 Z";
+  }
+  var cBands = Array.prototype.slice.call(document.querySelectorAll(".c-band"));
+  var cClouds = Array.prototype.slice.call(document.querySelectorAll(".c-cloud"));
+  cBands[0].querySelector("path").setAttribute("d", scallops(11, 150, 90, 170, 70));
+  cBands[1].querySelector("path").setAttribute("d", scallops(29, 170, 60, 120, 60));
+  cBands[2].querySelector("path").setAttribute("d", scallops(47, 190, 40, 80, 40));
+
+  function renderC(st) {
+    cBands.forEach(function (b, i) {
+      var depth = +b.dataset.depth;
+      // Rises in at first paint, far first; sinks on the way out, near first.
+      var inK = easeOut(span(st.elapsed, 80 + i * 110, 900 + i * 110));
+      var outK = easeIn(span(st.leave, 0.1 + (2 - i) * 0.12, 0.65 + (2 - i) * 0.12));
+      var y = (1 - inK) * 100 + outK * 100;
+      b.style.transform = "translate(" + (st.mx * -depth * 22).toFixed(1) + "px," + (st.my * -depth * 8).toFixed(1) + "px) translateY(" + y.toFixed(2) + "%)";
+    });
+    cClouds.forEach(function (c, i) {
+      var depth = +c.dataset.depth;
+      var inK = easeOut(span(st.elapsed, 300 + i * 160, 1200 + i * 160));
+      var out = span(st.leave, 0, 0.6);
+      c.style.transform = "translate(" + (st.mx * -depth * 30 + (i ? 1 : -1) * out * 60).toFixed(1) + "px," + (st.my * -depth * 10 + (1 - inK) * 18).toFixed(1) + "px)";
+      c.style.opacity = inK * (1 - out);
+    });
+  }
+
+  var RENDER = { a: renderA, b: renderB, c: renderC };
+
+  /* ================================================================ plane stand-in */
+  // Outline keyframes: nose, right, right tail, tail, left tail, left. Sheet units, nose up.
+  var KEYS = [
+    { at: 0, pts: [[0, -0.62], [0.5, -0.62], [0.5, 0.62], [0, 0.62], [-0.5, 0.62], [-0.5, -0.62]] },
+    { at: 0.4, pts: [[0, -0.62], [0.5, -0.62], [0.5, 0.62], [0, 0.62], [-0.5, 0.62], [-0.5, -0.62]] },
+    { at: 0.53, pts: [[0, -0.62], [0.5, -0.12], [0.5, 0.62], [0, 0.62], [-0.5, 0.62], [-0.5, -0.12]] },
+    { at: 0.65, pts: [[0, -0.62], [0.5, 0.587], [0.5, 0.62], [0, 0.62], [-0.5, 0.62], [-0.5, 0.587]] },
+    { at: 0.8, pts: [[0, -0.62], [0.2, 0.55], [0.2, 0.62], [0, 0.62], [0, 0.62], [0, 0.55]] },
+    { at: 0.92, pts: [[0, -0.62], [0.44, 0.6], [0.08, 0.62], [0, 0.56], [-0.08, 0.62], [-0.44, 0.6]] },
+    { at: 1, pts: [[0, -0.62], [0.44, 0.6], [0.08, 0.62], [0, 0.56], [-0.08, 0.62], [-0.44, 0.6]] }
+  ];
+  var body = $("planeBody"), shade = $("planeShade"), lines = $("planeLines");
+  function planeShape(fold) {
+    var i = 0;
+    while (i < KEYS.length - 2 && fold > KEYS[i + 1].at) i++;
+    var a = KEYS[i], b = KEYS[i + 1], k = ease(span(fold, a.at, b.at));
+    var pts = a.pts.map(function (p, j) { return [lerp(p[0], b.pts[j][0], k), lerp(p[1], b.pts[j][1], k)]; });
+    body.setAttribute("points", pts.map(function (p) { return p.join(","); }).join(" "));
+    var dart = span(fold, 0.8, 0.92);
+    shade.setAttribute("points", [pts[0], pts[1], pts[2], [0.02, 0.6]].map(function (p) { return p.join(","); }).join(" "));
+    shade.setAttribute("opacity", dart);
+    var crease = span(fold, 0.15, 0.4) * (1 - dart);
+    var d = crease > 0 ? "M0 -0.62 L0 " + lerp(-0.62, 0.62, crease) : "";
+    if (dart > 0) d += " M0 -0.62 L0.07 0.6 M0 -0.62 L-0.07 0.6";
+    lines.setAttribute("d", d);
+    lines.setAttribute("opacity", Math.max(crease, dart));
+  }
+
+  /* ================================================================ the run */
+  var concept = (location.hash.slice(1) || "a").toLowerCase();
+  if (!RENDER[concept]) concept = "a";
+  var st, manual = false, pointer = null;
+
+  function fresh() {
+    return {
+      started: performance.now(), elapsed: 0, shown: 0, p: 0, fold: 0, air: 0, leave: 0,
+      phase: "showing", leaveAt: 0, skipped: false,
+      x: CX, y: CY, heading: 0, scale: 1, mx: 0, my: 0, exitFrom: null
+    };
+  }
+
+  function stepFor(p) {
+    var f = p / FOLD_END;
+    for (var i = 0; i < STEPS.length; i++) if (f < STEPS[i].until) return i;
+    return STEPS.length;
+  }
+  var shownStep = -1, painted = "";
+  function paintCorners() {
+    var n = Math.round(Math.min(st.skipped ? st.p : st.p, 1) * 100);
+    var text = st.phase === "showing" ? pad(Math.min(n, 99)) : (st.skipped ? pad(Math.min(n, 99)) : "100");
+    if (text !== painted) { painted = text; countEl.textContent = text; }
+    var idx = stepFor(st.p);
+    if (idx !== shownStep) {
+      shownStep = idx;
+      stepNum.textContent = pad(idx + 1) + " / " + pad(STEPS.length + 1);
+      stepText.textContent = idx < STEPS.length ? STEPS[idx].text : "In the air. Point, and it follows";
+    }
+    var city = new Date(Date.now() + 7 * 3600000);
+    clockEl.textContent = [city.getUTCHours(), city.getUTCMinutes(), city.getUTCSeconds()].map(pad).join(":");
+  }
+
+  function leave(skipped) {
+    if (st.phase !== "showing") return;
+    st.phase = "leaving"; st.leaveAt = st.elapsed; st.skipped = skipped;
+  }
+
+  function tick(now) {
+    st.elapsed = now - st.started;
+    var t = st.elapsed;
+
+    if (st.phase === "showing") {
+      if (manual) {
+        st.shown = scrub.value / 100;
+      } else {
+        var done = t >= READY_AT ? 1 : CEIL * (1 - Math.pow(1 - t / READY_AT, 2));
+        var target = Math.min(done, t < PLANE_AT ? 0 : (t - PLANE_AT) / PACE);
+        st.shown = Math.max(st.shown, st.shown + (target - st.shown) * 0.2);
+        scrub.value = Math.round(st.shown * 100);
+        if (done >= 1 && st.shown > 0.99) leave(false);
+      }
+      st.p = st.shown;
+    } else {
+      var L = (t - st.leaveAt) / 1000, lead = st.skipped ? 0.22 : 0.18;
+      st.p = st.skipped ? Math.max(st.shown, FOLD_END) : lerp(st.shown, 1, easeOut(span(L, 0, lead)));
+      st.leave = span(L, lead, lead + EXIT);
+      frame.style.opacity = 1 - span(L, st.skipped ? 0 : lead, (st.skipped ? 0 : lead) + 0.25);
+      ground.style.opacity = 1 - easeOut(span(L, lead + 0.5, lead + 0.95));
+      if (L > lead + EXIT + 0.12) { st.phase = "done"; opening.style.visibility = "hidden"; }
+    }
+
+    st.fold = clamp(st.p / FOLD_END, 0, 1);
+    st.air = easeOut(span(st.p, FOLD_END, FOLD_END + 0.06));
+
+    // The plane: folds in place, then follows the pointer, then flies off the way it points.
+    if (st.leave > 0) {
+      if (!st.exitFrom) st.exitFrom = { x: st.x, y: st.y, h: st.heading };
+      var k = easeIn(st.leave), hd = st.exitFrom.h;
+      var far = Math.max(vw, vh) * 1.3;
+      st.x = st.exitFrom.x + Math.sin(hd) * far * k;
+      st.y = st.exitFrom.y - Math.cos(hd) * far * k;
+    } else if (st.air > 0 && pointer) {
+      var tx = lerp(CX, pointer.x, st.air), ty = lerp(CY, pointer.y, st.air);
+      var vx = (tx - st.x) * 0.06, vy = (ty - st.y) * 0.06;
+      st.x += vx; st.y += vy;
+      if (Math.hypot(vx, vy) > 0.6) {
+        var want = Math.atan2(vx, -vy), diff = Math.atan2(Math.sin(want - st.heading), Math.cos(want - st.heading));
+        st.heading += diff * 0.08;
+      } else st.heading *= 0.97;
+    } else if (st.air > 0) {
+      // No pointer yet: a slow glide on the spot, as the 3D plane idles.
+      st.x = CX + Math.sin(t / 1400) * 18 * st.air; st.y = CY + Math.sin(t / 900) * 8 * st.air;
+      st.heading = Math.sin(t / 1400) * 0.18 * st.air;
+    } else { st.x = CX; st.y = CY; st.heading = 0; }
+    st.scale = lerp(1, 0.62, st.air);
+
+    // The ground reads the plane: where it is relative to the stage's centre, eased.
+    st.mx += ((st.x - CX) / (vw / 2) - st.mx) * 0.08;
+    st.my += ((st.y - CY) / (vh / 2) - st.my) * 0.08;
+    var mx = clamp(st.mx, -1.2, 1.2), my = clamp(st.my, -1.2, 1.2);
+
+    var s = root.style;
+    s.setProperty("--p", st.p.toFixed(4));
+    s.setProperty("--fold", st.fold.toFixed(4));
+    s.setProperty("--air", st.air.toFixed(4));
+    s.setProperty("--leave", st.leave.toFixed(4));
+    s.setProperty("--mx", mx.toFixed(4));
+    s.setProperty("--my", my.toFixed(4));
+
+    planeShape(st.fold);
+    planeEl.style.transform = "translate(" + st.x.toFixed(1) + "px," + st.y.toFixed(1) + "px) rotate(" + st.heading.toFixed(3) + "rad) scale(" + st.scale.toFixed(3) + ")";
+
+    RENDER[concept]({ p: st.p, fold: st.fold, air: st.air, leave: st.leave, mx: mx, my: my, elapsed: st.elapsed });
+    paintCorners();
+    requestAnimationFrame(tick);
+  }
+
+  function run() {
+    st = fresh();
+    opening.style.visibility = "";
+    frame.style.opacity = 1;
+    ground.style.opacity = 1;
+    shownStep = -1; painted = "";
+  }
+
+  /* ---------------------------------------------------------------- input */
+  opening.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") pointer = { x: e.clientX, y: e.clientY }; });
+  opening.addEventListener("pointerdown", function (e) { if (!e.target.closest("button")) pointer = { x: e.clientX, y: e.clientY }; });
+  $("skip").addEventListener("click", function () { manual = false; setAuto(); leave(true); });
+
+  function pick(c) {
+    concept = c;
+    opening.dataset.concept = c;
+    history.replaceState(null, "", "#" + c);
+    document.querySelectorAll("[data-pick]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.pick === c)); });
+    $("note").textContent = NOTES[c];
+    // Reset what the other concepts left inline.
+    bSheets.forEach(function (sh) { sh.style.transform = ""; });
+    run();
+  }
+  function setAuto() { autoBtn.setAttribute("aria-pressed", String(!manual)); }
+  document.querySelectorAll("[data-pick]").forEach(function (b) { b.addEventListener("click", function () { pick(b.dataset.pick); }); });
+  $("replay").addEventListener("click", function () { manual = false; setAuto(); run(); });
+  scrub.addEventListener("input", function () {
+    manual = true; setAuto();
+    if (st.phase !== "showing") run();
+  });
+  autoBtn.addEventListener("click", function () { manual = !manual; setAuto(); if (!manual) run(); });
+  $("hide").addEventListener("click", function () {
+    var d = $("demo"); d.classList.toggle("is-hidden");
+    this.textContent = d.classList.contains("is-hidden") ? "Hiện (H)" : "Ẩn (H)";
+  });
+  addEventListener("keydown", function (e) {
+    if (e.key === "1" || e.key === "2" || e.key === "3") pick("abc"[+e.key - 1]);
+    else if (e.key === "r" || e.key === "R") { manual = false; setAuto(); run(); }
+    else if (e.key === "h" || e.key === "H") $("hide").click();
+    else if (e.key === "Escape") { manual = false; setAuto(); leave(true); }
+  });
+
+  addEventListener("hashchange", function () {
+    var c = location.hash.slice(1).toLowerCase();
+    if (RENDER[c] && c !== concept) { manual = false; setAuto(); pick(c); }
+  });
+
+  pick(concept);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

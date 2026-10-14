@@ -347,42 +347,6 @@ export function Placed({ drive, fit, children }: { drive: Drive; fit: number; ch
   return <group ref={root}>{children}</group>;
 }
 
-/**
- * Same, but where it is comes from a function - the loader's flight: position and size,
- * and optionally a turn in the screen's plane and a roll about `rollAxis`, applied in
- * that order, so the roll stays about the mark's own axis whichever way it has turned.
- */
-export function Flown({
-  place,
-  rollAxis,
-  children,
-}: {
-  place: (dt: number) => { x: number; y: number; size: number; turn?: number; bank?: number };
-  rollAxis?: THREE.Vector3;
-  children: ReactNode;
-}) {
-  const root = useRef<THREE.Group>(null);
-  const turned = useRef<THREE.Group>(null);
-  const rolled = useRef<THREE.Group>(null);
-  useFrame((_, dt) => {
-    const group = root.current;
-    if (!group || !turned.current || !rolled.current) return;
-    const { x, y, size, turn = 0, bank = 0 } = place(dt);
-    group.position.set(x, y, 0);
-    group.scale.setScalar(Math.max(1, size));
-    turned.current.rotation.z = turn;
-    if (rollAxis) rolled.current.quaternion.setFromAxisAngle(rollAxis, bank);
-  });
-  useInkWeight(root);
-  return (
-    <group ref={root}>
-      <group ref={turned}>
-        <group ref={rolled}>{children}</group>
-      </group>
-    </group>
-  );
-}
-
 /* --------------------------------------------------------------------------- */
 
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));

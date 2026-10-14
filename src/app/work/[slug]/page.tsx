@@ -55,10 +55,10 @@ export default async function CaseStudy({
   const next = PROJECTS[(index + 1) % PROJECTS.length];
 
   const sections: Section[] = [
-    { id: "overview", label: "Overview" },
-    { id: "challenge", label: "Challenge" },
-    { id: "approach", label: "Approach" },
-    { id: "highlights", label: "What it does" },
+    { id: "story", label: "The Story" },
+    { id: "problem", label: "The Problem" },
+    { id: "solution", label: "The Solution" },
+    { id: "features", label: "Key Features" },
     ...(project.gallery.length ? [{ id: "gallery", label: "Gallery" }] : []),
   ];
 
@@ -130,22 +130,22 @@ export default async function CaseStudy({
         <CaseStudyNav sections={sections} />
 
         <article className="shell pb-24">
-          <Prose id="overview" title="Overview" body={project.overview} />
-          <Prose id="challenge" title="Challenge" body={project.challenge} />
-          <Prose id="approach" title="Approach" body={project.approach}>
-            {project.note ? (
+          <Prose id="story" title="The Story" body={project.story} />
+          <Prose id="problem" title="The Problem" body={project.problem} />
+          <Prose id="solution" title="The Solution" body={project.solution}>
+            {project.detailNote ? (
               <MarginNote index={5} className="mt-6">
-                {project.note}
+                {project.detailNote}
               </MarginNote>
             ) : null}
           </Prose>
 
-          <section id="highlights" className="scroll-mt-32 border-t border-divider pt-12">
+          <section id="features" className="scroll-mt-32 border-t border-divider pt-12">
             <Reveal as="h2" className="font-display text-title">
-              What it does
+              Key Features
             </Reveal>
             <ul className="mt-8 grid gap-x-10 gap-y-8 md:grid-cols-2">
-              {project.highlights.map((highlight, i) => (
+              {project.features.map((highlight, i) => (
                 <Reveal as="li" key={highlight.title} delay={(i % 2) * 70}>
                   <div className="flex items-start gap-3">
                     <Sticker
@@ -241,7 +241,7 @@ function Intro({ project, titleClassName }: { project: Project; titleClassName: 
 
       <Reveal delay={90} className="mt-5 max-w-[46ch]">
         <p className="text-lead text-[color:var(--band-soft,var(--ink-soft))]">
-          {project.summary}
+          {project.lead}
         </p>
       </Reveal>
 
@@ -284,7 +284,7 @@ function Prose({
 }: {
   id: string;
   title: string;
-  body: string;
+  body: string | string[];
   children?: React.ReactNode;
 }) {
   return (
@@ -297,7 +297,11 @@ function Prose({
           {title}
         </Reveal>
         <Reveal delay={70} className="max-w-[64ch]">
-          <p className="text-lead text-ink-soft">{body}</p>
+          {(Array.isArray(body) ? body : [body]).map((paragraph) => (
+            <p key={paragraph} className="text-lead text-ink-soft [&:not(:first-child)]:mt-5">
+              {paragraph}
+            </p>
+          ))}
           {children}
         </Reveal>
       </div>

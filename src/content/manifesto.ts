@@ -1,13 +1,13 @@
-/** The build-process section shows how the author turns an open problem into working software. */
+/** The build-process section shows how the author works from a request to a finished feature. */
 
 /** Split so the accent word can carry its own colour through the line wipe. */
 export const HOW_I_BUILD_HEADLINE = {
-  lead: "I like starting",
-  accent: "from zero.",
+  lead: "I like understanding",
+  accent: "the whole feature.",
 } as const;
 
 export const HOW_I_BUILD_LEAD = [
-  "I enjoy the part where there is no obvious answer yet: understanding the problem, shaping the flow, deciding how the pieces fit together, and turning it into something people can actually use.",
+  "I usually start by figuring out what the feature needs to do, who will use it, and how the data should move through the system. Then I work through the UI, API and details that make it usable. It's not always a straight line, but I like being involved from the first discussion to the final check.",
 ] as const;
 
 export type BuildPrinciple = {
@@ -21,30 +21,30 @@ export type BuildPrinciple = {
 export const BUILD_PRINCIPLES: BuildPrinciple[] = [
   {
     id: "start-with-flow",
-    title: "Start with the flow",
-    body: "Before thinking about components or endpoints, I want to understand what the user is trying to do and where the data needs to go.",
-    note: "If the flow is unclear, the code probably will be too.",
+    title: "Understand the user flow",
+    body: "Before jumping into components or endpoints, I try to understand what users need to do and what should happen at each step.",
+    note: "Clear flows make implementation easier.",
   },
   {
     id: "connect-pieces",
-    title: "Connect the pieces",
-    body: "I enjoy figuring out how UI, API, business logic and data should fit together instead of treating them as separate tasks.",
-    note: "Frontend is more fun when I know what happens after the button click.",
+    title: "Know how the pieces connect",
+    body: "I enjoy working across the UI, API and database because it helps me see where a problem really comes from. I don't want to stop at making a screen look right.",
+    note: "I like knowing what happens after the button click.",
   },
   {
     id: "make-it-usable",
-    title: "Turn it into something usable",
-    body: "A feature is not finished when the code exists. I want to see the whole path work, handle the awkward cases, and leave it understandable enough to keep building on.",
-    note: "Done means someone can actually use it.",
+    title: "Check what happens outside the happy path",
+    body: "I test how a feature behaves with real inputs, loading states and errors. A screen can look finished while the full flow still needs work.",
+    note: "Loading, empty and error states matter too.",
   },
 ];
 
-/** A compact view of how the author moves from an open problem to shipped software. */
+/** A compact view of how the author moves from a request to a working feature. */
 export const BUILD_STEPS = [
-  { level: "01", label: "Understand the problem" },
-  { level: "02", label: "Map the user flow" },
-  { level: "03", label: "Shape the data" },
-  { level: "04", label: "Design the boundaries" },
-  { level: "05", label: "Build the feature" },
-  { level: "06", label: "Run the real flow" },
+  { level: "01", label: "Understand the request" },
+  { level: "02", label: "Sketch the user flow" },
+  { level: "03", label: "Plan the data" },
+  { level: "04", label: "Agree on the API and responsibilities" },
+  { level: "05", label: "Build and connect the pieces" },
+  { level: "06", label: "Test the complete flow" },
 ] as const;

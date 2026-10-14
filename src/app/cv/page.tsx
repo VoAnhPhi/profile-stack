@@ -9,7 +9,7 @@ import { SITE } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "CV",
-  description: `The CV of ${SITE.nameLatin}, ${SITE.role} in Ho Chi Minh City, to read here or download as a PDF.`,
+  description: `Read or download the CV of ${SITE.nameLatin}, a software engineer based in Ho Chi Minh City.`,
 };
 
 /** Read from the file at build, so the label on the download is never a CV behind. */
@@ -31,7 +31,7 @@ export default function CvPage() {
               <p className="label">[ CV ]</p>
               <h1 className="font-display text-title mt-4">{SITE.name}</h1>
               <p className="mt-2 text-ink-soft">
-                {SITE.role}, {SITE.location}
+                {SITE.role} · {SITE.location}
               </p>
             </div>
             <a

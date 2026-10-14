@@ -242,7 +242,7 @@ export function CvViewer() {
             <p className="label cv-sheet__status">
               {status === "loading" ? (
                 <>
-                  <span className="cv-sheet__wait">Laying out the CV</span>
+                  <span className="cv-sheet__wait">Getting the CV ready</span>
                   {/* Without script nothing draws: the file itself is the way in. */}
                   <noscript>
                     <a href={SITE.cvPath} className="underline underline-offset-4">

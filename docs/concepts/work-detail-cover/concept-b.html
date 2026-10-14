@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concept B - Split cover</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      /* Concept B - Split cover.
+         Title and cover share the first screen. The band takes a colour from the
+         cover's own backdrop, so each case study gets its own key colour and the
+         cover reads as continuing into it. The cover is whole at its ratio and
+         hangs over the band's lower edge onto the paper. */
+
+      main {
+        --overhang: clamp(2.5rem, 7vw, 6rem);
+        --band-pad: clamp(2.5rem, 5vw, 4rem);
+      }
+
+      .band {
+        background: var(--tone);
+        color: var(--tone-ink);
+        padding-top: calc(var(--header-h) + clamp(2.5rem, 6vw, 5rem));
+        padding-bottom: var(--band-pad);
+      }
+
+      .band[data-ink="light"] {
+        --tone-ink: #f5f3ee;
+        --tone-soft: rgba(245, 243, 238, 0.78);
+        --tone-label: rgba(245, 243, 238, 0.66);
+        --tone-line: rgba(245, 243, 238, 0.28);
+      }
+
+      .band[data-ink="dark"] {
+        --tone-ink: var(--ink);
+        --tone-soft: var(--ink-soft);
+        --tone-label: #5c574f;
+        --tone-line: rgba(17, 17, 17, 0.18);
+      }
+
+      .band__grid {
+        display: grid;
+        gap: clamp(2rem, 5vw, 3rem);
+        align-items: center;
+      }
+
+      @media (min-width: 1024px) {
+        .band__grid {
+          grid-template-columns: minmax(0, 5.5fr) minmax(0, 6.5fr);
+          gap: clamp(2.5rem, 4vw, 4rem);
+        }
+      }
+
+      .band .label {
+        color: var(--tone-label);
+      }
+
+      .band h1 {
+        margin-top: 24px;
+        /* Sized to the half column, not the page: a one-word title such as
+           NhaNgonSaiGon cannot wrap and must still clear the cover. */
+        font-size: clamp(2.5rem, 4.2vw, 3.75rem);
+        line-height: 0.98;
+        overflow-wrap: break-word;
+        letter-spacing: -0.02em;
+      }
+
+      .band .summary {
+        margin-top: 20px;
+        max-width: 42ch;
+        color: var(--tone-soft);
+      }
+
+      .band .link-row {
+        margin-top: 28px;
+      }
+
+      .band .pill {
+        border-color: var(--tone-line);
+      }
+
+      .band .pill:hover {
+        border-color: var(--tone-ink);
+        color: inherit;
+      }
+
+      /* The cover sits on the row's bottom edge and its negative margin pulls it
+         past the band's padding by exactly --overhang, whatever the text height.
+         The text centres on the visible band. */
+      .band__text {
+        align-self: center;
+      }
+
+      .cover {
+        align-self: end;
+        margin: 0 0 calc(-1 * (var(--overhang) + var(--band-pad)));
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--canvas);
+        box-shadow:
+          0 0 0 1px rgba(17, 17, 17, 0.08),
+          0 40px 80px -36px rgba(0, 0, 0, 0.55);
+      }
+
+      .cover img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: var(--ratio);
+      }
+
+      .after {
+        padding-top: calc(var(--overhang) + clamp(2rem, 4vw, 3rem));
+      }
+
+      .after .metrics {
+        margin-top: clamp(2.5rem, 5vw, 3.5rem);
+      }
+
+      @media (max-width: 1023px) {
+        main {
+          --overhang: clamp(2.5rem, 10vw, 4rem);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .cover {
+          border-radius: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="data.js"></script>
+    <script>
+      const p = project;
+      document.getElementById("app").innerHTML = `
+        ${frag.header()}
+        <main>
+          <section class="band" data-ink="${p.toneInk}" style="--tone:${p.tone}">
+            <div class="shell band__grid">
+              <div class="band__text">
+                ${frag.eyebrow(p)}
+                <h1 class="font-display">${esc(p.title)}</h1>
+                <p class="text-lead summary">${esc(p.summary)}</p>
+                ${frag.links(p)}
+              </div>
+              ${frag.cover(p)}
+            </div>
+          </section>
+
+          <section class="shell after">
+            ${frag.meta(p)}
+            ${frag.metrics(p)}
+          </section>
+          ${frag.prose(p)}
+        </main>
+        ${frag.switcher("B")}
+      `;
+    </script>
+  </body>
+</html>

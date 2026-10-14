@@ -32,14 +32,14 @@ export function WorkChapters() {
           </Reveal>
           <Reveal delay={60}>
             <h2 className="font-display text-display mt-5">
-              <ScrambleText text="Four things that shipped." />
+              <ScrambleText text="A few projects I have worked on." />
             </h2>
           </Reveal>
         </div>
         <Reveal delay={120} className="flex items-center gap-3">
           <Sticker name="link" index={5} size={20} delay={200} accent />
           <p className="label max-w-[30ch] normal-case tracking-normal">
-            Screenshots are of the running products, taken from the live sites.
+            Screenshots come from working versions of the projects. Patient details shown in the hospital app are sample data.
           </p>
         </Reveal>
       </div>
@@ -115,7 +115,7 @@ export function WorkChapters() {
                       data-cursor
                       className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-inverse-text transition-colors duration-200 hover:bg-accent"
                     >
-                      Read the case study
+                      Read the project
                       <Icon
                         name="arrow"
                         size={18}

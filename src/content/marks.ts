@@ -6,43 +6,43 @@ export const MARK_COPY: { id: MarkId; name: string; blurb: string }[] = [
   {
     id: "mascot",
     name: "Mascot",
-    blurb: "The author as a chibi bust. It turns to look at you, and hops when you come close.",
+    blurb: "A small illustrated version of me. It follows the cursor and moves when you get close.",
   },
   {
     id: "cube",
     name: "Cube",
-    blurb: "A paper box that folds itself shut, then turns as you scroll.",
+    blurb: "A paper-like box that folds together and rotates as you scroll.",
   },
   {
     id: "monogram",
     name: "Monogram",
-    blurb: "The P of the name, cut from the same italic as the headings.",
+    blurb: "A letter P based on the type used in the portfolio.",
   },
   {
     id: "phin",
     name: "Phin",
-    blurb: "A coffee filter dripping into a glass, drop by drop.",
+    blurb: "A Vietnamese coffee filter with a slow drip.",
   },
   {
     id: "keycap",
     name: "Keycap",
-    blurb: "A key printed with the P of the name. It clicks onto its switch, and presses down when you come near.",
+    blurb: "A keyboard key with a P on it. Move closer to press it.",
   },
   {
     id: "plane",
     name: "Paper plane",
-    blurb: "The opening's own: a sheet that folds itself into a dart while the site loads. Here it glides, and banks toward you.",
+    blurb: "The same paper plane from the opening, now following your movement.",
   },
 ];
 
 export const ENTRY_COPY: { id: EntryId; name: string; blurb: string }[] = [
-  { id: "palette", name: "Palette", blurb: "Four dabs of wet paint that wobble when you come near." },
-  { id: "dial", name: "Dial", blurb: "A knurled knob on a ticked plate. It turns with the page." },
-  { id: "brush", name: "Brush", blurb: "A brush over the stroke it just made. Reach for it and it paints again." },
-  { id: "toggle", name: "Toggle", blurb: "A switch that flips on as you come near." },
-  { id: "faders", name: "Faders", blurb: "Three sliders that ride the page, and jump when you reach for them." },
-  { id: "gear", name: "Gear", blurb: "A cog that turns with the page, and spins up as you come near." },
-  { id: "wand", name: "Wand", blurb: "A star on a stick. Come near and it sparkles." },
-  { id: "swatches", name: "Swatches", blurb: "A fan of colour cards that opens as you come near." },
-  { id: "roller", name: "Roller", blurb: "A paint roller over its stripe. Reach for it and it rolls again." },
+  { id: "palette", name: "Palette", blurb: "Four spots of paint that move when you get close." },
+  { id: "dial", name: "Dial", blurb: "A small dial that turns as you scroll." },
+  { id: "brush", name: "Brush", blurb: "A brush that makes a new stroke when you approach." },
+  { id: "toggle", name: "Toggle", blurb: "A switch that flips when your cursor gets close." },
+  { id: "faders", name: "Faders", blurb: "Three sliders that react to scrolling and cursor movement." },
+  { id: "gear", name: "Gear", blurb: "A gear that turns while you scroll." },
+  { id: "wand", name: "Wand", blurb: "A wand that sparkles when you move near it." },
+  { id: "swatches", name: "Swatches", blurb: "A fan of colour cards that opens on hover." },
+  { id: "roller", name: "Roller", blurb: "A paint roller that moves over its painted stripe." },
 ];

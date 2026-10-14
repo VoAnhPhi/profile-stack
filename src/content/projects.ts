@@ -1,13 +1,15 @@
 /**
  * Work.
  *
- * Four projects, every one of them real and reachable. The old portfolio carried
- * two more - a cinema booking system and "Portfolio V2" - both dressed in Unsplash
- * stock photography behind `example.com` links. They are cut. On a site whose whole
- * argument is that claims need evidence, invented work does more damage than a bug.
+ * Five projects, every one of them real. Four are reachable; the hospital app is
+ * client work under a withheld name, so it has no public link and its screenshots
+ * carry stand-in patient data. The old portfolio carried two more - a cinema
+ * booking system and "Portfolio V2" - both dressed in Unsplash stock photography
+ * behind `example.com` links. They are cut. On a site whose whole argument is that
+ * claims need evidence, invented work does more damage than a bug.
  *
  * No category grouping either. surendarselvaraj.com sorts 43 case studies into six
- * named buckets because it has 43. Four split across buckets reads as padding.
+ * named buckets because it has 43. Five split across buckets reads as padding.
  */
 
 export type ProjectLink = {
@@ -38,6 +40,8 @@ export type Project = {
   title: string;
   /** One line for the index card. Concrete, no adjectives. */
   summary: string;
+  /** The line under the title on the case study page. The card keeps `summary`. */
+  lead: string;
   category: string;
   year: string;
   role: string;
@@ -54,14 +58,20 @@ export type Project = {
   coverFrame?: "browser";
   /** Countable claims only. Every figure here is sourced from the CV. */
   metrics: { value: string; label: string }[];
-  overview: string;
-  challenge: string;
-  approach: string;
-  highlights: { title: string; body: string }[];
+  /** The Story: one or two short paragraphs. */
+  story: string[];
+  /** The Problem. */
+  problem: string;
+  /** The Solution. */
+  solution: string;
+  /** Key Features. */
+  features: { title: string; body: string }[];
   gallery: string[];
   links: ProjectLink[];
-  /** Rendered as a margin note in the handwriting face. First person, honest. */
+  /** Margin note on the home card, in the handwriting face. First person, honest. */
   note?: string;
+  /** Margin note on the case study page. */
+  detailNote?: string;
 };
 
 export const PROJECTS: Project[] = [
@@ -70,11 +80,13 @@ export const PROJECTS: Project[] = [
     index: "01",
     title: "SonaSpace",
     summary:
-      "Interior commerce built around room-first discovery, with a Gemini shopping assistant and a full operations back office.",
+      "An e-commerce website for furniture and home interiors. People can browse by room, add products to their cart, pay online and get help from an AI shopping assistant. There is also an admin area for managing products and orders.",
+    lead:
+      "A furniture and home interior shopping website where people can explore products by room, ask an AI assistant for suggestions, and complete an order online.",
     category: "E-commerce",
     year: "2025",
-    role: "Full-stack Developer / Business Analyst",
-    context: "Four-person team",
+    role: "Full-Stack Developer / Business Analyst",
+    context: "4-person team",
     duration: "2-3 months",
     stack: [
       "React 19",
@@ -97,32 +109,34 @@ export const PROJECTS: Project[] = [
     },
     metrics: [
       { value: "20+", label: "backend endpoints" },
-      { value: "3", label: "distinct user flows" },
-      { value: "4", label: "engineers on the team" },
-      { value: "2", label: "repositories owned" },
+      { value: "3", label: "main user flows" },
+      { value: "4", label: "people on the team" },
+      { value: "2", label: "code repositories" },
     ],
-    overview:
-      "SonaSpace is a furniture and interior storefront built around the whole shopping journey rather than a product grid. Customers browse by category or by living space, compare variants, keep a persistent wishlist and cart, check out through VNPay, and track the order afterwards. A connected admin system runs products, categories, rooms, content, customers and order operations.",
-    challenge:
-      "A furniture catalogue is content-heavy, and the interesting complexity is not in any one screen. Product variants, inventory, authentication, cart state, checkout, payment, media and the administrative workflows all had to stay consistent across a React client and an Express API that deploy separately.",
-    approach:
-      "I owned the backend APIs and the frontend architecture. The experience is organised around room-first discovery with reusable product flows underneath, so a variant, a wishlist entry and a cart line all read from the same shape. JWT for auth, Cloudinary for media, Socket.IO where the UI needs to react without a refresh, and a Gemini-backed assistant that answers product questions rather than decorating the page.",
-    highlights: [
+    story: [
+      "Furniture shopping often starts with a space in mind: a bedroom that needs better lighting, a living room that needs a new sofa, or a corner that could feel more personal. SonaSpace brings that way of exploring into an online store.",
+      "Alongside a regular product catalogue, visitors can browse by room and move from finding ideas to choosing products, saving favourites and placing an order. The same platform includes an admin area to keep the catalogue and orders organised.",
+    ],
+    problem:
+      "A furniture store needs more than attractive product pages. Product options, stock, cart items, payments and order status all need to stay connected. For customers, that complexity should feel like one clear shopping journey rather than several separate steps.",
+    solution:
+      "SonaSpace combines room-based browsing with the usual e-commerce flows. Customers can explore products, compare options, use a wishlist, check out with VNPay and follow their orders. An AI shopping assistant helps answer product questions, while the admin area supports the everyday work behind the storefront.",
+    features: [
       {
-        title: "Room-first discovery",
-        body: "Browse by category or by living space, with filters, variants, inventory state and related products.",
+        title: "Explore by room or category",
+        body: "Browse furniture by living space or product category, narrow the selection with filters, and view available variants and stock information.",
       },
       {
-        title: "Complete purchase journey",
-        body: "Persistent wishlist and cart feed a validated checkout, VNPay payment and order tracking.",
+        title: "Save, purchase and track",
+        body: "Keep products in a wishlist or cart, complete checkout through VNPay, and check what is happening with an order afterwards.",
       },
       {
-        title: "Gemini shopping assistant",
-        body: "Answers product questions and compares options. Prompts are designed and responses processed before anything reaches the customer.",
+        title: "Ask the shopping assistant",
+        body: "Ask questions about products and compare available options using an assistant connected to the store's product information.",
       },
       {
-        title: "Operations back office",
-        body: "Dashboards for products, categories, rooms, content, customers, media and order status.",
+        title: "Manage the storefront",
+        body: "Use the admin area to maintain products, categories, rooms, content, customer information and orders.",
       },
     ],
     gallery: [
@@ -141,17 +155,92 @@ export const PROJECTS: Project[] = [
       { label: "Client source", href: "https://github.com/VoAnhPhi/SONA_SPACE-Client" },
       { label: "Server source", href: "https://github.com/VoAnhPhi/SONA_SPACE-Server" },
     ],
-    note: "The AI assistant was the part everyone wanted first. The order state machine was the part that actually decided whether this shipped.",
+    note: "A little inspiration can go a long way when you're finding something for your home.",
+    detailNote: "A useful furniture store should make it easy to move from an idea for a room to an actual order.",
+  },
+  {
+    slug: "hospital-patient-app",
+    index: "02",
+    title: "Hospital Patient App",
+    summary:
+      "A mobile app for hospital patients. I worked on profiles, account settings and appointment lookup, including a way to check appointment details without signing in.",
+    lead:
+      "A mobile app that helps hospital patients manage their information, appointments and payments, with a way to look up an appointment without signing in.",
+    category: "Healthcare / Mobile",
+    year: "2026",
+    role: "Mobile Front-End Developer",
+    context: "Hospital product team · client name withheld",
+    duration: "Jun - Sep 2026",
+    stack: [
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "Expo Router",
+      "TanStack Query",
+      "React Hook Form",
+      "Yup",
+      "Zustand",
+      "Laravel",
+      "Jest",
+    ],
+    cover: {
+      src: "/img/work/hospital-patient-app/cover.png",
+      width: 1920,
+      height: 1200,
+      tone: "#123c82",
+      ink: "light",
+    },
+    metrics: [
+      { value: "4", label: "workflow areas" },
+      { value: "4", label: "months on the team" },
+    ],
+    story: [
+      "A hospital visit can involve several small tasks before and after an appointment: registering patient details, finding a suitable time, paying, and checking the visit information later. The app brings those tasks together on a phone.",
+      "Built for iOS and Android, the patient app includes registration, appointment booking, notifications and account management. It also gives people a simpler option when they just need to check an existing appointment.",
+    ],
+    problem:
+      "Hospital information comes from existing systems, so the mobile experience has to handle slow responses, missing information and failed requests without leaving people confused. An appointment lookup that works without a login also needs to limit what information is returned.",
+    solution:
+      "The app keeps patient-facing tasks in a familiar mobile flow, with validation and clear loading or error states where information is requested. For appointment lookup, patients can enter a booking code instead of signing in. The lookup API limits requests and returns only a restricted set of appointment details.",
+    features: [
+      {
+        title: "Book and manage appointments",
+        body: "The wider app supports choosing a specialty, doctor and time slot, then continuing through payment and appointment management.",
+      },
+      {
+        title: "Look up a booking without signing in",
+        body: "Enter a booking code to view the available appointment details. The response is limited to the information needed for the lookup.",
+      },
+      {
+        title: "Keep account information up to date",
+        body: "Access patient profile details, account settings, password changes and notification preferences, with form validation and error handling.",
+      },
+      {
+        title: "Keep payment rules consistent",
+        body: "Appointment-related screens follow shared rules for whether an appointment is still eligible for payment.",
+      },
+    ],
+    gallery: [
+      "/img/work/hospital-patient-app/01-sign-in.webp",
+      "/img/work/hospital-patient-app/02-booking.webp",
+      "/img/work/hospital-patient-app/03-home-profile.webp",
+      "/img/work/hospital-patient-app/04-dark-mode.webp",
+    ],
+    links: [],
+    note: "Healthcare should feel a little easier, even in the small things.",
+    detailNote: "Sometimes people only need to check a booking. That should not require navigating the whole app.",
   },
   {
     slug: "tomatohub",
-    index: "02",
+    index: "03",
     title: "TomatoHub",
     summary:
-      "Relief campaigns with an audit trail: QR check-in, rule-based beneficiary scoring, and AI that turns free text into a structured campaign.",
-    category: "AI platform / social impact",
+      "A team project for organising relief campaigns, managing volunteers and tracking activity. It includes QR check-ins, explainable beneficiary scoring and AI-assisted campaign drafts.",
+    lead:
+      "A community relief campaign MVP for organising donations, coordinating volunteers and keeping a record of campaign activity.",
+    category: "Community / AI-assisted tools",
     year: "2026",
-    role: "Full-stack Engineer",
+    role: "Full-Stack Engineer",
     context: "Hackathon team",
     duration: "6 weeks",
     stack: [
@@ -174,46 +263,49 @@ export const PROJECTS: Project[] = [
     metrics: [
       { value: "3", label: "user roles" },
       { value: "6", label: "weeks to MVP" },
-      { value: "2", label: "AI-assisted flows" },
     ],
-    overview:
-      "TomatoHub lets organisations run relief campaigns that can be checked afterwards. It handles donations, volunteer registration, QR-based check-in and check-out, and transparency logs, with separate dashboards for supporters, organisations and administrators.",
-    challenge:
-      "Relief work fails on trust, not on features. The system had to stay auditable while moving fast enough to be useful during an actual campaign, and the data had to survive being questioned later.",
-    approach:
-      "REST APIs cover the campaign lifecycle, donations and volunteer workflows across three roles. A QR check-in and check-out cycle tracks volunteers in real time and writes the transparency log as a side effect of the work, not as a separate reporting chore. The AI features stay human-in-the-loop: they draft, a person confirms.",
-    highlights: [
+    story: [
+      "A relief campaign brings many moving parts together: people offering support, organisations managing supplies, volunteers showing up at the right time, and families who need help. When those details are scattered, it becomes harder to see what happened during a campaign.",
+      "TomatoHub was built as a hackathon MVP to bring the main activities into one place. The project explores how a campaign can be easier to coordinate and easier to review afterwards.",
+    ],
+    problem:
+      "Campaign teams need to manage volunteers and donations without adding more manual paperwork. They also need records that can be reviewed later, especially when deciding how to prioritise support. Those decisions are more useful when the criteria are clear rather than hidden behind an unexplained score.",
+    solution:
+      "TomatoHub provides campaign and volunteer workflows for different user roles. QR check-in and check-out records volunteer attendance, while activity information can feed into reporting. AI helps turn a short campaign description into an editable draft. Beneficiary prioritisation uses defined rules, so the scoring can be explained.",
+    features: [
       {
-        title: "AI campaign drafting",
-        body: "Converts a free-text description into structured fields - campaign type, beneficiaries, goals, required supplies, volunteer capacity - all editable before publish.",
+        title: "Create a campaign from a draft",
+        body: "Turn a short description into proposed campaign details such as goals, supplies and volunteer needs, then review and edit them before publishing.",
       },
       {
-        title: "QR check-in and check-out",
-        body: "Real-time volunteer tracking that produces the transparency log rather than requiring one to be written afterwards.",
+        title: "Coordinate volunteers with QR check-in",
+        body: "Record when volunteers check in and out so campaign teams have a clearer view of participation and activity.",
       },
       {
-        title: "Rule-based beneficiary scoring",
-        body: "Ranks candidates by urgency, vulnerability and verification status. Rules, not a model, so a decision can be explained.",
+        title: "Prioritise with visible criteria",
+        body: "Use criteria such as urgency, vulnerability and verification status to help review beneficiary priorities without relying on an opaque model.",
       },
       {
-        title: "Transparency reporting",
-        body: "Campaign and volunteer activity become the context for a report generated after each check-in cycle.",
+        title: "Review campaign activity",
+        body: "Bring campaign and volunteer records into reports that help organisers look back at what took place.",
       },
     ],
     gallery: [],
     links: [{ label: "GitHub profile", href: "https://github.com/VoAnhPhi" }],
-    note: "Scoring is rules, not a model, on purpose. When somebody asks why a family ranked where it did, I want to be able to answer.",
+    detailNote: "The aim is not to make decisions for organisers, but to give them clearer information to work with.",
   },
   {
     slug: "nhangonsaigon",
-    index: "03",
+    index: "04",
     title: "NhaNgonSaiGon",
     summary:
-      "Real estate listing platform. Property filtering, search and inquiry flows, tuned for layout stability on listing pages.",
-    category: "Real estate / client work",
+      "A property listing website where visitors can search, filter, view property details and send inquiries. I built the frontend and worked on the mobile layout and loading experience.",
+    lead:
+      "A property listing website that helps visitors search for homes and other properties, explore listing details and contact the business.",
+    category: "Real estate / Freelance",
     year: "2025",
     role: "Freelance Front-End Developer",
-    context: "Client engagement",
+    context: "Client project",
     duration: "Jan - Apr 2025",
     stack: ["React", "JavaScript", "Responsive CSS", "REST API"],
     cover: {
@@ -225,23 +317,32 @@ export const PROJECTS: Project[] = [
     },
     coverFrame: "browser",
     metrics: [
-      { value: "15+", label: "REST APIs integrated" },
-      { value: "4", label: "months, delivered" },
+      { value: "4", label: "month client project" },
     ],
-    overview:
-      "A responsive listing platform for a Ho Chi Minh City property business. Visitors filter and search properties, open a listing and send an inquiry. Listing data is dynamic and comes from the client's API.",
-    challenge:
-      "Property listing pages are the worst case for layout stability: mixed image dimensions, variable-length titles and cards that arrive after the shell has already painted. On mobile that reads as the page jumping under the reader's thumb.",
-    approach:
-      "Integrated the listing, CRUD and inquiry APIs, then went through rendering on both mobile and desktop specifically for layout shift - reserving space for media and stabilising card heights before the data lands.",
-    highlights: [
+    story: [
+      "Looking for a property usually begins with narrowing down a long list. Location, price and listing details matter, but so does being able to scan results comfortably, especially on a phone.",
+      "NhaNgonSaiGon is a real estate website for a property business in Ho Chi Minh City. It brings listings, search and filters together so visitors can explore available options and ask about a property that interests them.",
+    ],
+    problem:
+      "Property data is rarely uniform. Images have different dimensions, listing titles vary in length, and results arrive from an API. Without care, a page can shift as it loads or become difficult to browse on a smaller screen.",
+    solution:
+      "The website uses responsive listing and detail layouts connected to the client's property APIs. Visitors can search, filter and open listings before sending an inquiry. Loading states, reserved media space and more consistent card sizes help keep the experience usable as content appears.",
+    features: [
       {
-        title: "Filter, search, inquire",
-        body: "The three flows a property site is actually judged on, built against the client's live API.",
+        title: "Search and filter listings",
+        body: "Explore available properties and narrow down results to find listings worth a closer look.",
       },
       {
-        title: "Layout shift work",
-        body: "Reduced shift on listing pages by reserving media space and fixing card metrics ahead of data arrival.",
+        title: "View property details",
+        body: "Open a listing to see more information and images without losing the overall browsing flow.",
+      },
+      {
+        title: "Send an inquiry",
+        body: "Contact the business directly from the property browsing experience when a listing is relevant.",
+      },
+      {
+        title: "Browse comfortably on mobile",
+        body: "Responsive cards and media layouts keep listings easier to scan on smaller screens, including while images and data load.",
       },
     ],
     gallery: [
@@ -253,18 +354,21 @@ export const PROJECTS: Project[] = [
       "/img/work/nhangonsaigon/07-results-grid.webp",
     ],
     links: [{ label: "Live site", href: "https://nhangonsaigon.com.vn" }],
-    note: "First paid client. The lesson was that 'it works on my laptop' and 'it does not jump on a phone' are two different deliverables.",
+    note: "This was my first paid client project, and mobile details mattered more than I first expected.",
+    detailNote: "For a listing website, the small details matter: readable cards, steady layouts and an easy next step.",
   },
   {
     slug: "ui-style-research",
-    index: "04",
+    index: "05",
     title: "UI Style Research",
     summary:
-      "A research workspace for comparing 13 interface styles through live previews, design tokens and fit guidance.",
-    category: "Design research tool",
+      "A side project I use to compare interface styles, design tokens and live previews. It helps me explore visual directions without starting the research from scratch every time.",
+    lead:
+      "A personal research workspace for comparing interface styles, live previews and design tokens before choosing a direction for a new UI.",
+    category: "Personal tool / UI research",
     year: "2026",
-    role: "Frontend Developer / UI Researcher",
-    context: "Personal research",
+    role: "Front-End Developer / UI Researcher",
+    context: "Personal project",
     duration: "Ongoing",
     stack: ["React 19", "TypeScript", "Vite 6", "CSS"],
     cover: {
@@ -275,27 +379,33 @@ export const PROJECTS: Project[] = [
       ink: "light",
     },
     metrics: [
-      { value: "13", label: "style dossiers" },
-      { value: "8", label: "token categories per style" },
+      { value: "13", label: "interface styles" },
+      { value: "8", label: "token groups per style" },
     ],
-    overview:
-      "A workspace for scanning, filtering and comparing UI styles. Each dossier pairs a live preview with design tokens, patterns, implementation notes, accessibility risks and a surface-fit recommendation.",
-    challenge:
-      "Design research grows faster than any interface built to hold it. The problem was keeping comparison fast and previews legible while the body of research kept expanding.",
-    approach:
-      "A three-part shell: searchable catalogue, focused dossier tabs, decision rail. Style data is structured around reusable tokens and suitability signals, so adding a style is a data change rather than a redesign.",
-    highlights: [
+    story: [
+      "Starting a new interface often means reopening the same references, comparing a few design styles and trying to remember what worked last time. That process became repetitive, so UI Style Research grew out of a practical need for one place to keep the research organised.",
+      "Rather than being a gallery of screenshots, the tool puts visual examples next to the design decisions behind them. It is something to browse, compare and return to when a new project begins.",
+    ],
+    problem:
+      "Different styles can look interesting in isolation but behave very differently when applied to a real product. Comparing typography, spacing, colours, motion and component choices across many browser tabs makes it harder to reach a clear decision.",
+    solution:
+      "The workspace brings 13 interface styles into a searchable catalogue. Each style includes a live preview, design tokens, patterns and notes on where the style may fit well or create trade-offs. A comparison guide helps narrow down options for a particular interface.",
+    features: [
       {
-        title: "13 style dossiers",
-        body: "Modern, editorial, brutalist, material, futuristic and other directions, each with live preview.",
+        title: "Browse 13 interface styles",
+        body: "Explore a range of visual directions, from minimal and editorial layouts to material and more experimental approaches.",
       },
       {
-        title: "Tokens and patterns",
-        body: "Colour, typography, radius, shadow, spacing, density, motion and component guidance per style.",
+        title: "See how styles behave",
+        body: "Use live previews to look beyond a static reference image and understand the feel of each approach.",
       },
       {
-        title: "Decision guide",
-        body: "Surface-fit matrix with strengths, risks and recommended uses.",
+        title: "Compare design tokens",
+        body: "Review typography, colour, spacing, radius, shadows, density, motion and related component choices.",
+      },
+      {
+        title: "Choose a direction with context",
+        body: "Use notes on strengths, limitations and suitable use cases when deciding which style fits a product.",
       },
     ],
     gallery: [
@@ -311,7 +421,8 @@ export const PROJECTS: Project[] = [
         href: "https://github.com/VoAnhPhi/interface-style-comparison",
       },
     ],
-    note: "Built this because I kept re-deciding the same visual questions from scratch. This site's own direction came out of it.",
+    note: "This portfolio's visual direction was influenced by some of the research in this tool.",
+    detailNote: "Some of the visual decisions in this portfolio came from comparing ideas in this tool.",
   },
 ];
 

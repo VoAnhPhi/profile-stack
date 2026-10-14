@@ -1,28 +1,23 @@
 /**
  * Experience and education, from the CV.
  *
- * Rewritten short. The first version ran five full-sentence bullets per role, and
- * the section became the densest block of prose on a page that already measured
- * highest for text among every site researched. What survives is the countable
- * part: a one-line summary, three clipped facts, and the figures - which is the
- * shape the author's own reference decks use, where a giant number and an image
- * carry the slide and the copy is a caption.
- *
- * Hopper lives here rather than in the work index: it is a company product, so it
- * is described by what was built and measured, without company UI or data.
+ * Kept short: a two-sentence summary at most, four clipped facts, and the figures
+ * that can be counted. Hopper lives here rather than in the work index: it is a
+ * company product, so it is described by what was built, without company UI or data.
  */
 
 export type TrajectoryEntry = {
   id: string;
   index: string;
-  kind: "work" | "education";
+  /** Shown under the period, ahead of the location: "Employment", "Freelance", "Education". */
+  type: string;
   role: string;
   org: string;
   period: string;
   location?: string;
-  /** One line. If it needs two, it is not a summary. */
+  /** Two sentences at most. */
   summary: string;
-  /** Clipped facts, not sentences. Three at most. */
+  /** Clipped facts, not paragraphs. Four at most. */
   points: string[];
   /** Countable claims, shown as figures rather than said in prose. */
   figures: { value: string; label: string }[];
@@ -35,99 +30,94 @@ export const TRAJECTORY: TrajectoryEntry[] = [
   {
     id: "acta",
     index: "01",
-    kind: "work",
+    type: "Full-time employment",
     role: "Full-Stack Developer",
     org: "ACTA",
     period: "Aug 2026 - Present",
-    // U+2060 WORD JOINER after the hyphen, as in site.ts: at 390 the line broke inside
-    // "e-commerce".
     summary:
-      "Internal management, social and e-⁠commerce systems, built end to end on Next.js, NestJS and PostgreSQL.",
+      "I work on internal tools, social features and e-commerce systems. My tasks cover both the frontend and backend, from building screens and APIs to checking how features work with users.",
     points: [
-      "Daily reports, approvals, KPIs and scheduled jobs, with department-based access",
-      "One component library - tables, dynamic forms, modals - shared by 4 modules",
-      "Production data fixed at the source: reward points reconciled, orders corrected",
+      "Built daily reporting, approval and KPI features, along with scheduled tasks and department-based access rules.",
+      "Worked on APIs, database changes and background jobs to support business workflows.",
+      "Reused tables, forms and modals across modules to keep the admin UI consistent.",
+      "Investigated production data issues, including reward-point reconciliation and corrections to affected orders.",
     ],
     figures: [
-      { value: "4", label: "modules on one UI kit" },
-      { value: "~30%", label: "faster, with AI tooling" },
+      { value: "3", label: "product areas" },
+      { value: "4", label: "modules on shared UI components" },
     ],
-    stack: ["Next.js", "React", "NestJS", "PostgreSQL"],
+    stack: ["Next.js", "React", "NestJS", "PostgreSQL", "Prisma"],
   },
   {
     id: "trieu-an",
     index: "02",
-    kind: "work",
+    type: "Employment",
     role: "Mobile Front-End Developer",
     org: "Trieu An Mobile",
     period: "Jun 2026 - Sep 2026",
-    summary: "A patient app in React Native: profiles, settings, notifications and appointments.",
+    summary:
+      "Worked on a React Native app for hospital patients, mainly around profiles, account settings and appointment-related features.",
     points: [
-      "Data layer on TanStack Query, with optimistic updates that roll back",
-      "No-login appointment lookup, from the screen to a rate-limited Laravel API",
-      "i18n across existing flows; Jest tests for forms and business-logic hooks",
+      "Built profile and settings screens with form validation, API integration and clear loading and error handling.",
+      "Implemented appointment lookup without requiring a login, including the mobile screen and a Laravel API with rate limiting and limited response fields.",
+      "Worked with TanStack Query, including optimistic updates and rollback when a request failed.",
+      "Helped with i18n and added tests for forms and business-logic hooks.",
     ],
     // The CV gives this role no figures, and figures here are countable claims only.
     figures: [],
-    stack: ["React Native", "TanStack Query", "React Hook Form", "Yup", "Jest"],
+    stack: ["React Native", "Expo", "TanStack Query", "React Hook Form", "Yup", "Laravel", "Jest"],
   },
   {
     id: "hopper",
     index: "03",
-    kind: "work",
+    type: "Employment",
     role: "R&D and Full-stack Developer",
     org: "Hopper Solution & Education",
     period: "May 2025 - Sep 2025",
     location: "Ho Chi Minh City",
     summary:
-      "Fintech SaaS. I built the money flows, the permissions around them, and the schemas underneath.",
+      "Worked on a fintech product with a small development team. I contributed to React screens, NestJS APIs, permissions and database design.",
     points: [
-      "React frontend for deposit, saving, budgeting and eKYC",
-      "RBAC for 3 roles, from protected routes to the API",
-      "NestJS APIs on PostgreSQL schemas kept auditable",
+      "Built frontend features for financial workflows such as deposits, savings, budgeting and identity verification.",
+      "Developed REST APIs in NestJS and worked with PostgreSQL schemas for the related data.",
+      "Implemented role-based permissions across the interface and API.",
     ],
-    figures: [
-      { value: "25+", label: "REST APIs" },
-      { value: "4", label: "core modules" },
-      { value: "3", label: "user roles" },
-      { value: "3", label: "engineers" },
-    ],
-    stack: ["NestJS", "PostgreSQL", "React", "TypeScript", "RBAC"],
-    note: "Deposits and budgets look simple on screen. Most of the work lives underneath.",
+    figures: [{ value: "3", label: "user roles with role-based access" }],
+    stack: ["React", "NestJS", "PostgreSQL", "TypeScript", "RBAC"],
+    note: "This was where I started working more seriously across frontend and backend.",
   },
   {
     id: "nhangonsaigon-work",
     index: "04",
-    kind: "work",
+    type: "Freelance",
     role: "Freelance Front-End Developer",
     org: "NhaNgonSaiGon",
     period: "Jan 2025 - Apr 2025",
     location: "Remote",
-    summary: "A real estate listing platform, delivered solo.",
+    summary:
+      "Built the frontend for a real estate listing website, including search, filters, property details and inquiry forms.",
     points: [
-      "Filter, search and inquiry flows against a live API",
-      "Layout shift cut on listing pages, mobile first",
+      "Connected listing, search and inquiry features to the client's APIs.",
+      "Made pages responsive across desktop and mobile screen sizes.",
+      "Improved property cards and image layouts to reduce layout shifts as content loaded.",
     ],
-    figures: [
-      { value: "15+", label: "APIs integrated" },
-      { value: "4", label: "months, delivered" },
-    ],
-    stack: ["React", "JavaScript", "REST API"],
+    figures: [{ value: "4", label: "month freelance project" }],
+    stack: ["React", "JavaScript", "Responsive CSS", "REST APIs"],
     link: { label: "nhangonsaigon.com.vn", href: "https://nhangonsaigon.com.vn" },
   },
   {
     id: "iuh",
     index: "05",
-    kind: "education",
+    type: "Education",
     role: "B.Eng Software Engineering",
     org: "Industrial University of Ho Chi Minh City",
-    period: "Jan 2023 - Dec 2027",
+    period: "Jan 2023 - Dec 2027 (expected)",
     location: "Ho Chi Minh City",
-    summary: "Final year. Algorithms, systems, databases, testing.",
-    points: ["Data Structures, Operating Systems, Networking", "Databases, Software Testing, Capstone"],
-    figures: [
-      { value: "3.4", label: "GPA / 4.0" },
-      { value: "5", label: "years, part-time study" },
+    summary: "Currently in my final year of Software Engineering, alongside my development work.",
+    points: [
+      "Studied data structures and algorithms, operating systems, computer networks and databases.",
+      "Also covered software testing and project-based software development.",
     ],
+    figures: [{ value: "3.4", label: "GPA / 4.0" }],
   },
 ];

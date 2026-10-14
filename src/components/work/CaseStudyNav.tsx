@@ -76,7 +76,7 @@ export function CaseStudyNav({ sections }: { sections: Section[] }) {
         {sections.map((section) => {
           const isActive = section.id === active;
           return (
-            <li key={section.id}>
+            <li key={section.id} className="shrink-0">
               <a
                 href={`#${section.id}`}
                 data-cursor

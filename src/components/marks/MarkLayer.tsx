@@ -8,43 +8,27 @@ import { useSmoothScroll } from "@/components/providers/SmoothScroll";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { useHeaderPrefs } from "@/lib/headerPrefs";
 import { HEADER_FIT, renderEntry, renderMark } from "./registry";
-import { PLANE_HEADING, PLANE_NOSE, PaperPlane } from "./PaperPlane";
-import { createFlight } from "./planeFlight";
 import {
-  FOLD_END,
-  OPENING,
   makeDrive,
   setAnchor,
   setMarksState,
   setPointer,
-  setProgress,
   setScroll,
   setStill,
   useOpening,
   useSlots,
 } from "./runtime";
-import { Flown, Placed, Rig, SmallMarks, nearness, span } from "./shared";
+import { Placed, Rig, SmallMarks, nearness } from "./shared";
 
 /**
- * Everything 3D outside the studio: the mark in the header's left slot, the way
- * into the studio in its right slot, and the paper plane that folds and flies during
- * the opening. Loaded in its own chunk after hydration; until it arrives the header
- * shows its 2D posters and the opening shows only paper and a count.
+ * Everything 3D outside the studio: the mark in the header's left slot and the way
+ * into the studio in its right slot, on one canvas 64px tall across the top, over the
+ * header (z-60), drawn on demand and paced by Pace below. Loaded in its own chunk
+ * after hydration; until it arrives the header shows its 2D posters.
  *
- * The opening's plane is not the header's mark. It used to be - whichever mark the
- * reader had chosen assembled in the middle and flew into its slot - but the plane is
- * the one that belongs to a loader, folded from a sheet while the page is made and
- * sent off once it is, and the author wants the mascot in the header from the start.
- * So the header draws its mark throughout, under the paper, and the plane leaves by
- * the window's edge.
- *
- * Two canvases, because they need different layers and different sizes:
- *
- *   header    64px tall across the top, over the header (z-60). Draws on demand,
- *             paced by Pace below.
- *   opening   the whole viewport over the paper (z-95), mounted only while the
- *             opening shows. A full-screen canvas left up would be composited on
- *             every frame of every page for nothing.
+ * The opening's plane used to be drawn here too, on a second canvas over the whole
+ * window while the opening showed. It is flat now and the opening draws it itself
+ * (OpeningPlane.tsx); the header draws its mark throughout, under the paper.
  *
  * It also pumps the inputs every mark reads - pointer, scroll, scroll speed - on
  * the GSAP ticker that already drives Lenis, so the marks lean on the same clock
@@ -53,8 +37,6 @@ import { Flown, Placed, Rig, SmallMarks, nearness, span } from "./shared";
 
 const HEADER = makeDrive();
 const ENTRY = makeDrive();
-const FLOWN = makeDrive(0);
-const flight = createFlight(PLANE_HEADING);
 
 /** Tells the opening the 3D layer can draw, after its first real frame. */
 function Ready() {
@@ -144,7 +126,6 @@ function Pace() {
 export default function MarkLayer() {
   const prefs = useHeaderPrefs();
   const slots = useSlots();
-  const { phase } = useOpening();
   const { lenisRef } = useSmoothScroll();
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -152,7 +133,6 @@ export default function MarkLayer() {
   // the registered slots are enough; nothing re-renders on a slot change but this.
   const markTrack = useRef<HTMLElement | null>(null);
   const entryTrack = useRef<HTMLElement | null>(null);
-  const screenTrack = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     markTrack.current = slots.mark;
@@ -160,12 +140,6 @@ export default function MarkLayer() {
     setAnchor(HEADER, slots.mark);
     setAnchor(ENTRY, slots.entry);
   }, [slots]);
-
-  // The plane has no anchor: it takes no look from the pointer of its own, the flight
-  // turns and rolls it.
-  useEffect(() => {
-    screenTrack.current = document.getElementById("opening");
-  }, []);
 
   useEffect(() => {
     setStill(prefersReducedMotion);
@@ -191,62 +165,43 @@ export default function MarkLayer() {
     };
   }, [lenisRef]);
 
-  /** The plane folds over the first part of the count and flies the rest; planeFlight.ts has how. */
-  const flightPlace = (dt: number) => {
-    setProgress(FLOWN, span(OPENING.progress, 0, FOLD_END));
-    const box = screenTrack.current?.getBoundingClientRect() ?? new DOMRect(0, 0, window.innerWidth, window.innerHeight);
-    return flight(dt, box);
-  };
-
-  const openingShows = phase === "showing" || phase === "leaving" || phase === "landed";
-
   return (
-    <>
-      <Canvas
-        flat
-        frameloop="demand"
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
-        // No `fallback` that reports failure: R3F renders `fallback` inside the
-        // <canvas> element on every render, so a component there marked the layer
-        // failed on every machine, and the opening never flew the mark. A missing
-        // context is caught before this chunk loads (hasWebGL) and a failed one by
-        // MarkBoundary.
-        style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "4rem", pointerEvents: "none", zIndex: 60 }}
-      >
-        <Ready />
-        <Pace />
-        <SmallMarks.Provider value>
-          <View track={markTrack as RefObject<HTMLElement>}>
-            <Rig />
-            <Placed drive={HEADER} fit={HEADER_FIT}>
-              {renderMark(prefs.mark, HEADER)}
-            </Placed>
-          </View>
-          <View track={entryTrack as RefObject<HTMLElement>}>
-            <Rig />
-            <Placed drive={ENTRY} fit={HEADER_FIT}>
-              {renderEntry(prefs.entry, ENTRY)}
-            </Placed>
-          </View>
-        </SmallMarks.Provider>
-      </Canvas>
-
-      {openingShows ? (
-        <Canvas
-          flat
-          dpr={[1, 2]}
-          gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
-          style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 95 }}
-        >
-          <View track={screenTrack as RefObject<HTMLElement>}>
-            <Rig />
-            <Flown place={flightPlace} rollAxis={PLANE_NOSE}>
-              <PaperPlane drive={FLOWN} />
-            </Flown>
-          </View>
-        </Canvas>
-      ) : null}
-    </>
+    <Canvas
+      flat
+      frameloop="demand"
+      dpr={[1, 2]}
+      gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
+      // No `fallback` that reports failure: R3F renders `fallback` inside the
+      // <canvas> element on every render, so a component there marked the layer
+      // failed on every machine. A missing context is caught before this chunk
+      // loads (hasWebGL) and a failed one by MarkBoundary.
+      // Short of the scrollbar's gutter while the opening has taken it away (globals.css).
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "calc(100% - var(--opening-inset, 0px))",
+        height: "4rem",
+        pointerEvents: "none",
+        zIndex: 60,
+      }}
+    >
+      <Ready />
+      <Pace />
+      <SmallMarks.Provider value>
+        <View track={markTrack as RefObject<HTMLElement>}>
+          <Rig />
+          <Placed drive={HEADER} fit={HEADER_FIT}>
+            {renderMark(prefs.mark, HEADER)}
+          </Placed>
+        </View>
+        <View track={entryTrack as RefObject<HTMLElement>}>
+          <Rig />
+          <Placed drive={ENTRY} fit={HEADER_FIT}>
+            {renderEntry(prefs.entry, ENTRY)}
+          </Placed>
+        </View>
+      </SmallMarks.Provider>
+    </Canvas>
   );
 }
