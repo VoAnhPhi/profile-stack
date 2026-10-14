@@ -11,7 +11,7 @@ export const SITE = {
   /** Split for per-line masked reveal in the hero. */
   nameLines: ["Võ Đoàn", "Anh Phi"],
   role: "Software Engineer",
-  discipline: "Frontend & Full-stack",
+  discipline: "Full-stack",
   location: "Ho Chi Minh City, Vietnam",
   email: "voanhphi.dev@gmail.com",
   phone: "0866463002",
