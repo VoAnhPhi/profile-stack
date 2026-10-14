@@ -28,11 +28,11 @@ export type TrajectoryEntry = {
 
 export const TRAJECTORY: TrajectoryEntry[] = [
   {
-    id: "acta",
+    id: "cattleya",
     index: "01",
     type: "Full-time employment",
     role: "Full-Stack Developer",
-    org: "ACTA",
+    org: "Hoa Lan Cattleya",
     period: "Aug 2026 - Present",
     summary:
       "I work on internal tools, social features and e-commerce systems. My tasks cover both the frontend and backend, from building screens and APIs to checking how features work with users.",

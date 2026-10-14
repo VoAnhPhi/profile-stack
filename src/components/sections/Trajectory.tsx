@@ -21,7 +21,7 @@ import { Icon, type IconName } from "@/components/icons/Icon";
  */
 
 const ENTRY_ICON: Record<string, IconName> = {
-  acta: "chart",
+  cattleya: "chart",
   "trieu-an": "qr",
   hopper: "wallet",
   "nhangonsaigon-work": "schema",
