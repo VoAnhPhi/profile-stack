@@ -1,0 +1,389 @@
+/* Shared base for the three work-detail cover concepts.
+   Tokens, fonts and type scale copied from src/app/globals.css so each concept
+   is judged in the site's real voice, not a generic mock. */
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("../../../src/fonts/fraunces.woff2") format("woff2");
+  font-weight: 460 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("../../../src/fonts/fraunces-italic.woff2") format("woff2");
+  font-weight: 460 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist";
+  src: url("../../../src/fonts/geist.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../../../src/fonts/geist-mono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playpen Sans";
+  src: url("../../../src/fonts/playpen-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --canvas: #fafaf8;
+  --canvas-sunk: #f2f0ec;
+  --ink: #111111;
+  --ink-soft: #33332f;
+  --muted: #6b675f;
+  --divider: #eae7e1;
+  --accent: #b42318;
+  --inverse-bg: #111111;
+  --inverse-text: #f5f3ee;
+
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+
+  --text-page: clamp(2.5rem, 7vw, 5rem);
+  --text-title: clamp(1.75rem, 3vw, 2rem);
+  --text-lead: clamp(1.125rem, 1.6vw, 1.375rem);
+
+  --header-h: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p,
+h1,
+h2,
+h3,
+ul {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+.shell {
+  width: 100%;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.label {
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.font-display {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-weight: 500;
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+}
+
+.text-page {
+  font-size: var(--text-page);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.text-title {
+  font-size: var(--text-title);
+  line-height: 1.08;
+}
+
+.text-lead {
+  font-size: var(--text-lead);
+  line-height: 1.5;
+}
+
+.hand {
+  font-family: "Playpen Sans", cursive;
+}
+
+/* ---------------------------------------------------------------------------
+   Mock header - same height and placement as the fixed site header
+--------------------------------------------------------------------------- */
+
+.site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: var(--header-h);
+  background: color-mix(in srgb, var(--canvas) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.site-header .shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.site-header__mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 28px;
+}
+
+.site-header nav a {
+  font-family: "Geist Mono", monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .site-header nav {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Pieces every concept shares below the cover
+--------------------------------------------------------------------------- */
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sticker {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #e6e2fb;
+  color: #5b4bd6;
+  box-shadow: 0 0 0 1px rgba(91, 75, 214, 0.15);
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+
+.meta-row p:last-child {
+  margin-top: 4px;
+  max-width: 24ch;
+}
+
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  transition:
+    border-color 150ms,
+    color 150ms;
+}
+
+.pill:hover {
+  border-color: var(--ink);
+  color: var(--accent);
+}
+
+.metrics {
+  border-block: 1px solid var(--divider);
+  padding-block: 32px;
+}
+
+.metrics ul {
+  display: grid;
+  gap: 32px;
+}
+
+@media (min-width: 640px) {
+  .metrics ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .metrics ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metrics .value {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics .label {
+  margin-top: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: "Geist", sans-serif;
+  font-size: 0.875rem;
+}
+
+.prose {
+  display: grid;
+  gap: 24px;
+  padding-block: 64px 96px;
+}
+
+@media (min-width: 1024px) {
+  .prose {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+.prose .text-lead {
+  max-width: 64ch;
+  color: var(--ink-soft);
+}
+
+/* Browser chrome for a bare screenshot, as on the work index */
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  padding-inline: 14px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--divider);
+}
+
+.browser-bar .dots {
+  display: flex;
+  gap: 6px;
+}
+
+.browser-bar .dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--divider);
+}
+
+.browser-bar .url {
+  flex: 1;
+  margin-right: 39px;
+  text-align: center;
+  font-family: "Geist Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Concept switcher - only for this comparison, not part of any design
+--------------------------------------------------------------------------- */
+
+.switcher {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 60;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100vw - 32px);
+  padding: 6px;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.92);
+  color: var(--inverse-text);
+  font-family: "Geist Mono", monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.5);
+  scrollbar-width: none;
+}
+
+.switcher a,
+.switcher span {
+  flex: none;
+  padding: 7px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.switcher a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.switcher a[aria-current="true"] {
+  background: var(--inverse-text);
+  color: var(--ink);
+}
+
+.switcher .sep {
+  width: 1px;
+  height: 18px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.embedded .switcher {
+  display: none;
+}

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concept A - Proof plate</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      /* Concept A - Proof plate.
+         Title first, then the cover set whole on a sunk paper band like a
+         printed plate, with crop marks and a figure caption. Nothing is ever
+         cropped: the plate takes the image's own ratio, and its width is capped
+         so the whole plate fits a short laptop screen. */
+
+      .intro {
+        padding-top: calc(var(--header-h) + clamp(3rem, 7vw, 5.5rem));
+        padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+      }
+
+      .intro h1 {
+        margin-top: 24px;
+      }
+
+      .intro .summary {
+        margin-top: 24px;
+        max-width: 54ch;
+        color: var(--ink-soft);
+      }
+
+      .intro .meta-row {
+        margin-top: 32px;
+      }
+
+      .intro .link-row {
+        margin-top: 32px;
+      }
+
+      .plate-band {
+        background: var(--canvas-sunk);
+        border-block: 1px solid var(--divider);
+        padding-block: clamp(2rem, 6vw, 4.5rem) clamp(1.5rem, 4vw, 2.5rem);
+      }
+
+      .plate {
+        position: relative;
+        /* Whole plate on screen: the height left after the header and the band's
+           padding, turned back into a width through the cover's ratio. */
+        width: min(100%, calc((100svh - var(--header-h) - 11rem) * var(--ratio)));
+        margin-inline: auto;
+      }
+
+      .cover {
+        margin: 0;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--canvas);
+        box-shadow:
+          0 0 0 1px rgba(17, 17, 17, 0.06),
+          0 30px 60px -32px rgba(17, 17, 17, 0.38);
+      }
+
+      .cover img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: var(--ratio);
+      }
+
+      /* Printer's crop marks at the four corners. */
+      .plate i {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-color: var(--muted);
+        border-style: solid;
+        border-width: 0;
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      .plate i:nth-of-type(1) { top: -24px; left: -24px; border-top-width: 1px; border-left-width: 1px; }
+      .plate i:nth-of-type(2) { top: -24px; right: -24px; border-top-width: 1px; border-right-width: 1px; }
+      .plate i:nth-of-type(3) { bottom: -24px; left: -24px; border-bottom-width: 1px; border-left-width: 1px; }
+      .plate i:nth-of-type(4) { bottom: -24px; right: -24px; border-bottom-width: 1px; border-right-width: 1px; }
+
+      .plate .caption {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 28px;
+      }
+
+      .plate .caption .label:first-child {
+        color: var(--ink-soft);
+      }
+
+      .metrics-wrap {
+        padding-top: clamp(2.5rem, 5vw, 3.5rem);
+      }
+
+      @media (max-width: 640px) {
+        .plate i {
+          display: none;
+        }
+        .cover {
+          border-radius: 10px;
+        }
+        .plate .caption {
+          margin-top: 14px;
+        }
+        .plate .caption .label:last-child {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="data.js"></script>
+    <script>
+      const p = project;
+      document.getElementById("app").innerHTML = `
+        ${frag.header()}
+        <main>
+          <section class="shell intro">
+            ${frag.eyebrow(p)}
+            <h1 class="font-display text-page">${esc(p.title)}</h1>
+            <p class="text-lead summary">${esc(p.summary)}</p>
+            ${frag.meta(p)}
+            ${frag.links(p)}
+          </section>
+
+          <section class="plate-band" aria-label="Cover">
+            <div class="shell">
+              <div class="plate" style="--ratio:${p.w}/${p.h}">
+                <i></i><i></i><i></i><i></i>
+                ${frag.cover(p)}
+                <div class="caption">
+                  <span class="label">Fig. ${p.index} / ${esc(p.caption)}</span>
+                  <span class="label">${esc(p.category)}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="shell metrics-wrap">${frag.metrics(p)}</section>
+          ${frag.prose(p)}
+        </main>
+        ${frag.switcher("A")}
+      `;
+    </script>
+  </body>
+</html>

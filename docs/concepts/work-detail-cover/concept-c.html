@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concept C - Stage</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      /* Concept C - Stage.
+         Keeps today's order (big band, then the title) but stops cropping: the
+         band is a stage lit by a blurred copy of the cover, and the cover itself
+         stands on it whole, at its own ratio. The band's height follows the
+         cover instead of a fixed svh, so a 16:9 laptop and a 16:10 phone trio
+         both fit without losing an edge. */
+
+      .stage {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        margin-top: var(--header-h);
+        padding-block: clamp(1.5rem, 5vw, 4.5rem);
+        background: var(--tone);
+      }
+
+      /* Same file as the cover, so no extra request; blurred past recognition
+         it only carries the cover's colours out to the screen edges. */
+      .stage__light {
+        position: absolute;
+        inset: -10%;
+        z-index: -2;
+        width: 120%;
+        height: 120%;
+        max-width: none;
+        object-fit: cover;
+        filter: blur(90px) saturate(1.2);
+        opacity: 0.55;
+      }
+
+      /* A soft vignette so the cover's own edge is never lost against its echo. */
+      .stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(ellipse 70% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.22) 100%),
+          linear-gradient(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.12));
+      }
+
+      .stage .cover {
+        /* Fit the cover in the shell's width and in the screen's height, whichever
+           binds first, so it is always seen whole on arrival. */
+        width: min(
+          100%,
+          calc((100svh - var(--header-h) - 2 * clamp(1.5rem, 5vw, 4.5rem) - 3rem) * var(--ratio))
+        );
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--canvas);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.12),
+          0 50px 90px -40px rgba(0, 0, 0, 0.6);
+      }
+
+      .stage .cover img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: var(--ratio);
+      }
+
+      .intro {
+        padding-top: clamp(2.5rem, 5vw, 3.5rem);
+      }
+
+      .intro h1 {
+        margin-top: 24px;
+      }
+
+      .intro .summary {
+        margin-top: 24px;
+        max-width: 54ch;
+        color: var(--ink-soft);
+      }
+
+      .intro .meta-row,
+      .intro .link-row {
+        margin-top: 32px;
+      }
+
+      .intro .metrics {
+        margin-top: 56px;
+      }
+
+      @media (max-width: 640px) {
+        .stage .cover {
+          border-radius: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="data.js"></script>
+    <script>
+      const p = project;
+      document.getElementById("app").innerHTML = `
+        ${frag.header()}
+        <main>
+          <section class="stage" aria-label="Cover" style="--tone:${p.tone}">
+            <img class="stage__light" src="${p.cover}" alt="" aria-hidden="true">
+            <div class="shell">${frag.cover(p)}</div>
+          </section>
+
+          <section class="shell intro">
+            ${frag.eyebrow(p)}
+            <h1 class="font-display text-page">${esc(p.title)}</h1>
+            <p class="text-lead summary">${esc(p.summary)}</p>
+            ${frag.meta(p)}
+            ${frag.links(p)}
+            ${frag.metrics(p)}
+          </section>
+          ${frag.prose(p)}
+        </main>
+        ${frag.switcher("C")}
+      `;
+    </script>
+  </body>
+</html>
