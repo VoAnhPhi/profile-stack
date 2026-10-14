@@ -7,10 +7,12 @@ import { SITE } from "@/content/site";
 import { Icon } from "@/components/icons/Icon";
 import { registerSlot, type SlotName } from "@/components/marks/runtime";
 
+/** In the order the sections run down the home page (app/page.tsx), named as they label themselves. */
 const NAV = [
-  { label: "Work", href: "/#work" },
   { label: "How I work", href: "/#manifesto" },
   { label: "Experience", href: "/#trajectory" },
+  { label: "Stack", href: "/#skills" },
+  { label: "Work", href: "/#work" },
   { label: "Contact", href: "/#contact" },
 ];
 
