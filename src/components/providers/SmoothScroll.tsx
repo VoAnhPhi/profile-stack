@@ -47,6 +47,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       touchMultiplier: 1.6,
       // No snapping, no direction locking. None of the reference sites jack scroll.
       smoothWheel: true,
+      // A link to another page ends the glide, so the next page does not carry it on.
+      stopInertiaOnNavigate: true,
     });
 
     const onScroll = (event: Lenis) => {
@@ -54,6 +56,20 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       ScrollTrigger.update();
     };
     instance.on("scroll", onScroll);
+
+    // Back and Forward: the browser puts the page back where the reader left it, but
+    // while Lenis is still gliding it ignores the browser's scrolling and carries on to
+    // its own target - the place on the page just left. Coming back to the work list
+    // within a second or so of the last wheel landed on the case study's scroll position
+    // instead of on the project that had been opened. Stopping and starting resets the
+    // glide, so Lenis takes up wherever the browser restores. Not while the opening holds
+    // it stopped.
+    const onHistory = () => {
+      if (instance.isStopped) return;
+      instance.stop();
+      instance.start();
+    };
+    window.addEventListener("popstate", onHistory);
 
     // One rAF loop for the whole page. Driving Lenis from the GSAP ticker keeps
     // scroll and tweens on the same clock; two independent loops drift apart.
@@ -65,6 +81,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     ScrollTrigger.refresh();
 
     return () => {
+      window.removeEventListener("popstate", onHistory);
       instance.off("scroll", onScroll);
       gsap.ticker.remove(raf);
       gsap.ticker.lagSmoothing(500, 33);
