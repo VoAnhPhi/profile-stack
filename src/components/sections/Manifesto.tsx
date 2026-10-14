@@ -14,12 +14,12 @@ export function Manifesto() {
 			<div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-20">
 				<div>
 					<Reveal as="p" className="label">
-						How I build
+						How I work
 					</Reveal>
 
 					{/* studiomodular.be's line wipe. Scrubbed clip-path, not a colour tween,
               so the fill edge stays hard. */}
-					<LineWipe as="h2" className="font-display text-display mt-6 max-w-[11ch]">
+					<LineWipe as="h2" className="font-display text-display mt-6 max-w-[19ch]">
 						{HOW_I_BUILD_HEADLINE.lead}{" "}
 						<span className="wipe-accent block pb-1 italic leading-[1.1]">{HOW_I_BUILD_HEADLINE.accent}</span>
 					</LineWipe>
@@ -38,10 +38,7 @@ export function Manifesto() {
               beliefs earns its place; a face next to a name is decoration. Two faces
               now, because the answer to "how I build" has two halves. */}
 					<Reveal delay={180} className="mt-12 flex flex-wrap items-end gap-6">
-<PortraitFlip />
-						<MarginNote index={2} delay={80} className="mb-2">
-							Me, approximately five minutes before opening another file.
-						</MarginNote>
+						<PortraitFlip />
 					</Reveal>
 				</div>
 
@@ -49,7 +46,7 @@ export function Manifesto() {
 				<Reveal delay={100} className="lg:pt-16">
 					<div className="flex items-center gap-3">
 						<Sticker name="spark" index={4} size={22} accent delay={200} />
-						<p className="label text-ink">From zero to shipped</p>
+						<p className="label text-ink">From idea to working feature</p>
 					</div>
 
 					{/* Every step in one weight and one colour. They used to ramp from 380 to
@@ -67,7 +64,7 @@ export function Manifesto() {
 					</ol>
 
 					<MarginNote index={6} delay={260} className="mt-5">
-						Blank page is usually the fun part.
+						I usually find the edge cases while testing the flow.
 					</MarginNote>
 				</Reveal>
 			</div>

@@ -36,16 +36,16 @@ export function Trajectory() {
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <Reveal as="p" className="label">
-            Trajectory
+            Experience
           </Reveal>
           <Reveal delay={60}>
             <h2 className="font-display text-display mt-5">
-              <ScrambleText text="Where the hours went." />
+              <ScrambleText text="What I have worked on so far." />
             </h2>
           </Reveal>
         </div>
         <MarginNote index={3} delay={120} arrow="left">
-          The path so far: university, freelance work, and production software.
+          A mix of full-time work, freelance projects and a lot of learning along the way.
         </MarginNote>
       </div>
 
@@ -60,7 +60,7 @@ export function Trajectory() {
             <div>
               <p className="label tabular-nums text-ink">{entry.period}</p>
               <p className="label mt-2 normal-case tracking-normal">
-                {entry.kind === "work" ? "Employment" : "Education"}
+                {entry.type}
                 {entry.location ? ` · ${entry.location}` : ""}
               </p>
             </div>

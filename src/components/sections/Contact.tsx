@@ -16,16 +16,17 @@ export function Contact() {
       </Reveal>
 
       <h2 className="font-display text-display mt-6 max-w-[18ch]">
-        <ScrambleText text="Tell me what is" />{" "}
+        <ScrambleText text="Want to get" />{" "}
         <span className="italic text-accent">
-          <ScrambleText text="broken." />
+          <ScrambleText text="in touch?" />
         </span>
       </h2>
 
       <Reveal delay={100} className="mt-8 max-w-[48ch]">
         <p className="text-lead text-ink-soft">
-          I am looking for a Software Engineer role where I get to own something end
-          to end and be held to the result. If that is what you have, write to me.
+          I&apos;m open to Software Engineer opportunities where I can keep working across
+          frontend and backend, learn from a team and take responsibility for real
+          features. If you think we could work together, feel free to reach out.
         </p>
       </Reveal>
 
@@ -102,7 +103,7 @@ export function Contact() {
             {SITE.name}
           </p>
           <MarginNote index={12} delay={80} className="mt-4 lg:ml-auto lg:justify-end">
-            That is the short version. Say hello for the longer one.
+            Thanks for taking a look around.
           </MarginNote>
         </Reveal>
       </div>

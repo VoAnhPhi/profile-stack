@@ -10,7 +10,7 @@ import { Icon } from "@/components/icons/Icon";
  *
  * Without it the reader got Next's default page: no header, no footer and not a
  * single link, so the only way off it was the browser's back button. The likeliest
- * way here is an old or mistyped case study link, so the four case studies are
+ * way here is an old or mistyped case study link, so the case studies are
  * listed directly rather than behind a trip to the homepage.
  */
 export default function NotFound() {
@@ -20,11 +20,11 @@ export default function NotFound() {
       <main className="shell pt-32 pb-24 md:pt-40">
         <p className="label">[ 404 ]</p>
         <h1 className="font-display text-page mt-6 max-w-[16ch]">
-          This page does not exist.
+          This page is not here.
         </h1>
         <p className="text-lead mt-6 max-w-[46ch] text-ink-soft">
-          The link is probably old or mistyped. If you were after a case study, all
-          four are here.
+          The link may be old or typed incorrectly. You can head back home or take a
+          look at my projects.
         </p>
 
         <ul className="mt-12 border-t border-divider">
@@ -57,7 +57,7 @@ export default function NotFound() {
           data-cursor
           className="group mt-10 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-inverse-text transition-colors duration-200 hover:bg-accent"
         >
-          <span>Back to the homepage</span>
+          <span>Back to homepage</span>
           <Icon
             name="arrow"
             size={18}

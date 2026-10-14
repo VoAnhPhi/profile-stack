@@ -14,8 +14,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.nameLatin} - ${SITE.role}`,
-    template: `%s - ${SITE.nameLatin}`,
+    default: `${SITE.nameLatin} | ${SITE.role}`,
+    template: `%s | ${SITE.nameLatin}`,
   },
   description: SITE.description,
   authors: [{ name: SITE.nameLatin, url: SITE.url }],
@@ -25,12 +25,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE.url,
     siteName: SITE.nameLatin,
-    title: `${SITE.nameLatin} - ${SITE.role}`,
+    title: `${SITE.nameLatin} | ${SITE.role}`,
     description: SITE.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE.nameLatin} - ${SITE.role}`,
+    title: `${SITE.nameLatin} | ${SITE.role}`,
     description: SITE.description,
   },
   robots: { index: true, follow: true },

@@ -1,6 +1,6 @@
 /**
- * Identity and contact. Every value here is taken from the CV, the October 2026
- * "Software Engineer" one served at `cvPath` - nothing invented.
+ * Identity and contact. Names, places, dates and figures come from the CV, the October
+ * 2026 "Software Engineer" one served at `cvPath`. The wording is Phi's own.
  */
 
 export const SITE = {
@@ -11,25 +11,15 @@ export const SITE = {
   /** Split for per-line masked reveal in the hero. */
   nameLines: ["Võ Đoàn", "Anh Phi"],
   role: "Software Engineer",
-  discipline: "Full-stack",
-  location: "Ho Chi Minh City, Viet Nam",
-  /** The city centre, for the opening's corner. Not an address. */
-  coordinates: "10.78° N, 106.70° E",
-  /**
-   * The city's offset from UTC, in hours. Viet Nam has kept UTC+7 all year, with no
-   * daylight saving, so the opening's clock adds it to UTC itself. Naming the zone to
-   * Intl instead loaded the time-zone database on the first call: 150-390ms on a phone,
-   * in a script that holds up the page's first paint.
-   */
-  utcOffsetHours: 7,
-  timeZoneLabel: "GMT+7",
+  discipline: "Frontend & Full-stack",
+  location: "Ho Chi Minh City, Vietnam",
   email: "voanhphi.dev@gmail.com",
   phone: "0866463002",
 
   /** Override with NEXT_PUBLIC_SITE_URL once the domain is decided. */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://built-by-phi.vercel.app",
 
-  tagline: "I build full-stack systems, and I bring the evidence.",
+  tagline: "Building web apps, from the interface to the API.",
 
   /**
    * Phi's own words. Spoken, first person, addressed to the reader.
@@ -40,25 +30,23 @@ export const SITE = {
    * hold at the width it was written for.
    */
   intro: [
-    "Hey, I'm Phi. Writing software from Ho Chi Minh City, Viet Nam - hope your " +
+    "Hey, I'm Phi. Writing software from Ho Chi Minh City, Vietnam - hope your " +
       "day's treating you well.",
-    "I work across both frontend and backend, mostly with React, Next.js, NestJS " +
-      "and PostgreSQL, with experience building products in fintech, real estate, " +
-      // U+2060 WORD JOINER holds "e-commerce" on one line; the hyphen alone is a
-      // break point, and the paragraph was splitting it at 320, 390, 1280 and 1440.
-      // Not U+2011: Geist has no glyph for it, so it would render from a fallback.
-      "e-⁠commerce and CRM.",
+    "I work on both frontend and backend, mostly with React, Next.js, React Native, " +
+      "NestJS and PostgreSQL. I've built features for fintech, real estate, " +
+      "healthcare and internal business tools, and I enjoy understanding how the " +
+      "whole feature works, not just my part of the code.",
   ],
 
   /**
    * What search results and link previews get, which is not the same job as the
    * hero paragraph. A greeting spends the ~155 characters Google renders on words
-   * that identify nobody, and `intro` is 265 characters, so it would be cut mid
-   * sentence. Same claims as `intro`, none of the hello.
+   * that identify nobody. Same claims as `intro`, none of the hello.
    */
   description:
-    "Full-stack engineer in Ho Chi Minh City. React, Next.js, NestJS and " +
-    "PostgreSQL, with products shipped in fintech, real estate, e-commerce and CRM.",
+    "I'm Phi, a software engineer based in Ho Chi Minh City. I work with React, " +
+    "Next.js, React Native, NestJS and PostgreSQL, building web and mobile " +
+    "features across different products.",
 
   cvPath: "/cv/vo-doan-anh-phi-software-engineer.pdf",
 
@@ -67,5 +55,5 @@ export const SITE = {
     { label: "Email", href: "mailto:voanhphi.dev@gmail.com", handle: "voanhphi.dev@gmail.com" },
   ],
 
-  availability: "Open to Software Engineer roles",
+  availability: "Open to Software Engineer opportunities",
 } as const;

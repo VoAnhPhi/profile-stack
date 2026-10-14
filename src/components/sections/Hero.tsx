@@ -71,10 +71,10 @@ export function Hero() {
           <Link
             href="#work"
             data-cursor
-            data-cursor-label="4 case studies"
+            data-cursor-label="5 projects"
             className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-inverse-text transition-colors duration-200 hover:bg-accent"
           >
-            <span>See the work</span>
+            <span>See my work</span>
             <Icon
               name="arrow"
               size={18}

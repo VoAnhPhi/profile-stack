@@ -41,7 +41,6 @@ const GROUP_ICON: Record<string, IconName> = {
 
 export function Skills() {
   const [focus, setFocus] = useState<string | null>(null);
-  const total = STACK.reduce((sum, group) => sum + group.items.length, 0);
 
   return (
     <section id="skills" className="relative shell section hairline">
@@ -54,15 +53,15 @@ export function Skills() {
           </Reveal>
           <Reveal delay={60}>
             <h2 className="font-display text-display mt-5">
-              <ScrambleText text={`${total} things I`} />{" "}
+              <ScrambleText text="Tools I" />{" "}
               <span className="italic text-accent">
-                <ScrambleText text="actually use." />
+                <ScrambleText text="work with." />
               </span>
             </h2>
           </Reveal>
         </div>
         <MarginNote index={8} delay={120} arrow="left">
-          A layer-by-layer view of the tools I use most.
+          The main technologies I use at work and in my projects.
         </MarginNote>
       </div>
 

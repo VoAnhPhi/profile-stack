@@ -50,9 +50,9 @@ type ConnectionId = (typeof CONNECTIONS)[number]["id"];
 const seconds = (ms: number) => `${ms / 1000} s`;
 
 const RULES = [
-  ["4.8 s", "A first visit always gets all of it: a sheet folds itself into a plane as the count runs."],
-  ["Play", "While the page loads, the plane follows your pointer, or a tap on a touch screen."],
-  ["8 s", "Never longer, and Skip or Esc ends it at any time. The rest loads behind the page."],
+  ["First visit", "On a first visit, the paper plane folds while the page loads."],
+  ["Play", "Move your cursor or tap to guide the plane."],
+  ["Skip", "Press Esc or choose Skip to go straight to the page."],
 ] as const;
 
 /* Preview drives, one per card, outside React like every other mark input. */
@@ -205,11 +205,11 @@ export function Studio() {
     <main className="shell pt-32 pb-24 md:pt-40">
       <p className="label">[ Studio ]</p>
       <h1 className="font-display text-page mt-6 max-w-[14ch]">
-        Make the header <span className="italic text-accent">yours.</span>
+        Make the header <span className="italic text-accent">your own.</span>
       </h1>
       <p className="text-lead mt-6 max-w-[56ch] text-ink-soft">
-        Choose what sits in the corners of every page, and replay how the site opens.
-        Your choice is kept in this browser only - nothing is sent anywhere.
+        Choose the small objects shown in the corners of the site and replay the opening
+        animation. Your choices stay in this browser.
       </p>
 
       <section aria-labelledby="studio-mark" className="mt-20">
@@ -220,8 +220,8 @@ export function Studio() {
           <p className="label">Top left, every page</p>
         </div>
         <p className="mt-3 max-w-[60ch] text-ink-soft">
-          It looks where your pointer is and leans as you scroll. Drag the bar to take it
-          apart and watch how it is built.
+          This object moves with your cursor and reacts as you scroll. Use the slider to
+          see how it comes together.
         </p>
 
         <div role="radiogroup" aria-labelledby="studio-mark" className="mt-8 grid gap-6 sm:grid-cols-2">
@@ -280,7 +280,8 @@ export function Studio() {
           <p className="label">Top right, every page</p>
         </div>
         <p className="mt-3 max-w-[60ch] text-ink-soft">
-          The object that brought you here. Bring the pointer close and it answers.
+          Pick another small object for the top-right corner. Each one reacts a little
+          differently.
         </p>
 
         <div role="radiogroup" aria-labelledby="studio-entry" className="mt-8 grid gap-6 sm:grid-cols-3">
@@ -310,8 +311,8 @@ export function Studio() {
           The opening
         </h2>
         <p className="mt-3 max-w-[60ch] text-ink-soft">
-          It runs once per visit. The count follows what has actually loaded, waits at 94%
-          until everything is in, and never runs faster than the fold.
+          The opening runs once per visit. It follows the real loading progress, and you
+          can skip it at any time.
         </p>
 
         <ol className="mt-8 grid gap-4 md:grid-cols-3">
@@ -332,7 +333,7 @@ export function Studio() {
             onClick={() => requestReplay(CONNECTIONS.find((c) => c.id === connection)?.readyAt ?? 1500)}
             className="rounded-full bg-ink px-5 py-2.5 text-[0.9375rem] text-canvas transition-colors duration-150 hover:bg-accent disabled:opacity-40"
           >
-            Replay the opening
+            Replay opening
           </button>
         </div>
         <p aria-live="polite" className="mt-5 max-w-[70ch] text-ink-soft">
@@ -341,7 +342,7 @@ export function Studio() {
       </section>
 
       <div className="mt-24 flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-8">
-        <p className="text-ink-soft">Kept in this browser. Clearing site data puts it back.</p>
+        <p className="text-ink-soft">Saved in this browser. Resetting site data will clear your choices.</p>
         <button
           type="button"
           data-cursor

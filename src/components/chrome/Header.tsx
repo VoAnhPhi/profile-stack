@@ -9,8 +9,8 @@ import { registerSlot, type SlotName } from "@/components/marks/runtime";
 
 const NAV = [
   { label: "Work", href: "/#work" },
-  { label: "How I build", href: "/#manifesto" },
-  { label: "Trajectory", href: "/#trajectory" },
+  { label: "How I work", href: "/#manifesto" },
+  { label: "Experience", href: "/#trajectory" },
   { label: "Contact", href: "/#contact" },
 ];
 
