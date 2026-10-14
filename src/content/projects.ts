@@ -15,6 +15,23 @@ export type ProjectLink = {
   href: string;
 };
 
+export type Cover = {
+  src: string;
+  /** The file's real pixel size. The case study shows the cover whole at this
+   *  ratio, so a 16:9 laptop and a 16:10 phone trio both keep every edge. */
+  width: number;
+  height: number;
+  /**
+   * The case study's band colour, picked by eye from the cover's own backdrop so
+   * the cover reads as continuing into it. A plain average of the edge pixels is
+   * not it: SonaSpace's averages to a muddy brown from its dark panels, not the
+   * cream wall the eye sees.
+   */
+  tone: string;
+  /** Which text colour reads on `tone`. */
+  ink: "light" | "dark";
+};
+
 export type Project = {
   slug: string;
   index: string;
@@ -27,11 +44,12 @@ export type Project = {
   context: string;
   duration: string;
   stack: string[];
-  cover: string | null;
+  cover: Cover | null;
   /**
    * Set when the cover is a bare screenshot rather than a presentation mockup.
-   * The work index then draws a browser window around it, so it sits beside the
-   * device mockups the other covers already are instead of looking unfinished.
+   * The work index and the case study then draw a browser window around it, so it
+   * sits beside the device mockups the other covers already are instead of
+   * looking unfinished.
    */
   coverFrame?: "browser";
   /** Countable claims only. Every figure here is sourced from the CV. */
@@ -70,7 +88,13 @@ export const PROJECTS: Project[] = [
       "Gemini API",
       "VNPay",
     ],
-    cover: "/img/work/sonaspace/cover.png",
+    cover: {
+      src: "/img/work/sonaspace/cover.png",
+      width: 1586,
+      height: 992,
+      tone: "#e7ddd0",
+      ink: "dark",
+    },
     metrics: [
       { value: "20+", label: "backend endpoints" },
       { value: "3", label: "distinct user flows" },
@@ -140,7 +164,13 @@ export const PROJECTS: Project[] = [
       "Tailwind CSS",
       "JWT",
     ],
-    cover: "/img/work/tomatohub/cover.png",
+    cover: {
+      src: "/img/work/tomatohub/cover.png",
+      width: 1920,
+      height: 1080,
+      tone: "#163556",
+      ink: "light",
+    },
     metrics: [
       { value: "3", label: "user roles" },
       { value: "6", label: "weeks to MVP" },
@@ -186,7 +216,13 @@ export const PROJECTS: Project[] = [
     context: "Client engagement",
     duration: "Jan - Apr 2025",
     stack: ["React", "JavaScript", "Responsive CSS", "REST API"],
-    cover: "/img/work/nhangonsaigon/01-search.webp",
+    cover: {
+      src: "/img/work/nhangonsaigon/01-search.webp",
+      width: 1600,
+      height: 1000,
+      tone: "#1f3f5c",
+      ink: "light",
+    },
     coverFrame: "browser",
     metrics: [
       { value: "15+", label: "REST APIs integrated" },
@@ -231,7 +267,13 @@ export const PROJECTS: Project[] = [
     context: "Personal research",
     duration: "Ongoing",
     stack: ["React 19", "TypeScript", "Vite 6", "CSS"],
-    cover: "/img/work/ui-style-research/cover.png",
+    cover: {
+      src: "/img/work/ui-style-research/cover.png",
+      width: 1586,
+      height: 992,
+      tone: "#1c47d4",
+      ink: "light",
+    },
     metrics: [
       { value: "13", label: "style dossiers" },
       { value: "8", label: "token categories per style" },

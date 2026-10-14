@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Project } from "@/content/projects";
+import { BrowserBar, coverHost } from "@/components/work/BrowserBar";
 
 /**
  * One flat cover per project on the work index.
@@ -30,10 +31,7 @@ export function WorkCover({ project }: { project: Project }) {
     );
   }
 
-  const host =
-    project.coverFrame === "browser" && project.links[0]
-      ? new URL(project.links[0].href).hostname
-      : null;
+  const host = coverHost(project);
 
   return (
     <Link
@@ -43,19 +41,10 @@ export function WorkCover({ project }: { project: Project }) {
       data-cursor-label="Open the case study"
       className="work-cover"
     >
-      {host ? (
-        <span className="work-cover__bar" aria-hidden="true">
-          <span className="work-cover__dots">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="work-cover__url">{host}</span>
-        </span>
-      ) : null}
+      {host ? <BrowserBar host={host} /> : null}
       <span className="work-cover__media">
         <Image
-          src={project.cover}
+          src={project.cover.src}
           alt={`${project.title} - ${project.summary}`}
           fill
           sizes="(min-width: 1024px) 46vw, 92vw"

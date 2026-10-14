@@ -877,10 +877,10 @@ html.is-opening .opening {
   scale: 1.03;
 }
 
-/* Browser chrome for a cover that is a bare screenshot. Drawn in the page's own
+/* Browser chrome for a cover that is a bare screenshot (`BrowserBar.tsx`). Drawn in the page's own
    paper and divider tones rather than as a real OS window, so it frames the shot
    without pretending to be one. */
-.work-cover__bar {
+.browser-bar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -890,19 +890,19 @@ html.is-opening .opening {
   border-bottom: 1px solid var(--divider);
 }
 
-.work-cover__dots {
+.browser-bar__dots {
   display: flex;
   gap: 6px;
 }
 
-.work-cover__dots > span {
+.browser-bar__dots > span {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--divider);
 }
 
-.work-cover__url {
+.browser-bar__url {
   flex: 1;
   /* Centred on the bar, not on the space the dots leave: pull back by the dots'
      width so the address sits over the middle of the screenshot. */
@@ -924,6 +924,103 @@ html.is-opening .opening {
   }
   .work-cover:hover .work-cover__img {
     scale: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Case study band
+
+   The top of a case study: title on the left, the cover whole on the right, on a
+   band in a colour taken from the cover's own backdrop (`Cover.tone`).
+
+   It replaced a full-width banner that was 52-64svh tall with `object-fit:
+   cover`. At 1440 that frame measured 1425x576, a 2.47:1 slot for 16:10 and 16:9
+   covers, so it cut the top and bottom off every one - the hospital app lost the
+   heads and feet of all three phones - and on a phone it cut the sides instead.
+   At 1920 it also stretched a 1586px cover to 1905px. Here the cover keeps its
+   own ratio and is drawn at about 600px, below its source width.
+
+   The cover hangs `--overhang` past the band's lower edge onto the paper. It sits
+   on the end of its grid row and a negative margin pulls it through the band's
+   padding, so the overhang is the same whatever the height of the text beside
+   it; the band's own bottom margin keeps that space clear for what follows.
+--------------------------------------------------------------------------- */
+
+.case-band {
+  --overhang: clamp(2.5rem, 10vw, 4rem);
+  --band-pad: clamp(2.5rem, 5vw, 4rem);
+  /* Starts below the fixed header's h-16 rather than running up under it: the
+     header has no fill of its own and its links are ink, which all but vanish on
+     a navy or royal-blue band. */
+  margin-top: 4rem;
+  margin-bottom: var(--overhang);
+  padding-top: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: var(--band-pad);
+  background: var(--tone);
+  color: var(--band-ink);
+}
+
+/* Label and summary alphas are the lowest that hold 4.5:1 on the lightest light-
+   ink tone, UI Style Research's #1c47d4. */
+.case-band[data-ink="light"] {
+  --band-ink: var(--inverse-text);
+  --band-soft: rgba(245, 243, 238, 0.88);
+  --band-label: rgba(245, 243, 238, 0.8);
+  --band-line: rgba(245, 243, 238, 0.32);
+}
+
+.case-band[data-ink="dark"] {
+  --band-ink: var(--ink);
+  --band-soft: var(--ink-soft);
+  --band-label: #5c574f;
+  --band-line: rgba(17, 17, 17, 0.18);
+}
+
+.case-band .label {
+  color: var(--band-label);
+}
+
+/* The sticker chip is a see-through wash of its glyph's colour, made for paper. On
+   a dark band it went to a murky square with the glyph sunk in it, so it gets the
+   same wash laid over solid paper and looks as it does everywhere else. */
+.case-band[data-ink="light"] .sticker__chip {
+  background: color-mix(in oklab, currentColor 18%, var(--canvas));
+}
+
+.case-band__grid {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3rem);
+}
+
+.case-band__text {
+  align-self: center;
+}
+
+.case-band__cover {
+  align-self: end;
+  margin-bottom: calc(-1 * (var(--overhang) + var(--band-pad)));
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--canvas);
+  box-shadow:
+    0 0 0 1px rgba(17, 17, 17, 0.08),
+    0 40px 80px -36px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 640px) {
+  .case-band__cover {
+    border-radius: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .case-band {
+    --overhang: clamp(2.5rem, 7vw, 6rem);
+  }
+
+  .case-band__grid {
+    grid-template-columns: minmax(0, 5.5fr) minmax(0, 6.5fr);
+    gap: clamp(2.5rem, 4vw, 4rem);
   }
 }
 

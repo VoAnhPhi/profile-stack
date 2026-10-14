@@ -10,6 +10,8 @@ import { Reveal } from "@/components/annotate/Reveal";
 import { Sticker } from "@/components/annotate/Sticker";
 import { MarginNote } from "@/components/annotate/MarginNote";
 import { Icon } from "@/components/icons/Icon";
+import { BrowserBar, coverHost } from "@/components/work/BrowserBar";
+import type { Project } from "@/content/projects";
 
 export function generateStaticParams() {
   return projectSlugs().map((slug) => ({ slug }));
@@ -31,7 +33,9 @@ export async function generateMetadata({
       title: `${project.title} - ${project.category}`,
       description: project.summary,
       type: "article",
-      images: project.cover ? [{ url: project.cover }] : undefined,
+      images: project.cover
+        ? [{ url: project.cover.src, width: project.cover.width, height: project.cover.height }]
+        : undefined,
     },
   };
 }
@@ -45,6 +49,8 @@ export default async function CaseStudy({
   const project = getProject(slug);
   if (!project) notFound();
 
+  const { cover } = project;
+  const host = coverHost(project);
   const index = PROJECTS.findIndex((p) => p.slug === slug);
   const next = PROJECTS[(index + 1) % PROJECTS.length];
 
@@ -60,71 +66,49 @@ export default async function CaseStudy({
     <>
       <Header />
       <main>
-        {project.cover ? (
-          <div className="relative mt-16 h-[52svh] min-h-80 w-full overflow-hidden md:h-[64svh]">
-            {/*
-              No scrims. The frame used to run up under the fixed header and the
-              title was pulled up over its lower edge, so it needed a canvas
-              gradient at each end to keep the nav links and the H1 readable - and
-              those read as two pale bands across the photograph. It now starts
-              below the header's own h-16, and the title sits beneath it on the page.
-            */}
-            <Image
-              src={project.cover}
-              alt=""
-              fill
-              sizes="100vw"
-              preload
-              className="object-cover"
-            />
-          </div>
+        {cover ? (
+          <section
+            className="case-band"
+            data-ink={cover.ink}
+            style={{ "--tone": cover.tone } as React.CSSProperties}
+          >
+            <div className="shell case-band__grid">
+              <header className="case-band__text">
+                {/* Sized to the half column, not the page. */}
+                <Intro
+                  project={project}
+                  titleClassName="text-[clamp(2.5rem,4.2vw,3.75rem)] leading-[0.98]"
+                />
+              </header>
+              <figure className="case-band__cover">
+                {host ? <BrowserBar host={host} /> : null}
+                <Image
+                  src={cover.src}
+                  alt=""
+                  width={cover.width}
+                  height={cover.height}
+                  sizes="(min-width: 1280px) 600px, (min-width: 1024px) 50vw, 92vw"
+                  preload
+                  className="block h-auto w-full"
+                />
+              </figure>
+            </div>
+          </section>
         ) : (
-          <div className="h-28" />
+          <header className="shell pt-28">
+            <Intro project={project} titleClassName="text-page" />
+          </header>
         )}
 
         <article className="shell">
-          <header className={project.cover ? "pt-10 md:pt-14" : "pt-16"}>
-            <Reveal className="flex items-center gap-3">
-              <Sticker name="pointer" index={1} size={20} />
-              <p className="label">
-                [ Case study ] {project.index} &middot; {project.year}
-              </p>
-            </Reveal>
-
-            <h1 className="font-display text-page mt-6">
-              {project.title}
-            </h1>
-
-            <Reveal delay={90} className="mt-6 max-w-[54ch]">
-              <p className="text-lead text-ink-soft">{project.summary}</p>
-            </Reveal>
-
-            <Reveal delay={140} className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
+          <Reveal delay={140} className={cover ? "pt-10 md:pt-12" : "pt-8"}>
+            <div className="flex flex-wrap gap-x-10 gap-y-4">
               <Meta label="Role" value={project.role} />
               <Meta label="Context" value={project.context} />
               <Meta label="Duration" value={project.duration} />
               <Meta label="Category" value={project.category} />
-            </Reveal>
-
-            {project.links.length ? (
-              <Reveal delay={180} className="mt-8 flex flex-wrap gap-2.5">
-                {project.links.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cursor
-                    data-cursor-label="Opens in a new tab"
-                    className="inline-flex items-center gap-2 rounded-full border border-divider px-4 py-2 transition-colors duration-150 hover:border-ink hover:text-accent"
-                  >
-                    <Icon name="link" size={16} />
-                    {link.label}
-                  </a>
-                ))}
-              </Reveal>
-            ) : null}
-          </header>
+            </div>
+          </Reveal>
 
           {/* Figures band. Every value is countable and sourced from the CV. */}
           <Reveal delay={120} className="mt-14 border-y border-divider py-8">
@@ -232,6 +216,53 @@ export default async function CaseStudy({
         </article>
       </main>
       <Footer />
+    </>
+  );
+}
+
+/**
+ * Eyebrow, title, summary and links. On the case-study band they take the band's
+ * ink through `--band-*`; without a cover they fall back to the paper's own tones.
+ */
+function Intro({ project, titleClassName }: { project: Project; titleClassName: string }) {
+  return (
+    <>
+      <Reveal className="flex items-center gap-3">
+        <Sticker name="pointer" index={1} size={20} />
+        <p className="label">
+          [ Case study ] {project.index} &middot; {project.year}
+        </p>
+      </Reveal>
+
+      {/* Not in a Reveal: the title is the first thing read, so it paints at once.
+          `break-words` is for a one-word title such as NhaNgonSaiGon, which cannot
+          wrap at a space and would otherwise run under the cover on a narrow column. */}
+      <h1 className={`font-display mt-6 break-words ${titleClassName}`}>{project.title}</h1>
+
+      <Reveal delay={90} className="mt-5 max-w-[46ch]">
+        <p className="text-lead text-[color:var(--band-soft,var(--ink-soft))]">
+          {project.summary}
+        </p>
+      </Reveal>
+
+      {project.links.length ? (
+        <Reveal delay={180} className="mt-7 flex flex-wrap gap-2.5">
+          {project.links.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              data-cursor
+              data-cursor-label="Opens in a new tab"
+              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--band-line,var(--divider))] px-4 py-2 transition-colors duration-150 hover:border-current"
+            >
+              <Icon name="link" size={16} />
+              {link.label}
+            </a>
+          ))}
+        </Reveal>
+      ) : null}
     </>
   );
 }
