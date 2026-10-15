@@ -39,7 +39,7 @@ export function WorkChapters() {
         <Reveal delay={120} className="flex items-center gap-3">
           <Sticker name="link" index={5} size={20} delay={200} accent />
           <p className="label max-w-[30ch] normal-case tracking-normal">
-            Screenshots come from working versions of the projects. Patient details shown in the hospital app are sample data.
+            Screenshots are of the running products, taken from the live sites.
           </p>
         </Reveal>
       </div>
