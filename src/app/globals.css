@@ -748,8 +748,10 @@ html[data-opening="skip"] .opening {
   pointer-events: none;
   /* No will-change: as a layer of its own it was drawn once at full size and the bitmap
      shrunk for the air, and on a 1x screen its thin lines broke into dots. Drawn again
-     at the size it is, each frame, they stay whole; it is a few hundred px of SVG. */
-  filter: drop-shadow(0 10px 14px rgb(60 48 30 / 0.16));
+     at the size it is, each frame, they stay whole; it is a few hundred px of SVG.
+     The shadow of a sheet lying flat: short and light. OpeningPlane.tsx lifts it as the
+     sheet folds (AS_SHEET, AS_PLANE there). */
+  filter: drop-shadow(0 2px 5px rgb(60 48 30 / 0.09));
 }
 
 .opening__plane svg {
@@ -765,6 +767,8 @@ html[data-opening="skip"] .opening {
   stroke: var(--ink-soft);
   stroke-width: var(--plane-ink, 0.0043);
   stroke-linejoin: round;
+  /* A sheet's edge is faint; it darkens to the plane's ink as it folds. */
+  stroke-opacity: 0.3;
 }
 
 .opening__plane-shade {
@@ -776,6 +780,7 @@ html[data-opening="skip"] .opening {
   stroke: var(--ink-soft);
   stroke-width: calc(var(--plane-ink, 0.0043) * 0.75);
   stroke-linecap: round;
+  stroke-opacity: 0.5;
 }
 
 html.is-opening,

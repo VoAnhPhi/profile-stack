@@ -80,11 +80,31 @@ const STAGES: readonly { at: number; outline: Outline }[] = [
   { at: 1, outline: DART },
 ];
 
+/**
+ * How the plane is dressed, as a sheet lying flat and as the finished plane. A sheet has a
+ * faint edge, as paper does, and a short, light shadow close under it; drawn with the
+ * plane's ink edge and its lifted shadow it read as a card, and heavy. The plane keeps the
+ * ink the author liked (INK_PX in Opening.tsx) and the shadow it flies with. The CSS holds
+ * the sheet's values for the first paint, before this runs: keep globals.css in step.
+ */
+const AS_SHEET = { edge: 0.3, crease: 0.5, shadowY: 2, shadowBlur: 5, shadowAlpha: 0.09 };
+const AS_PLANE = { edge: 1, crease: 1, shadowY: 10, shadowBlur: 14, shadowAlpha: 0.16 };
+
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const span = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const points = (outline: readonly Point[]) => outline.map(([x, y]) => `${x.toFixed(4)},${y.toFixed(4)}`).join(" ");
+
+/**
+ * From a sheet to a plane, 0 to 1. The sheet stays a sheet through the crease, and is a
+ * plane by the time it is folded in half; the look follows the outline, which only starts
+ * to change after the crease.
+ */
+function planeness(fold: number) {
+  const t = span(fold, 0.4, 0.8);
+  return t * t * (3 - 2 * t);
+}
 
 /** The plane's outline, shade and fold lines at `fold`, 0 (a sheet) to 1 (folded). */
 function shapeAt(fold: number) {
@@ -121,10 +141,22 @@ export function planeFolder(plane: HTMLElement) {
   const shade = plane.querySelector<SVGPolygonElement>("[data-plane-shade]");
   const lines = plane.querySelector<SVGPathElement>("[data-plane-lines]");
   let last = -1;
+  let shadow = "";
   return (fold: number) => {
     if (!body || !shade || !lines || Math.abs(fold - last) < 1e-4) return;
     last = fold;
     const shape = shapeAt(fold);
+    const e = planeness(fold);
+    body.style.strokeOpacity = lerp(AS_SHEET.edge, AS_PLANE.edge, e).toFixed(3);
+    lines.style.strokeOpacity = lerp(AS_SHEET.crease, AS_PLANE.crease, e).toFixed(3);
+    const y = lerp(AS_SHEET.shadowY, AS_PLANE.shadowY, e).toFixed(1);
+    const blur = lerp(AS_SHEET.shadowBlur, AS_PLANE.shadowBlur, e).toFixed(1);
+    const alpha = lerp(AS_SHEET.shadowAlpha, AS_PLANE.shadowAlpha, e).toFixed(3);
+    const next = `drop-shadow(0 ${y}px ${blur}px rgb(60 48 30 / ${alpha}))`;
+    if (next !== shadow) {
+      shadow = next;
+      plane.style.filter = next;
+    }
     body.setAttribute("points", shape.outline);
     shade.setAttribute("points", shape.shade);
     shade.setAttribute("opacity", shape.dart.toFixed(3));
