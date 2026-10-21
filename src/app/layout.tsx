@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { fontVariables } from "@/lib/fonts";
 import { SITE } from "@/content/site";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
@@ -87,6 +88,7 @@ export default function RootLayout({
           <MarkLayerMount />
         </SmoothScroll>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
