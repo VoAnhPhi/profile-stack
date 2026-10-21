@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { fontVariables } from "@/lib/fonts";
 import { SITE } from "@/content/site";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
@@ -85,6 +86,7 @@ export default function RootLayout({
           {children}
           <MarkLayerMount />
         </SmoothScroll>
+        <Analytics />
       </body>
     </html>
   );
