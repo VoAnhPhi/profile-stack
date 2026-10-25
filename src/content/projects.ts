@@ -26,8 +26,8 @@ export type Cover = {
   /**
    * The case study's band colour, picked by eye from the cover's own backdrop so
    * the cover reads as continuing into it. A plain average of the edge pixels is
-   * not it: SonaSpace's averages to a muddy brown from its dark panels, not the
-   * cream wall the eye sees.
+   * only a start: SonaSpace's backdrop is lit from the top centre and darkens
+   * towards the foot, so its tone is taken at the sides, level with the band.
    */
   tone: string;
   /** Which text colour reads on `tone`. */
@@ -98,14 +98,15 @@ export const PROJECTS: Project[] = [
       "Socket.IO",
       "Cloudinary",
       "Gemini API",
+      "MoMo",
       "VNPay",
     ],
     cover: {
-      src: "/img/work/sonaspace/cover.webp",
+      src: "/img/work/sonaspace/cover-home.webp",
       width: 1920,
       height: 1200,
-      tone: "#e7ddd0",
-      ink: "dark",
+      tone: "#2d241b",
+      ink: "light",
     },
     metrics: [
       { value: "20+", label: "backend endpoints" },
@@ -120,7 +121,7 @@ export const PROJECTS: Project[] = [
     problem:
       "A furniture store needs more than attractive product pages. Product options, stock, cart items, payments and order status all need to stay connected. For customers, that complexity should feel like one clear shopping journey rather than several separate steps.",
     solution:
-      "SonaSpace combines room-based browsing with the usual e-commerce flows. Customers can explore products, compare options, use a wishlist, check out with VNPay and follow their orders. An AI shopping assistant helps answer product questions, while the admin area supports the everyday work behind the storefront.",
+      "SonaSpace combines room-based browsing with the usual e-commerce flows. Customers can explore products, compare options, use a wishlist, pay on delivery or with the MoMo wallet, and follow their orders. An AI shopping assistant helps answer product questions, while the admin area supports the everyday work behind the storefront.",
     features: [
       {
         title: "Explore by room or category",
@@ -128,7 +129,7 @@ export const PROJECTS: Project[] = [
       },
       {
         title: "Save, purchase and track",
-        body: "Keep products in a wishlist or cart, complete checkout through VNPay, and check what is happening with an order afterwards.",
+        body: "Keep products in a wishlist or cart, choose which items to buy, pay on delivery or with MoMo, and check what is happening with an order afterwards.",
       },
       {
         title: "Ask the shopping assistant",
@@ -136,16 +137,18 @@ export const PROJECTS: Project[] = [
       },
       {
         title: "Manage the storefront",
-        body: "Use the admin area to maintain products, categories, rooms, content, customer information and orders.",
+        body: "Use the admin area to maintain products, categories, rooms, customer information and orders, schedule event popups and publish articles.",
       },
     ],
     gallery: [
-      "/img/work/sonaspace/showcase-01-recommended.webp",
-      "/img/work/sonaspace/showcase-02-category.webp",
-      "/img/work/sonaspace/showcase-03-product.webp",
-      "/img/work/sonaspace/showcase-04-mobile.webp",
-      "/img/work/sonaspace/showcase-05-design-service.webp",
-      "/img/work/sonaspace/showcase-06-custom-interiors.webp",
+      "/img/work/sonaspace/01-home.webp",
+      "/img/work/sonaspace/02-event-popup.webp",
+      "/img/work/sonaspace/03-categories.webp",
+      "/img/work/sonaspace/04-product.webp",
+      "/img/work/sonaspace/05-cart.webp",
+      "/img/work/sonaspace/06-checkout.webp",
+      "/img/work/sonaspace/07-news.webp",
+      "/img/work/sonaspace/08-admin.webp",
     ],
     links: [
       { label: "Live site", href: "https://sona-space.vercel.app/" },
