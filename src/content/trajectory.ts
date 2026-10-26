@@ -109,7 +109,7 @@ export const TRAJECTORY: TrajectoryEntry[] = [
     id: "iuh",
     index: "05",
     type: "Education",
-    role: "B.Eng Software Engineering",
+    role: "Software Engineering Undergraduate",
     org: "Industrial University of Ho Chi Minh City",
     period: "Jan 2023 - Dec 2027 (expected)",
     location: "Ho Chi Minh City",
