@@ -8,6 +8,8 @@ import { useSmoothScroll } from "@/components/providers/SmoothScroll";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { useHeaderPrefs } from "@/lib/headerPrefs";
 import { HEADER_FIT, renderEntry, renderMark } from "./registry";
+import { FoodSwitchCanvas } from "./FoodSwitch";
+import { MarkBoundary } from "./MarkBoundary";
 import {
   makeDrive,
   setAnchor,
@@ -23,7 +25,8 @@ import { Placed, Rig, SmallMarks, nearness } from "./shared";
 /**
  * Everything 3D outside the studio: the mark in the header's left slot and the way
  * into the studio in its right slot, on one canvas 64px tall across the top, over the
- * header (z-60), drawn on demand and paced by Pace below. Loaded in its own chunk
+ * header (z-60), drawn on demand and paced by Pace below. On the home page, the food
+ * switch in the bottom-left corner too, on a small canvas of its own (FoodSwitch). Loaded in its own chunk
  * after hydration; until it arrives the header shows its 2D posters.
  *
  * The opening's plane used to be drawn here too, on a second canvas over the whole
@@ -166,42 +169,50 @@ export default function MarkLayer() {
   }, [lenisRef]);
 
   return (
-    <Canvas
-      flat
-      frameloop="demand"
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
-      // No `fallback` that reports failure: R3F renders `fallback` inside the
-      // <canvas> element on every render, so a component there marked the layer
-      // failed on every machine. A missing context is caught before this chunk
-      // loads (hasWebGL) and a failed one by MarkBoundary.
-      // Short of the scrollbar's gutter while the opening has taken it away (globals.css).
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "calc(100% - var(--opening-inset, 0px))",
-        height: "4rem",
-        pointerEvents: "none",
-        zIndex: 60,
-      }}
-    >
-      <Ready />
-      <Pace />
-      <SmallMarks.Provider value>
-        <View track={markTrack as RefObject<HTMLElement>}>
-          <Rig />
-          <Placed drive={HEADER} fit={HEADER_FIT}>
-            {renderMark(prefs.mark, HEADER)}
-          </Placed>
-        </View>
-        <View track={entryTrack as RefObject<HTMLElement>}>
-          <Rig />
-          <Placed drive={ENTRY} fit={HEADER_FIT}>
-            {renderEntry(prefs.entry, ENTRY)}
-          </Placed>
-        </View>
-      </SmallMarks.Provider>
-    </Canvas>
+    <>
+      <Canvas
+        flat
+        frameloop="demand"
+        dpr={[1, 2]}
+        gl={{ antialias: true, alpha: true, localClippingEnabled: true }}
+        // No `fallback` that reports failure: R3F renders `fallback` inside the
+        // <canvas> element on every render, so a component there marked the layer
+        // failed on every machine. A missing context is caught before this chunk
+        // loads (hasWebGL) and a failed one by MarkBoundary.
+        // Short of the scrollbar's gutter while the opening has taken it away (globals.css).
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "calc(100% - var(--opening-inset, 0px))",
+          height: "4rem",
+          pointerEvents: "none",
+          zIndex: 60,
+        }}
+      >
+        <Ready />
+        <Pace />
+        <SmallMarks.Provider value>
+          <View track={markTrack as RefObject<HTMLElement>}>
+            <Rig />
+            <Placed drive={HEADER} fit={HEADER_FIT}>
+              {renderMark(prefs.mark, HEADER)}
+            </Placed>
+          </View>
+          <View track={entryTrack as RefObject<HTMLElement>}>
+            <Rig />
+            <Placed drive={ENTRY} fit={HEADER_FIT}>
+              {renderEntry(prefs.entry, ENTRY)}
+            </Placed>
+          </View>
+        </SmallMarks.Provider>
+      </Canvas>
+      {/* Its own boundary, so a failure there costs the switch its 3D and not the header. */}
+      {slots.food && (
+        <MarkBoundary>
+          <FoodSwitchCanvas anchor={slots.food} />
+        </MarkBoundary>
+      )}
+    </>
   );
 }
