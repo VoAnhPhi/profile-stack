@@ -1,5 +1,6 @@
 import { Header } from "@/components/chrome/Header";
 import { Footer } from "@/components/chrome/Footer";
+import { BleedToggle } from "@/components/chrome/BleedToggle";
 import { Hero } from "@/components/sections/Hero";
 import { Manifesto } from "@/components/sections/Manifesto";
 import { WorkChapters } from "@/components/sections/WorkChapters";
@@ -11,6 +12,7 @@ export default function Home() {
   return (
     <>
       <Header />
+      <BleedToggle />
       <main>
         <Hero />
         <Manifesto />

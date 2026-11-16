@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { tiltAt } from "@/lib/motion";
 import { useHasFinePointer, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import { useBleedShown } from "@/lib/bleedPref";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -205,6 +206,10 @@ export function BleedItems({ preset }: { preset: BleedPreset }) {
   const layer = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const hasFinePointer = useHasFinePointer();
+  // Off until the reader asks for the food (BleedToggle). Not rendered at all while
+  // off, rather than hidden: the hero's six are eager, and display:none still
+  // downloads an eager image.
+  const shown = useBleedShown();
   const items = PRESETS[preset];
 
   // Parallax, on the outer node.
@@ -234,7 +239,7 @@ export function BleedItems({ preset }: { preset: BleedPreset }) {
     }, element);
 
     return () => context.revert();
-  }, [prefersReducedMotion, preset]);
+  }, [prefersReducedMotion, preset, shown]);
 
   // Magnet, on the inner node.
   useEffect(() => {
@@ -305,7 +310,9 @@ export function BleedItems({ preset }: { preset: BleedPreset }) {
       window.removeEventListener("pointermove", onMove);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [hasFinePointer, prefersReducedMotion, preset]);
+  }, [hasFinePointer, prefersReducedMotion, preset, shown]);
+
+  if (!shown) return null;
 
   return (
     <div ref={layer} className="bleed-layer" aria-hidden="true">

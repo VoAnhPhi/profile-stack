@@ -16,6 +16,14 @@
   --muted: #6b675f;
   --divider: #eae7e1;
   --accent: #b42318;
+  /* The food switch (BleedToggle), its only use. Muted rather than the accent's
+     full strength - a corner control should not outshout the page - yet each still
+     clears 3:1 against the canvas (3.16 and 3.23), the floor for a control. */
+  --switch-off: #589b74;
+  --switch-on: #d36f64;
+  /* Its distance from the window's left and bottom edges. The 3D canvas drawn over
+     it (FoodSwitch) is placed from the same value. */
+  --switch-inset: 1.5rem;
   --inverse-bg: #111111;
   --inverse-text: #f5f3ee;
 
@@ -922,6 +930,133 @@ html.is-opening .opening {
      landing on the header and behind the hero card instead of beside them. There
      is nothing to arrange here, so nothing is drawn. */
   .bleed-layer {
+    display: none;
+  }
+}
+
+/* The stickers are off until the reader turns them on (BleedToggle), and arrive
+   with a short fade rather than popping into the margins. */
+.bleed-layer {
+  animation: bleed-in var(--dur-reveal) var(--ease-editorial) both;
+}
+
+@keyframes bleed-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bleed-layer {
+    animation: none;
+  }
+}
+
+/* A small slide switch in the bottom-left corner, the same distance from both
+   edges so it sits square in the corner. Hidden wherever `.bleed-layer` is, since
+   below 1360 there is nothing for it to switch.
+
+   The button is only the box: target, focus ring, and the measure the 3D knob is
+   sized from (FoodSwitch). It never turns. What the reader sees is the track inside
+   it, glass: a faint wash of the state's colour over whatever the page has behind
+   it, softened by backdrop-filter, with a gloss along its top, its colour pooled
+   along the bottom, and an ink line round it like the knob's. The track leans with
+   the scroll; the button does not, so the knob does not grow when it leans. The
+   knob is the studio Toggle's, drawn in 3D over the track; the flat knob here is
+   its poster until then, and stays on a machine without WebGL. */
+.bleed-toggle {
+  position: fixed;
+  bottom: var(--switch-inset);
+  left: var(--switch-inset);
+  z-index: 40;
+  width: 2.875rem;
+  height: 1.625rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+}
+
+/* The switch is 26px tall; this lends it a 44px target without drawing one. */
+.bleed-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -9px -4px;
+}
+
+.bleed-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.bleed-toggle__track {
+  --tint: var(--switch-off);
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: color-mix(in srgb, var(--tint) 26%, transparent);
+  -webkit-backdrop-filter: blur(2px) saturate(1.5);
+  backdrop-filter: blur(2px) saturate(1.5);
+  box-shadow:
+    0 0 0 1px var(--ink),
+    inset 0 1px 1px rgb(255 255 255 / 0.85),
+    inset 0 -5px 7px -2px color-mix(in srgb, var(--tint) 55%, transparent),
+    0 2px 6px -1px rgb(0 0 0 / 0.12);
+  transition:
+    background-color var(--dur-pop) var(--ease-editorial),
+    box-shadow var(--dur-pop) var(--ease-editorial);
+}
+
+.bleed-toggle[aria-checked="true"] .bleed-toggle__track {
+  --tint: var(--switch-on);
+}
+
+/* The gloss: light caught along the top of the tube. */
+.bleed-toggle__track::before {
+  content: "";
+  position: absolute;
+  inset: 2px 7px 55% 7px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0));
+  pointer-events: none;
+}
+
+/* The poster knob: a paper ball in ink, the size and stops of the 3D one - 16px,
+   5px of glass round it, so its ink never meets the rim's. */
+.bleed-toggle__knob {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #f3f0ea 60%, #e8e4dc);
+  box-shadow:
+    0 0 0 1px var(--ink),
+    0 2px 3px rgb(0 0 0 / 0.16);
+  transition: translate var(--dur-pop) var(--ease-playful);
+}
+
+.bleed-toggle[aria-checked="true"] .bleed-toggle__knob {
+  /* Track 46, knob 16, 5px inset each side. */
+  translate: 1.25rem 0;
+}
+
+/* The 3D knob has drawn: the track keeps its glass and stops painting a knob. */
+html[data-food-switch="ready"] .bleed-toggle__knob {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bleed-toggle__track,
+  .bleed-toggle__knob {
+    transition: none;
+  }
+}
+
+@media (max-width: 1359px) {
+  .bleed-toggle,
+  .food-switch-canvas {
     display: none;
   }
 }

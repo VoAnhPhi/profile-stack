@@ -70,12 +70,16 @@ export function setStill(still: boolean) {
 }
 
 /* --------------------------------------------------------------------------- */
-/* Header slots                                                                 */
+/* Slots                                                                        */
 
-export type SlotName = "mark" | "entry";
+/**
+ * The boxes the 3D layer draws into: the header's two corners, and on the home page
+ * the food switch in the bottom-left corner (BleedToggle).
+ */
+export type SlotName = "mark" | "entry" | "food";
 type Slots = Readonly<Record<SlotName, HTMLElement | null>>;
 
-const NO_SLOTS: Slots = { mark: null, entry: null };
+const NO_SLOTS: Slots = { mark: null, entry: null, food: null };
 let slots: Slots = NO_SLOTS;
 const slotListeners = new Set<() => void>();
 
